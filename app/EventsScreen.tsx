@@ -16,44 +16,37 @@ import JsonCalendarService from "../services/jsonCalendarService";
 import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
 
-// Change this to true to use JSON data instead of mock data
 const USE_JSON_SERVICE = true;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Events">;
 
 const EventsScreen: React.FC<Props> = ({ navigation }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date(2025, 7, 17)); // August 17, 2025
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1)); // August 2025
+  const [selectedDate, setSelectedDate] = useState(new Date(2025, 7, 17));
+  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1));
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Choose which service to use
   const service = USE_JSON_SERVICE ? JsonCalendarService : CalendarService;
 
-  // Function to navigate to previous month
   const goToPreviousMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
     );
   };
 
-  // Function to navigate to next month
   const goToNextMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
     );
   };
 
-  // Function to handle date selection
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
   };
 
-  // Function to handle event registration
   const handleRegister = async (eventId: string) => {
     try {
       const event = events.find((e) => e.id === eventId);
-
       if (event) {
         let success;
         if (event.registered) {
@@ -77,12 +70,10 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Fetch events for the current month
   useEffect(() => {
     const fetchEventsForMonth = async () => {
       setLoading(true);
       try {
-        // Calculate first and last day of the month
         const firstDay = new Date(
           currentMonth.getFullYear(),
           currentMonth.getMonth(),
@@ -94,7 +85,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
           0
         );
 
-        // Fetch events
         const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
         setEvents(fetchedEvents);
       } catch (error) {
@@ -107,7 +97,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     fetchEventsForMonth();
   }, [currentMonth]);
 
-  // Filter events for selected date
   const filteredEvents = events.filter(
     (event) =>
       event.date.getDate() === selectedDate?.getDate() &&
@@ -117,10 +106,14 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with Back Button and Logo */}
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Events</Text>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButtonContainer}
+        >
+          <Text style={styles.backButton}>←</Text>
+          <Text style={styles.headerTitle}>Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -130,15 +123,13 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
+                  weekday: "long",
+                  month: "long",
                   day: "numeric",
+                  year: "numeric"
                 })}`
               : "Select date"}
           </Text>
-          <TouchableOpacity style={styles.editIcon}>
-            <Text>✏️</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Calendar Component */}
@@ -156,7 +147,7 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView style={styles.eventsListContainer}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#9DC08B" />
+            <ActivityIndicator size="large" color="#3A7D44" />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
@@ -183,47 +174,53 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F0",
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    backgroundColor: "#F5F5F0",
+    height: 80,
+    paddingHorizontal: 20,
+    justifyContent: 'flex-end',
+    paddingBottom: 15,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  backButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    fontSize: 24,
+    color: "#3A7D44",
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: "#3A7D44",
+  },
+  dateSelectionContainer: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
   },
-  backButton: {
-    fontSize: 16,
-    color: "#3A7D44",
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  logoPlaceholder: {
-    color: "#E34935",
-  },
-  dateSelectionContainer: {
-    backgroundColor: "#E8F0E5",
-    padding: 15,
-  },
   selectedDateContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   selectedDateText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3E7E45",
-  },
-  editIcon: {
-    padding: 5,
+    color: "#3A7D44",
   },
   eventsListContainer: {
     flex: 1,
-    padding: 15,
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -233,7 +230,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#3E7E45",
+    color: "#3A7D44",
+    fontSize: 16,
   },
   noEventsContainer: {
     padding: 20,

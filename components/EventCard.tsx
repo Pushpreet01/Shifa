@@ -30,7 +30,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onRegister }) => {
         onPress={() => onRegister(event.id)}
       >
         <Text style={styles.registerButtonText}>
-          {event.registered ? 'Registered' : 'Register'}
+          {event.registered ? 'Unregister' : 'Register'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -40,48 +40,54 @@ const EventCard: React.FC<EventCardProps> = ({ event, onRegister }) => {
 const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginVertical: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 20,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    borderRadius: 12,
+    marginVertical: 8,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 3,
   },
   eventInfo: {
     flex: 1,
+    marginRight: 10,
   },
   eventTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color:"#3A7D44",
-   marginBottom :8,
+    color: "#3A7D44",
+    marginBottom: 6,
   },
   eventDetails: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
-    marginBottom: 5,
+    marginBottom: 4,
   },
   eventLocation: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
   },
   registerButton: {
-    backgroundColor: '#9ABF64',
-    paddingHorizontal: 15,
+    backgroundColor: '#3A7D44',
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignSelf: 'center',
+    minWidth: 100,
+    alignItems: 'center',
   },
   registeredButton: {
     backgroundColor: '#E0E0E0',
   },
   registerButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

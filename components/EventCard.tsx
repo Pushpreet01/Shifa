@@ -39,25 +39,25 @@ const EventCard: React.FC<EventCardProps> = ({ event, onRegister }) => {
 
 const styles = StyleSheet.create({
   eventCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
+    marginVertical: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 1,
+    elevation: 3,
   },
   eventInfo: {
     flex: 1,
   },
   eventTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3E7E45',
-    marginBottom: 5,
+    fontWeight: "bold",
+    color:"#3A7D44",
+   marginBottom :8,
   },
   eventDetails: {
     fontSize: 12,

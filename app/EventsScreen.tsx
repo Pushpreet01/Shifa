@@ -122,10 +122,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>← Events</Text>
         </TouchableOpacity>
-        <View style={styles.logoContainer}>
-          {/* Replace with your actual logo */}
-          <Text style={styles.logoPlaceholder}>NCM 🍎</Text>
-        </View>
       </View>
 
       {/* Date Selection */}
@@ -189,14 +185,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 15,
     paddingVertical: 12,
+    backgroundColor: "#F5F5F0",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
   },
   backButton: {
     fontSize: 16,
-    color: "#3E7E45",
+    color: "#3A7D44",
   },
   logoContainer: {
     flex: 1,
@@ -244,7 +242,7 @@ const styles = StyleSheet.create({
   noEventsText: {
     color: "#666",
     fontSize: 16,
-  }
+  },
 });
 
 export default EventsScreen;

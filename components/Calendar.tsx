@@ -118,8 +118,12 @@ const Calendar: React.FC<CalendarProps> = ({
 };
 
 const styles = StyleSheet.create({
+    
   calendarContainer: {
-    marginBottom: 15,
+    marginTop: 10,
+    backgroundColor: "#FFF9E5",
+    borderRadius: 10,
+    padding: 15,
   },
   monthNavigation: {
     flexDirection: 'row',
@@ -128,8 +132,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   monthYearText: {
-    fontSize: 14,
-    color: '#3A7D44',
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#3A7D44",
+    textAlign: "center",
+    marginBottom: 10,
   },
   monthArrows: {
     flexDirection: 'row',
@@ -145,9 +152,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   dayOfWeekText: {
-    color: '#3A7D44',
-    width: 30,
-    textAlign: 'center',
+    fontSize: 14,
+    color: "#3A7D44",
+    textAlign: "center",
   },
   calendarGrid: {
     flexDirection: 'row',
@@ -162,14 +169,21 @@ const styles = StyleSheet.create({
     margin: 2,
   },
   calendarDayText: {
-    color: '#3A7D44',
+    fontSize: 14,
+    color: "#3A7D44",
+    textAlign: "center",
   },
   selectedDay: {
     backgroundColor: '#9DC08B',
     borderRadius: 15,
   },
   selectedDayText: {
-    color: '#FFFFFF',
+    backgroundColor: "#9DC08B",
+    color: "#FFFFFF",
+    borderRadius: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    textAlign: "center",
   },
   emptyDay: {
     backgroundColor: 'transparent',

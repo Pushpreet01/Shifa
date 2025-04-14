@@ -3,11 +3,13 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from '../app/LoginScreen';
 import EventsScreen from '../app/EventsScreen';
 import EventsFormScreen from '../app/EventsFormScreen';
+import RegisterEventScreen from '../app/RegisterEventScreen'; //  NEW IMPORT
 
 export type RootStackParamList = {
   Login: undefined;
   Events: undefined;
   EventsForm: undefined;
+  RegisterEvent: { eventId: string }; //  NEW ROUTE
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -29,6 +31,11 @@ const AppNavigator = () => {
         <Stack.Screen
           name="EventsForm"
           component={EventsFormScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RegisterEvent"
+          component={RegisterEventScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

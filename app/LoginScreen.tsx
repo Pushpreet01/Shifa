@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { auth } from '../config/firebaseConfig'; 
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -17,29 +19,38 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    const validEmail = 'pushpreetsingh9@gmail.com';
-    const validPassword = 'p123';
-
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in both email and password.');
       return;
     }
 
-    if (email === validEmail && password === validPassword) {
+    try {
+      // Sign in with Firebase Authentication
+      await signInWithEmailAndPassword(auth, email, password);
+      // If successful, navigate to Events screen
       navigation.navigate('Events');
-    } else {
-      Alert.alert('Error', 'Invalid email or password.');
+    } catch (error: any) {
+      // Handle Firebase Authentication errors
+      const errorMessage = error.message;
+      if (error.code === 'auth/invalid-email') {
+        Alert.alert('Error', 'Invalid email format.');
+      } else if (error.code === 'auth/user-not-found') {
+        Alert.alert('Error', 'No user found with this email.');
+      } else if (error.code === 'auth/wrong-password') {
+        Alert.alert('Error', 'Incorrect password.');
+      } else if (error.code === 'auth/invalid-credentials') {
+        Alert.alert('Error', 'Invalid credentials.');
+      } else {
+        Alert.alert('Error', errorMessage);
+      }
     }
   };
 
   return (
     <View style={styles.container}>
       {/* Logo */}
-      <Image
-        source={require('../assets/logo.png')}
-        style={styles.logo}
-      />
+      <Image source={require('../assets/logo.png')} style={styles.logo} />
 
       {/* Username Field */}
       <View style={styles.inputContainer}>
@@ -57,7 +68,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#3A7D44" 
+          placeholderTextColor="#3A7D44"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -79,7 +90,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F5E9', 
+    backgroundColor: '#F8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -95,11 +106,10 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 2,
-    borderBottomColor: '#9DC08B', 
+    borderBottomColor: '#9DC08B',
     padding: 10,
     fontSize: 14,
-    color: '#3A7D44'
-    ,
+    color: '#3A7D44',
   },
   forgotPassword: {
     color: '#000',
@@ -108,7 +118,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   loginButton: {
-    backgroundColor: '#9DC08B', 
+    backgroundColor: '#9DC08B',
     paddingVertical: 7,
     paddingHorizontal: 100,
     borderRadius: 25,

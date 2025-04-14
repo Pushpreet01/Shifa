@@ -1,4 +1,3 @@
-// services/jsonCalendarService.ts
 import { CalendarEvent } from './calendarService';
 import eventsData from '../event.json';
 

@@ -1,4 +1,3 @@
-// services/CalendarService.ts
 import { Platform } from 'react-native';
 
 export type CalendarEvent = {

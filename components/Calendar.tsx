@@ -1,4 +1,3 @@
-// components/Calendar.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CalendarDay } from '../types/calendar';

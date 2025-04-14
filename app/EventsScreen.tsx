@@ -170,7 +170,78 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // (unchanged styles from before)
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F0",
+  },
+  header: {
+    height: 80,
+    paddingHorizontal: 20,
+    justifyContent: 'flex-end',
+    paddingBottom: 15,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  backButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    fontSize: 24,
+    color: "#3A7D44",
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: "#3A7D44",
+  },
+  dateSelectionContainer: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  selectedDateContainer: {
+    marginBottom: 15,
+  },
+  selectedDateText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3A7D44",
+  },
+  eventsListContainer: {
+    flex: 1,
+    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#3A7D44",
+    fontSize: 16,
+  },
+  noEventsContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  noEventsText: {
+    color: "#666",
+    fontSize: 16,
+  },
 });
 
 export default EventsScreen;

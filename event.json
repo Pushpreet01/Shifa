@@ -1,0 +1,104 @@
+{
+    "events": [
+      {
+        "id": "1",
+        "title": "Community Garden Day",
+        "date": "2025-08-17T00:00:00.000Z",
+        "startTime": "10:00 AM",
+        "endTime": "2:00 PM",
+        "location": "Central Park",
+        "description": "Join us for a day of gardening and community building!",
+        "registered": false
+      },
+      {
+        "id": "2",
+        "title": "Food Drive Volunteer",
+        "date": "2025-08-17T00:00:00.000Z",
+        "startTime": "9:00 AM",
+        "endTime": "12:00 PM",
+        "location": "Community Center",
+        "description": "Help collect and distribute food to those in need.",
+        "registered": true
+      },
+      {
+        "id": "3",
+        "title": "Environmental Cleanup",
+        "date": "2025-08-18T00:00:00.000Z",
+        "startTime": "8:00 AM",
+        "endTime": "11:00 AM",
+        "location": "Riverside Park",
+        "description": "Help clean up our local park and protect our environment.",
+        "registered": false
+      },
+      {
+        "id": "4",
+        "title": "Neighborhood Watch Meeting",
+        "date": "2025-08-20T00:00:00.000Z",
+        "startTime": "7:00 PM",
+        "endTime": "8:30 PM",
+        "location": "Town Hall",
+        "description": "Monthly meeting to discuss neighborhood safety and community initiatives.",
+        "registered": false
+      },
+      {
+        "id": "5",
+        "title": "Youth Mentorship Program",
+        "date": "2025-08-21T00:00:00.000Z",
+        "startTime": "4:00 PM",
+        "endTime": "6:00 PM",
+        "location": "Community Library",
+        "description": "Volunteer to mentor local youth in academics and life skills.",
+        "registered": false
+      },
+      {
+        "id": "6",
+        "title": "Farmers Market Setup",
+        "date": "2025-08-23T00:00:00.000Z",
+        "startTime": "6:00 AM",
+        "endTime": "9:00 AM",
+        "location": "Market Square",
+        "description": "Help local farmers set up their stalls for the weekly market.",
+        "registered": false
+      },
+      {
+        "id": "7",
+        "title": "Senior Center Visit",
+        "date": "2025-08-24T00:00:00.000Z",
+        "startTime": "1:00 PM",
+        "endTime": "3:00 PM",
+        "location": "Sunshine Senior Living",
+        "description": "Spend time with seniors through activities and conversation.",
+        "registered": false
+      },
+      {
+        "id": "8",
+        "title": "Tech Workshop for Kids",
+        "date": "2025-08-26T00:00:00.000Z",
+        "startTime": "10:00 AM",
+        "endTime": "12:00 PM",
+        "location": "Technology Center",
+        "description": "Teach basic coding and technology skills to children aged 8-12.",
+        "registered": false
+      },
+      {
+        "id": "9",
+        "title": "Community Cleanup",
+        "date": "2025-08-27T00:00:00.000Z",
+        "startTime": "9:00 AM",
+        "endTime": "12:00 PM",
+        "location": "Various Locations",
+        "description": "Join the monthly community cleanup effort across town.",
+        "registered": false
+      },
+      {
+        "id": "10",
+        "title": "Homeless Shelter Meal Service",
+        "date": "2025-08-30T00:00:00.000Z",
+        "startTime": "5:00 PM",
+        "endTime": "7:00 PM",
+        "location": "Hope Shelter",
+        "description": "Prepare and serve meals to residents at the local homeless shelter.",
+        "registered": false
+      }
+    ]
+  }

@@ -26,7 +26,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1)); // August 2025
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userType, setUserType] = useState("User"); // Can be 'Admin' or 'User'
 
   // Choose which service to use
   const service = USE_JSON_SERVICE ? JsonCalendarService : CalendarService;
@@ -125,30 +124,8 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
         <View style={styles.logoContainer}>
           {/* Replace with your actual logo */}
-          <Text style={styles.logoPlaceholder}>NCM Logo</Text>
+          <Text style={styles.logoPlaceholder}>NCM 🍎</Text>
         </View>
-      </View>
-
-      {/* User Type Toggle */}
-      <View style={styles.userTypeContainer}>
-        <TouchableOpacity
-          style={[
-            styles.userTypeButton,
-            userType === "Admin" && styles.userTypeButtonActive,
-          ]}
-          onPress={() => setUserType("Admin")}
-        >
-          <Text style={styles.userTypeText}>Admin</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.userTypeButton,
-            userType === "User" && styles.userTypeButtonActive,
-          ]}
-          onPress={() => setUserType("User")}
-        >
-          <Text style={styles.userTypeText}>User</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Date Selection */}
@@ -156,11 +133,11 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.selectedDateContainer}>
           <Text style={styles.selectedDateText}>
             {selectedDate
-              ? selectedDate.toLocaleDateString("en-US", {
+              ? `${selectedDate.toLocaleDateString("en-US", {
                   weekday: "short",
                   month: "short",
                   day: "numeric",
-                })
+                })}`
               : "Select date"}
           </Text>
           <TouchableOpacity style={styles.editIcon}>
@@ -200,16 +177,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
-
-      {/* Create Event Button (Only visible for Admin) */}
-      {userType === "Admin" && (
-        <TouchableOpacity
-          style={styles.createEventButton}
-          onPress={() => navigation.navigate("EventsForm")}
-        >
-          <Text style={styles.createEventButtonText}>Create New Event</Text>
-        </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 };
@@ -217,42 +184,29 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#F5F5F0",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
-    paddingTop: 15,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
   },
   backButton: {
     fontSize: 16,
-    color: "#3A7D44",
+    color: "#3E7E45",
   },
   logoContainer: {
     flex: 1,
     alignItems: "center",
   },
   logoPlaceholder: {
-    color: "#9DC08B",
-  },
-  userTypeContainer: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  userTypeButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  userTypeButtonActive: {
-    backgroundColor: "#9DC08B",
-  },
-  userTypeText: {
-    color: "#3A7D44",
+    color: "#E34935",
   },
   dateSelectionContainer: {
+    backgroundColor: "#E8F0E5",
     padding: 15,
   },
   selectedDateContainer: {
@@ -264,7 +218,7 @@ const styles = StyleSheet.create({
   selectedDateText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#3E7E45",
   },
   editIcon: {
     padding: 5,
@@ -281,7 +235,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#3A7D44",
+    color: "#3E7E45",
   },
   noEventsContainer: {
     padding: 20,
@@ -290,25 +244,7 @@ const styles = StyleSheet.create({
   noEventsText: {
     color: "#666",
     fontSize: 16,
-  },
-  createEventButton: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    backgroundColor: "#3A7D44",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  createEventButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
+  }
 });
 
 export default EventsScreen;

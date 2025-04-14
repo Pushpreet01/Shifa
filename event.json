@@ -33,7 +33,7 @@
       {
         "id": "4",
         "title": "Neighborhood Watch Meeting",
-        "date": "2023-08-20T00:00:00.000Z",
+        "date": "2025-08-20T00:00:00.000Z",
         "startTime": "7:00 PM",
         "endTime": "8:30 PM",
         "location": "Town Hall",
@@ -43,7 +43,7 @@
       {
         "id": "5",
         "title": "Youth Mentorship Program",
-        "date": "2023-08-21T00:00:00.000Z",
+        "date": "2025-08-21T00:00:00.000Z",
         "startTime": "4:00 PM",
         "endTime": "6:00 PM",
         "location": "Community Library",
@@ -53,7 +53,7 @@
       {
         "id": "6",
         "title": "Farmers Market Setup",
-        "date": "2023-08-23T00:00:00.000Z",
+        "date": "2025-08-23T00:00:00.000Z",
         "startTime": "6:00 AM",
         "endTime": "9:00 AM",
         "location": "Market Square",
@@ -63,7 +63,7 @@
       {
         "id": "7",
         "title": "Senior Center Visit",
-        "date": "2023-08-24T00:00:00.000Z",
+        "date": "2025-08-24T00:00:00.000Z",
         "startTime": "1:00 PM",
         "endTime": "3:00 PM",
         "location": "Sunshine Senior Living",
@@ -73,7 +73,7 @@
       {
         "id": "8",
         "title": "Tech Workshop for Kids",
-        "date": "2023-08-26T00:00:00.000Z",
+        "date": "2025-08-26T00:00:00.000Z",
         "startTime": "10:00 AM",
         "endTime": "12:00 PM",
         "location": "Technology Center",
@@ -83,7 +83,7 @@
       {
         "id": "9",
         "title": "Community Cleanup",
-        "date": "2023-08-27T00:00:00.000Z",
+        "date": "2025-08-27T00:00:00.000Z",
         "startTime": "9:00 AM",
         "endTime": "12:00 PM",
         "location": "Various Locations",
@@ -93,7 +93,7 @@
       {
         "id": "10",
         "title": "Homeless Shelter Meal Service",
-        "date": "2023-08-30T00:00:00.000Z",
+        "date": "2025-08-30T00:00:00.000Z",
         "startTime": "5:00 PM",
         "endTime": "7:00 PM",
         "location": "Hope Shelter",

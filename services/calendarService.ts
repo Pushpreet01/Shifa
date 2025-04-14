@@ -20,8 +20,7 @@ class CalendarService {
   // Function to fetch events from Google Calendar
   async fetchEvents(startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
     try {
-      // If you're just starting with development, return mock data
-      // In a real implementation, you'd make an actual API call
+      // For development purposes, I tried putting an API call for the Google Calendar, but it was not working as expected and would take too much time.
       return this.getMockEvents();
       
       // The commented code below shows how you would implement this with a real API call

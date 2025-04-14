@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#3A7D44',
+    color: '#3E7E45',
     marginBottom: 5,
   },
   eventDetails: {
@@ -69,11 +69,12 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   registerButton: {
-    backgroundColor: '#9DC08B',
+    backgroundColor: '#9ABF64',
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
     justifyContent: 'center',
+    alignSelf: 'center',
   },
   registeredButton: {
     backgroundColor: '#E0E0E0',
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
   registerButtonText: {
     color: '#FFFFFF',
     fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

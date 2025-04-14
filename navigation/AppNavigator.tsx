@@ -57,6 +57,12 @@ const AppNavigator = () => {
           component={EventsFormScreen}
           options={{ headerShown: false }}
         />
+         <Stack.Screen
+          name="RegisterEvents"
+          component={RegisterEventScreen}
+          options={{ headerShown: false }}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

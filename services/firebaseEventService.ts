@@ -1,4 +1,3 @@
-// services/firebaseEventService.ts
 import { 
     collection, 
     addDoc, 

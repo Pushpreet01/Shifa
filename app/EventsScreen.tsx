@@ -12,11 +12,13 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import CalendarService, { CalendarEvent } from "../services/calendarService";
-import JsonCalendarService from "../services/jsonCalendarService";
+import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
+import { db } from "../firebaseConfig";
 
-const USE_JSON_SERVICE = true;
+// Set to true to use Firebase, false to use local JSON data
+const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Events">;
 
@@ -26,7 +28,8 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const service = USE_JSON_SERVICE ? JsonCalendarService : CalendarService;
+  // Choose which service to use
+  const service = USE_FIREBASE_SERVICE ? firebaseEventService : CalendarService;
 
   const goToPreviousMonth = () => {
     setCurrentMonth(
@@ -71,7 +74,11 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleEventClick = (eventId: string) => {
-    navigation.navigate('RegisterEvent', { eventId });
+    navigation.navigate("RegisterEvent", { eventId });
+  };
+
+  const handleAddEvent = () => {
+    navigation.navigate("EventsForm");
   };
 
   useEffect(() => {
@@ -111,12 +118,18 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButtonContainer}
         >
           <Text style={styles.backButton}>←</Text>
           <Text style={styles.headerTitle}>Events</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleAddEvent}
+          style={styles.addEventButton}
+        >
+          <Text style={styles.addEventButtonText}>+</Text>
         </TouchableOpacity>
       </View>
 
@@ -128,7 +141,7 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
                   weekday: "long",
                   month: "long",
                   day: "numeric",
-                  year: "numeric"
+                  year: "numeric",
                 })}`
               : "Select date"}
           </Text>
@@ -156,12 +169,18 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
               key={event.id}
               event={event}
               onRegister={handleRegister}
-              onPress={() => handleEventClick(event.id)} // 👈 pass eventId
+              onPress={() => handleEventClick(event.id)}
             />
           ))
         ) : (
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
+            <TouchableOpacity
+              style={styles.addEventSmallButton}
+              onPress={handleAddEvent}
+            >
+              <Text style={styles.addEventSmallButtonText}>Add Event</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -177,7 +196,9 @@ const styles = StyleSheet.create({
   header: {
     height: 80,
     paddingHorizontal: 20,
-    justifyContent: 'flex-end',
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    flexDirection: "row",
     paddingBottom: 15,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
@@ -192,8 +213,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   backButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
     fontSize: 24,
@@ -202,8 +223,21 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#3A7D44",
+  },
+  addEventButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3A7D44",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addEventButtonText: {
+    fontSize: 24,
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   dateSelectionContainer: {
     backgroundColor: "#FFFFFF",
@@ -241,6 +275,17 @@ const styles = StyleSheet.create({
   noEventsText: {
     color: "#666",
     fontSize: 16,
+    marginBottom: 15,
+  },
+  addEventSmallButton: {
+    backgroundColor: "#3A7D44",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  addEventSmallButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
 });
 

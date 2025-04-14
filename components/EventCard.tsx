@@ -1,38 +1,57 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { CalendarEvent } from '../services/calendarService';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { CalendarEvent } from "../services/calendarService";
 
 interface EventCardProps {
   event: CalendarEvent;
   onRegister: (eventId: string) => void;
+  onPress: () => void; // For navigation to event details
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event, onRegister }) => {
+const EventCard: React.FC<EventCardProps> = ({
+  event,
+  onRegister,
+  onPress,
+}) => {
   return (
-    <View style={styles.eventCard}>
+    <TouchableOpacity style={styles.eventCard} onPress={onPress}>
       <View style={styles.eventInfo}>
         <Text style={styles.eventTitle}>{event.title}</Text>
         <Text style={styles.eventDetails}>
-          {event.date.toLocaleDateString('en-US', { 
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          })} | {event.startTime} - {event.endTime}
+          {event.date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}{" "}
+          | {event.startTime} - {event.endTime}
         </Text>
         <Text style={styles.eventLocation}>{event.location}</Text>
+        {event.description && (
+          <Text style={styles.eventDescription} numberOfLines={2}>
+            {event.description}
+          </Text>
+        )}
       </View>
       <TouchableOpacity
         style={[
           styles.registerButton,
-          event.registered && styles.registeredButton
+          event.registered && styles.registeredButton,
         ]}
-        onPress={() => onRegister(event.id)}
+        onPress={(e) => {
+          e.stopPropagation(); // Prevent triggering the parent onPress
+          onRegister(event.id);
+        }}
       >
-        <Text style={styles.registerButtonText}>
-          {event.registered ? 'Unregister' : 'Register'}
+        <Text
+          style={[
+            styles.registerButtonText,
+            event.registered && styles.registeredButtonText,
+          ]}
+        >
+          {event.registered ? "Unregister" : "Register"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -42,9 +61,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginVertical: 8,
     padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -66,28 +85,37 @@ const styles = StyleSheet.create({
   },
   eventDetails: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   eventLocation: {
     fontSize: 13,
-    color: '#666',
+    color: "#666",
+    marginBottom: 4,
+  },
+  eventDescription: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
   },
   registerButton: {
-    backgroundColor: '#3A7D44',
+    backgroundColor: "#3A7D44",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   registeredButton: {
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
   },
   registerButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+  },
+  registeredButtonText: {
+    color: "#666",
   },
 });
 

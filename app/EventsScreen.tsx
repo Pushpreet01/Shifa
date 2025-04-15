@@ -1,5 +1,4 @@
-// app/EventsScreen.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -15,9 +15,9 @@ import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
-import { db } from "../firebaseConfig";
+import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from "../context/AuthContext";
 
-// Set to true to use Firebase, false to use local JSON data
 const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Events">;
@@ -27,9 +27,36 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1));
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Choose which service to use
   const service = USE_FIREBASE_SERVICE ? firebaseEventService : CalendarService;
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchEventsForMonth = async () => {
+        setLoading(true);
+        try {
+          const firstDay = new Date(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth(),
+            1
+          );
+          const lastDay = new Date(
+            currentMonth.getFullYear(),
+            currentMonth.getMonth() + 1,
+            0
+          );
+          const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
+          setEvents(fetchedEvents);
+        } catch (error) {
+          console.error("Error fetching events:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchEventsForMonth();
+    }, [currentMonth])
+  );
 
   const goToPreviousMonth = () => {
     setCurrentMonth(
@@ -78,35 +105,13 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleAddEvent = () => {
+    if (!user) {
+      Alert.alert("Login Required", "Please login to create events");
+      navigation.navigate("Login");
+      return;
+    }
     navigation.navigate("EventsForm");
   };
-
-  useEffect(() => {
-    const fetchEventsForMonth = async () => {
-      setLoading(true);
-      try {
-        const firstDay = new Date(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth(),
-          1
-        );
-        const lastDay = new Date(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth() + 1,
-          0
-        );
-
-        const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEventsForMonth();
-  }, [currentMonth]);
 
   const filteredEvents = events.filter(
     (event) =>
@@ -166,10 +171,11 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         ) : filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <EventCard
-              key={event.id}
+              key={`${event.source}-${event.id}`}
               event={event}
               onRegister={handleRegister}
               onPress={() => handleEventClick(event.id)}
+              style={event.source === 'local' ? styles.localEvent : styles.firebaseEvent}
             />
           ))
         ) : (
@@ -286,6 +292,16 @@ const styles = StyleSheet.create({
   addEventSmallButtonText: {
     color: "#FFFFFF",
     fontWeight: "bold",
+  },
+  localEvent: {
+    backgroundColor: '#e3f2fd',
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196f3',
+  },
+  firebaseEvent: {
+    backgroundColor: '#fff',
+    borderLeftWidth: 4,
+    borderLeftColor: '#4caf50',
   },
 });
 

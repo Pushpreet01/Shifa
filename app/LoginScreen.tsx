@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,18 +12,28 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { auth } from "../config/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from "../context/AuthContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { user, setUser } = useAuth();
 
   // Dummy credentials
   const DUMMY_CREDENTIALS = {
     email: "test@example.com",
-    password: "password123"
+    password: "password123",
+    name: "Test User"
   };
+
+  // Handle navigation when user is authenticated
+  useEffect(() => {
+    if (user) {
+      navigation.replace("Events");
+    }
+  }, [user, navigation]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -31,32 +41,32 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    // Check for dummy credentials
-    if (email === DUMMY_CREDENTIALS.email && password === DUMMY_CREDENTIALS.password) {
-      Alert.alert("Success", "Logged in with dummy credentials");
-      navigation.navigate("Events");
-      return;
-    }
-
     try {
-      // Sign in with Firebase Authentication
-      await signInWithEmailAndPassword(auth, email, password);
-      // If successful, navigate to Events screen
-      navigation.navigate("Events");
-    } catch (error: any) {
-      // Handle Firebase Authentication errors
-      const errorMessage = error.message;
-      if (error.code === "auth/invalid-email") {
-        Alert.alert("Error", "Invalid email format.");
-      } else if (error.code === "auth/user-not-found") {
-        Alert.alert("Error", "No user found with this email.");
-      } else if (error.code === "auth/wrong-password") {
-        Alert.alert("Error", "Incorrect password.");
-      } else if (error.code === "auth/invalid-credentials") {
-        Alert.alert("Error", "Invalid credentials.");
-      } else {
-        Alert.alert("Error", errorMessage);
+      // Check for dummy credentials
+      if (email === DUMMY_CREDENTIALS.email && password === DUMMY_CREDENTIALS.password) {
+        // Create a dummy user object
+        const dummyUser = {
+          uid: "dummy-user-id",
+          email: DUMMY_CREDENTIALS.email,
+          displayName: DUMMY_CREDENTIALS.name
+        };
+        setUser(dummyUser); // Set the dummy user in context
+        return;
       }
+
+      // Regular Firebase authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setUser(userCredential.user);
+    } catch (error: any) {
+      let errorMessage = "Login failed. Please try again.";
+      if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === "auth/user-not-found") {
+        errorMessage = "No user found with this email.";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password.";
+      }
+      Alert.alert("Error", errorMessage);
     }
   };
 
@@ -65,19 +75,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       {/* Logo */}
       <Image source={require("../assets/logo.png")} style={styles.logo} />
 
-      {/* Username Field */}
+      {/* Email Field */}
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor="#3A7D44"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          autoCapitalize="none"
           style={styles.input}
         />
       </View>
 
-      {/* Password Field with Forgot Password Link */}
+      {/* Password Field */}
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Password"
@@ -93,14 +104,18 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* Log In Button */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+      <TouchableOpacity 
+        style={styles.loginButton} 
+        onPress={handleLogin}
+        disabled={!email || !password}
+      >
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
-      {/* Dummy credentials hint (optional) */}
+      {/* Dummy credentials hint */}
       <View style={styles.dummyHint}>
         <Text style={styles.dummyHintText}>
-          Use {DUMMY_CREDENTIALS.email} / {DUMMY_CREDENTIALS.password} for testing
+          Test with: {DUMMY_CREDENTIALS.email} / {DUMMY_CREDENTIALS.password}
         </Text>
       </View>
     </View>
@@ -139,10 +154,10 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: "#9DC08B",
-    paddingVertical: 7,
+    paddingVertical: 12,
     paddingHorizontal: 100,
     borderRadius: 25,
-    marginTop: 50,
+    marginTop: 30,
   },
   loginButtonText: {
     color: "#F8F5E9",

@@ -1,54 +1,38 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { CalendarEvent } from "../services/calendarService";
+
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { CalendarEvent } from '../services/calendarService';
 
 interface EventCardProps {
   event: CalendarEvent;
-  onRegister: (eventId: string) => void;
-  onPress: () => void; // For navigation to event details
+  onRegister: (eventId: string) => Promise<void>;
+  onPress: () => void;
+  style?: ViewStyle;
 }
 
-const EventCard: React.FC<EventCardProps> = ({
-  event,
-  onRegister,
-  onPress,
-}) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onRegister, onPress, style }) => {
   return (
-    <TouchableOpacity style={styles.eventCard} onPress={onPress}>
-      <View style={styles.eventInfo}>
-        <Text style={styles.eventTitle}>{event.title}</Text>
-        <Text style={styles.eventDetails}>
-          {event.date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}{" "}
-          | {event.startTime} - {event.endTime}
-        </Text>
-        <Text style={styles.eventLocation}>{event.location}</Text>
+    <TouchableOpacity 
+      onPress={onPress}
+      style={[styles.container, style]} // Apply the style here
+    >
+      <View style={styles.content}>
+        <Text style={styles.title}>{event.title}</Text>
+        <Text style={styles.time}>{event.startTime} - {event.endTime}</Text>
+        <Text style={styles.location}>{event.location}</Text>
         {event.description && (
-          <Text style={styles.eventDescription} numberOfLines={2}>
-            {event.description}
-          </Text>
+          <Text style={styles.description}>{event.description}</Text>
         )}
       </View>
       <TouchableOpacity
         style={[
           styles.registerButton,
-          event.registered && styles.registeredButton,
+          event.registered ? styles.registered : styles.unregistered
         ]}
-        onPress={(e) => {
-          e.stopPropagation(); // Prevent triggering the parent onPress
-          onRegister(event.id);
-        }}
+        onPress={() => onRegister(event.id)}
       >
-        <Text
-          style={[
-            styles.registerButtonText,
-            event.registered && styles.registeredButtonText,
-          ]}
-        >
-          {event.registered ? "Unregister" : "Register"}
+        <Text style={styles.registerButtonText}>
+          {event.registered ? 'Registered' : 'Register'}
         </Text>
       </TouchableOpacity>
     </TouchableOpacity>
@@ -56,66 +40,59 @@ const EventCard: React.FC<EventCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  eventCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    marginVertical: 8,
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     padding: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  eventInfo: {
+  content: {
     flex: 1,
-    marginRight: 10,
   },
-  eventTitle: {
+  title: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#3A7D44",
-    marginBottom: 6,
-  },
-  eventDetails: {
-    fontSize: 13,
-    color: "#666",
+    fontWeight: 'bold',
+    color: '#3A7D44',
     marginBottom: 4,
   },
-  eventLocation: {
-    fontSize: 13,
-    color: "#666",
+  time: {
+    fontSize: 14,
+    color: '#666',
     marginBottom: 4,
   },
-  eventDescription: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 4,
+  location: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: '#333',
   },
   registerButton: {
-    backgroundColor: "#3A7D44",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    minWidth: 100,
-    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginLeft: 8,
   },
-  registeredButton: {
-    backgroundColor: "#E0E0E0",
+  registered: {
+    backgroundColor: '#4CAF50',
+  },
+  unregistered: {
+    backgroundColor: '#3A7D44',
   },
   registerButtonText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: "bold",
-  },
-  registeredButtonText: {
-    color: "#666",
+    fontWeight: 'bold',
   },
 });
 

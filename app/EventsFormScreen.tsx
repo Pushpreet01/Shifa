@@ -12,44 +12,41 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-// Comment out the problematic import temporarily
-// import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../services/firebaseEventService";
-import { db } from "../firebaseConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
-  const [dateString, setDateString] = useState(new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }));
+  const [dateString, setDateString] = useState(
+    new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+  );
   const [startTime, setStartTime] = useState("9:00 AM");
   const [endTime, setEndTime] = useState("10:00 AM");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
-  // Removed showDatePicker state since we're not using the DateTimePicker component
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Alternative method for date selection (temporary)
-  const handleDateInput = (text: string) => {
-    try {
-      const parsedDate = new Date(text);
-      if (!isNaN(parsedDate.getTime())) {
-        setDate(parsedDate);
-        setDateString(parsedDate.toLocaleDateString("en-US", {
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      setDateString(
+        selectedDate.toLocaleDateString("en-US", {
           weekday: "long",
           month: "long",
           day: "numeric",
           year: "numeric",
-        }));
-      }
-    } catch (error) {
-      // Invalid date format, keep the current date
+        })
+      );
     }
   };
 
@@ -70,15 +67,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsSubmitting(true);
     try {
-      // Format the startTime and endTime
-      const formattedStartTime = startTime; // In real app, format this properly
-      const formattedEndTime = endTime; // In real app, format this properly
-
       const eventData = {
         title,
         date,
-        startTime: formattedStartTime,
-        endTime: formattedEndTime,
+        startTime,
+        endTime,
         location,
         description,
       };
@@ -92,9 +85,12 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       } else {
         Alert.alert("Error", "Failed to add event. Please try again.");
       }
-    } catch (error) {
-      console.error("Error adding event:", error);
-      Alert.alert("Error", "An unexpected error occurred");
+    } catch (error: unknown) {
+      let errorMessage = "Failed to add event";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,15 +119,20 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         />
 
         <Text style={styles.label}>Event Date</Text>
-        {/* Replace DateTimePicker with a simple TextInput temporarily */}
-        <TextInput
-          style={styles.input}
-          value={dateString}
-          onChangeText={handleDateInput}
-          placeholder="Enter date (MM/DD/YYYY)"
-          placeholderTextColor="#999"
-        />
-        <Text style={styles.helperText}>Format: Month/Day/Year (e.g., 8/17/2025)</Text>
+        <TouchableOpacity
+          style={styles.dateSelector}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateText}>{dateString}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
 
         <View style={styles.timeContainer}>
           <View style={styles.timeField}>
@@ -262,6 +263,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E0E0E0",
     padding: 12,
+    marginBottom: 10,
   },
   dateText: {
     fontSize: 16,

@@ -21,13 +21,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const { user, setUser } = useAuth();
 
-  // Dummy credentials
-  const DUMMY_CREDENTIALS = {
-    email: "test@example.com",
-    password: "password123",
-    name: "Test User"
-  };
-
   // Handle navigation when user is authenticated
   useEffect(() => {
     if (user) {
@@ -42,18 +35,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     try {
-      // Check for dummy credentials
-      if (email === DUMMY_CREDENTIALS.email && password === DUMMY_CREDENTIALS.password) {
-        // Create a dummy user object
-        const dummyUser = {
-          uid: "dummy-user-id",
-          email: DUMMY_CREDENTIALS.email,
-          displayName: DUMMY_CREDENTIALS.name
-        };
-        setUser(dummyUser); // Set the dummy user in context
-        return;
-      }
-
       // Regular Firebase authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
@@ -111,13 +92,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       >
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
-
-      {/* Dummy credentials hint */}
-      <View style={styles.dummyHint}>
-        <Text style={styles.dummyHintText}>
-          Test with: {DUMMY_CREDENTIALS.email} / {DUMMY_CREDENTIALS.password}
-        </Text>
-      </View>
     </View>
   );
 };
@@ -163,17 +137,6 @@ const styles = StyleSheet.create({
     color: "#F8F5E9",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  dummyHint: {
-    marginTop: 30,
-    padding: 10,
-    backgroundColor: "#E8F5E9",
-    borderRadius: 5,
-  },
-  dummyHintText: {
-    color: "#3A7D44",
-    fontSize: 12,
-    textAlign: "center",
   },
 });
 

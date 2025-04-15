@@ -2,7 +2,7 @@ import {
   collection, addDoc, getDocs, query, where, 
   doc, deleteDoc, updateDoc, Timestamp, serverTimestamp 
 } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db } from "../config/firebaseConfig";
 import { CalendarEvent } from "./calendarService";
 import eventsData from "../event.json";
 

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { db } from "../firebaseConfig";
+import { db } from "../config/firebaseConfig";
 import {
   collection,
   addDoc,

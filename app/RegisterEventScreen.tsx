@@ -1,4 +1,3 @@
-// screens/RegisterEventScreen.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -13,7 +12,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { db } from "../config/firebaseConfig";
+import { db, auth } from "../config/firebaseConfig"; // Import auth from firebaseConfig
 import {
   collection,
   addDoc,
@@ -22,6 +21,7 @@ import {
   where,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
@@ -31,12 +31,23 @@ type Props = NativeStackScreenProps<RootStackParamList, "RegisterEvent">;
 
 const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); // Email state will be set from Firebase Auth
   const [phone, setPhone] = useState("");
   const [event, setEvent] = useState<CalendarEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const { eventId } = route.params;
+
+  // Set the email input with the current user's email from Firebase Auth
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setEmail(currentUser.email || ""); // Set email from the authenticated user
+    } else {
+      Alert.alert("Error", "You must be logged in to register for an event.");
+      navigation.navigate("Login"); // Redirect to login if not authenticated
+    }
+  }, [navigation]);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -49,7 +60,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
         if (eventSnapshot.exists()) {
           const eventData = eventSnapshot.data();
           // Check registration status for current user
-          // In a real app, you'd use authenticated user ID instead of 'current-user'
           const isRegistered = await checkRegistration(eventSnapshot.id);
 
           setEvent({
@@ -65,8 +75,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
         } else {
           // Fallback to local JSON data
           try {
-            // For development purposes, we're using the imported JSON directly
-            // In production, you'd make an API call to fetch event data
             const eventsData = await import("../event.json");
             const foundEvent = eventsData.events.find((e: any) => e.id === eventId);
 
@@ -106,7 +114,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   // Helper function to check registration status
   const checkRegistration = async (
     eventId: string,
-    userId: string = "current-user"
+    userId: string = auth.currentUser?.uid || "current-user" // Use authenticated user ID
   ) => {
     try {
       const q = query(
@@ -131,7 +139,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
       Alert.alert("Error", "Please enter your email");
       return false;
     }
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert("Error", "Please enter a valid email address");
@@ -149,15 +156,24 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
       // Add registration to Firestore
       await addDoc(collection(db, "registrations"), {
         eventId: event.id,
-        userId: "current-user", // In a real app, use authenticated user ID
+        userId: auth.currentUser?.uid || "current-user", // Use authenticated user ID
         name,
         email,
         phone,
         timestamp: new Date().toISOString(),
       });
 
-      // Register for the event using firebaseEventService
-      await firebaseEventService.registerForEvent(event.id);
+      // Toggle the registered field in the event state
+      setEvent((prevEvent) => {
+        if (prevEvent) {
+          return { ...prevEvent, registered: true };
+        }
+        return prevEvent;
+      });
+
+      // Optionally update Firestore event document (if it exists)
+      const eventRef = doc(db, "events", event.id);
+      await updateDoc(eventRef, { registered: true });
 
       Alert.alert(
         "Registration Successful",
@@ -179,6 +195,18 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       // Cancel registration in Firestore
       await firebaseEventService.cancelRegistration(event.id);
+
+      // Toggle the registered field in the event state back to false
+      setEvent((prevEvent) => {
+        if (prevEvent) {
+          return { ...prevEvent, registered: false };
+        }
+        return prevEvent;
+      });
+
+      // Optionally update Firestore event document (if it exists)
+      const eventRef = doc(db, "events", event.id);
+      await updateDoc(eventRef, { registered: false });
 
       Alert.alert(
         "Registration Cancelled",
@@ -303,6 +331,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               placeholderTextColor="#999"
+              editable={false} // Make the email field non-editable since it's from Firebase Auth
             />
 
             <Text style={styles.label}>Phone Number (Optional)</Text>

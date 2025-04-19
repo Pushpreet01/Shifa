@@ -88,9 +88,18 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <TouchableOpacity 
         style={styles.loginButton} 
         onPress={handleLogin}
-        disabled={!email || !password}
       >
         <Text style={styles.loginButtonText}>Log In</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.Text}>Don't have an account?</Text>
+
+      {/* Sign Up Button */}
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={() => navigation.navigate("SignUp")}
+      >
+        <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -121,8 +130,9 @@ const styles = StyleSheet.create({
     color: "#3A7D44",
   },
   forgotPassword: {
-    color: "#000",
+    color: "#3A7D44",
     fontSize: 14,
+    fontWeight: "bold",
     textAlign: "right",
     marginTop: 5,
   },
@@ -136,6 +146,20 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#F8F5E9",
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  signUpButton: {
+    marginTop: 0,
+  },
+  signUpButtonText: {
+    color: "#3A7D44",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  Text: {
+    marginTop: 20,
+    color: "#3A7D44",
+    fontSize: 14,
     fontWeight: "bold",
   },
 });

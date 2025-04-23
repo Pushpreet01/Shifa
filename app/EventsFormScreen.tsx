@@ -18,10 +18,14 @@ import firebaseEventService from "../services/firebaseEventService";
 type Props = NativeStackScreenProps<RootStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
+  // Initialize with today's date instead of new Date()
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set time to beginning of the day for clear comparison
+  
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(today);
   const [dateString, setDateString] = useState(
-    new Date().toLocaleDateString("en-US", {
+    today.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -38,6 +42,18 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
+      // Check if the selected date is not before today
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+      
+      if (selectedDate < currentDate) {
+        Alert.alert(
+          "Invalid Date", 
+          "You cannot select a date in the past. Please choose today or a future date."
+        );
+        return;
+      }
+      
       setDate(selectedDate);
       setDateString(
         selectedDate.toLocaleDateString("en-US", {
@@ -59,6 +75,16 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert("Error", "Event location is required");
       return false;
     }
+    
+    // Validate that the date is not in the past
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+    
+    if (date < currentDate) {
+      Alert.alert("Error", "Event date cannot be in the past");
+      return false;
+    }
+    
     return true;
   };
 
@@ -131,8 +157,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             mode="date"
             display="default"
             onChange={handleDateChange}
+            minimumDate={today} // Set minimum date to today
           />
         )}
+        <Text style={styles.helperText}>Events can only be scheduled for today or future dates</Text>
 
         <View style={styles.timeContainer}>
           <View style={styles.timeField}>
@@ -263,7 +291,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E0E0E0",
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   dateText: {
     fontSize: 16,

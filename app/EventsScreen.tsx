@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,14 +17,17 @@ import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from "../context/AuthContext";
+import { isDateValidForEvent } from "../utils/dateUtils";
 
 const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Events">;
 
 const EventsScreen: React.FC<Props> = ({ navigation }) => {
-  const [selectedDate, setSelectedDate] = useState(new Date(2025, 7, 17));
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1));
+  // Set to current date instead of hardcoded value
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -47,7 +50,10 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
             0
           );
           const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
-          setEvents(fetchedEvents);
+          
+          // Filter out past events
+          const validEvents = fetchedEvents.filter(event => isDateValidForEvent(event.date));
+          setEvents(validEvents);
         } catch (error) {
           console.error("Error fetching events:", error);
         } finally {
@@ -59,9 +65,13 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-    );
+    // Don't allow navigating to past months
+    const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    if (previousMonth.getMonth() < today.getMonth() && previousMonth.getFullYear() <= today.getFullYear()) {
+      Alert.alert("Cannot view past months", "Only current and future months are available");
+      return;
+    }
+    setCurrentMonth(previousMonth);
   };
 
   const goToNextMonth = () => {
@@ -71,7 +81,12 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
+    // Prevent selecting dates in the past
+    if (isDateValidForEvent(date)) {
+      setSelectedDate(date);
+    } else {
+      Alert.alert("Invalid Date", "You can only view events for today and future dates");
+    }
   };
 
   const handleRegister = async (eventId: string) => {
@@ -119,6 +134,14 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
       event.date.getMonth() === selectedDate?.getMonth() &&
       event.date.getFullYear() === selectedDate?.getFullYear()
   );
+
+  // Adjust currentMonth if it's in the past
+  useEffect(() => {
+    const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (currentMonth < todayMonth) {
+      setCurrentMonth(todayMonth);
+    }
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -193,6 +216,7 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

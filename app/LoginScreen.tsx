@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -21,10 +22,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const { user, setUser } = useAuth();
 
-  // Handle navigation when user is authenticated
   useEffect(() => {
     if (user) {
-      navigation.replace("Events");
+      navigation.replace("HomeDashboard"); // <- You might want to change this to "HomeDashboard"
     }
   }, [user, navigation]);
 
@@ -35,7 +35,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     try {
-      // Regular Firebase authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
     } catch (error: any) {
@@ -53,10 +52,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image source={require("../assets/logo.png")} style={styles.logo} />
 
-      {/* Email Field */}
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Email"
@@ -69,7 +66,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         />
       </View>
 
-      {/* Password Field */}
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Password"
@@ -84,17 +80,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Log In Button */}
-      <TouchableOpacity 
-        style={styles.loginButton} 
-        onPress={handleLogin}
-      >
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
       <Text style={styles.Text}>Don't have an account?</Text>
 
-      {/* Sign Up Button */}
       <TouchableOpacity
         style={styles.signUpButton}
         onPress={() => navigation.navigate("SignUp")}

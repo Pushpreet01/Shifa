@@ -80,7 +80,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       });
 
       setUser(user);
-      navigation.replace("Events");
+      navigation.replace("HomeDashboard");
     } catch (error: any) {
       let errorMessage = "Sign-up failed. Please try again.";
       if (error.code === "auth/email-already-in-use") {

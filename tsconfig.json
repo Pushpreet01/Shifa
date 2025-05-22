@@ -3,5 +3,6 @@
   "compilerOptions": {
     "strict": true,
     "module": "ES2020",
+    "jsx": "react-native"
   }
 }

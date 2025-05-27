@@ -13,7 +13,6 @@ import { CalendarEvent } from "./calendarService";
 class FirebaseEventService {
   async fetchEvents(startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
     try {
-      // Create a query to get events within the date range
       const eventsCollection = collection(db, "events");
       const eventsQuery = query(
         eventsCollection,
@@ -23,49 +22,36 @@ class FirebaseEventService {
       const querySnapshot = await getDocs(eventsQuery);
 
       const events: CalendarEvent[] = [];
-      const currentUser = auth.currentUser;
-      const userId = currentUser ? currentUser.uid : "guest";
-
-      // Process the query results
       querySnapshot.forEach((doc) => {
-        const eventData = doc.data();
+        const data = doc.data();
         events.push({
           id: doc.id,
-          title: eventData.title,
-          date: eventData.date.toDate(),
-          startTime: eventData.startTime,
-          endTime: eventData.endTime,
-          location: eventData.location,
-          description: eventData.description || "",
-          registered: eventData.registered || false,
+          title: data.title,
+          date: data.date.toDate(),
+          startTime: data.startTime,
+          endTime: data.endTime,
+          location: data.location,
+          description: data.description || "",
+          registered: false,
           source: 'firebase',
         });
-
-        // Check if current user is registered for this event
-        // (This would normally be a separate query against a registrations collection)
       });
 
       return events;
     } catch (error) {
-      console.error("Error fetching events from Firebase:", error);
+      console.error("Error fetching events:", error);
       return [];
     }
   }
 
   async addEvent(eventData: any): Promise<string | null> {
     try {
-      // Validate that the event date is not in the past
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to beginning of day for clear comparison
-      
-      if (eventData.date < today) {
-        throw new Error("Event date cannot be in the past");
-      }
-      
+      today.setHours(0, 0, 0, 0);
+      if (eventData.date < today) throw new Error("Event date is in the past");
+
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User must be logged in to create events");
-      }
+      if (!currentUser) throw new Error("Not logged in");
 
       const eventRef = await addDoc(collection(db, "events"), {
         ...eventData,
@@ -75,39 +61,37 @@ class FirebaseEventService {
 
       return eventRef.id;
     } catch (error) {
-      console.error("Error adding event to Firebase:", error);
-      throw error; // Re-throw the error to be handled by the caller
+      console.error("Error adding event:", error);
+      throw error;
     }
   }
 
   async registerForEvent(eventId: string): Promise<boolean> {
     try {
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User must be logged in to register for events");
-      }
+      if (!currentUser) throw new Error("Not logged in");
 
-      // Check if user is already registered
-      const registrationsCollection = collection(db, "registrations");
       const q = query(
-        registrationsCollection,
+        collection(db, "registrations"),
         where("eventId", "==", eventId),
         where("userId", "==", currentUser.uid)
       );
-      const querySnapshot = await getDocs(q);
+      const snapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        // User is not registered, add registration
-        await addDoc(registrationsCollection, {
+      if (snapshot.empty) {
+        await addDoc(collection(db, "registrations"), {
           eventId,
           userId: currentUser.uid,
-          timestamp: new Date(),
+          name: currentUser.displayName || "",
+          email: currentUser.email || "",
+          phone: "",
+          timestamp: new Date()
         });
       }
 
       return true;
     } catch (error) {
-      console.error("Error registering for event:", error);
+      console.error("Error registering:", error);
       return false;
     }
   }
@@ -115,22 +99,17 @@ class FirebaseEventService {
   async cancelRegistration(eventId: string): Promise<boolean> {
     try {
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("User must be logged in to cancel registrations");
-      }
+      if (!currentUser) throw new Error("Not logged in");
 
-      // Find the registration document
-      const registrationsCollection = collection(db, "registrations");
       const q = query(
-        registrationsCollection,
+        collection(db, "registrations"),
         where("eventId", "==", eventId),
         where("userId", "==", currentUser.uid)
       );
-      const querySnapshot = await getDocs(q);
+      const snapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        // Delete the registration document
-        await deleteDoc(doc(db, "registrations", querySnapshot.docs[0].id));
+      if (!snapshot.empty) {
+        await deleteDoc(doc(db, "registrations", snapshot.docs[0].id));
       }
 
       return true;
@@ -140,7 +119,18 @@ class FirebaseEventService {
     }
   }
 
-  // Helper method to format a date as YYYY-MM-DD
+  async getUserRegistrations(): Promise<any[]> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("Not logged in");
+
+    const q = query(
+      collection(db, "registrations"),
+      where("userId", "==", currentUser.uid)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
   formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');

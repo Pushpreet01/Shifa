@@ -113,12 +113,6 @@ const dashboardButtons: DashboardButton[] = [
           </Text>
         </View>
       </ScrollView>
-
-      <View style={styles.curvedNav}>
-        <Ionicons name="people-outline" size={24} color="#3A7D44" />
-        <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />
-        <Ionicons name="settings-outline" size={24} color="#3A7D44" />
-      </View>
     </SafeAreaView>
   );
 };

@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import { db, auth } from "../config/firebaseConfig"; // Import auth from firebaseConfig
 import {
   collection,
@@ -27,7 +27,7 @@ import { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import eventsData from "../event.json";
 
-type Props = NativeStackScreenProps<RootStackParamList, "RegisterEvent">;
+type Props = NativeStackScreenProps<HomeStackParamList, "RegisterEvent">;
 
 const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [name, setName] = useState("");

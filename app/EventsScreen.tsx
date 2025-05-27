@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
@@ -21,7 +21,7 @@ import { isDateValidForEvent } from "../utils/dateUtils";
 
 const USE_FIREBASE_SERVICE = true;
 
-type Props = NativeStackScreenProps<RootStackParamList, "Events">;
+type Props = NativeStackScreenProps<HomeStackParamList, "Events">;
 
 const EventsScreen: React.FC<Props> = ({ navigation }) => {
   // Set to current date instead of hardcoded value

@@ -11,11 +11,11 @@ import {
   Platform,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../services/firebaseEventService";
 
-type Props = NativeStackScreenProps<RootStackParamList, "EventsForm">;
+type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   // Initialize with today's date instead of new Date()

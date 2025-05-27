@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"; 
 import {
   View,
   Text,
@@ -9,8 +9,11 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeDashboardScreen = () => {
+  const navigation: any = useNavigation();
+
   const events = [
     {
       id: "1",
@@ -28,12 +31,19 @@ const HomeDashboardScreen = () => {
     },
   ];
 
-  const dashboardButtons = [
-    { label: "Manage Volunteering", color: "#9DC08B" },
-    { label: "Journal", color: "#527754" },
-    { label: "SOS Dial", color: "#527754" },
-    { label: "Manage Events", color: "#9DC08B" },
-  ];
+  type DashboardButton = {
+  label: string;
+  color: string;
+  route: string;
+};
+
+const dashboardButtons: DashboardButton[] = [
+  { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
+  { label: "Journal", color: "#527754", route: "JournalScreen" },
+  { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
+  { label: "Manage Events", color: "#9DC08B", route: "EventsFormScreen" },
+];
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -71,6 +81,7 @@ const HomeDashboardScreen = () => {
             <TouchableOpacity
               key={i}
               style={[styles.gridButton, { backgroundColor: item.color }]}
+              onPress={() => navigation.navigate(item.route)}
             >
               <Text style={styles.gridButtonText}>{item.label}</Text>
             </TouchableOpacity>

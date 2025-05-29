@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useAuth } from '../context/AuthContext';
+import { Platform } from "react-native";
 
 // Import screens
 import LoginScreen from "../app/LoginScreen";

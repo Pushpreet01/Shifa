@@ -1,16 +1,24 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { Ionicons } from "@expo/vector-icons";
 
 const JournalScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={26} color="#3A7D44" />
       </TouchableOpacity>
 
@@ -24,33 +32,80 @@ const JournalScreen = () => {
 
       <Text style={styles.label}>My Journal</Text>
 
-      <TouchableOpacity
-        style={styles.openButton}
-        onPress={() => navigation.navigate("NewJournalEntryScreen")}
-      >
-        <Text style={styles.openButtonText}>Open</Text>
-      </TouchableOpacity>
+      {/* Unified Button Container */}
+      <View style={styles.buttonArea}>
+        <TouchableOpacity
+          style={styles.openButton}
+          onPress={() => navigation.navigate("NewJournalEntryScreen")}
+        >
+          <Text style={styles.openButtonText}>Open</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.viewBtn}
+          onPress={() => navigation.navigate("MyJournalsScreen")}
+        >
+          <Text style={styles.viewText}>View My Entries</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", padding: 30, backgroundColor: "#f7f3ec" },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 20, color: "#416d3e" },
-  journalImage: { height: 350, width: 350, marginBottom: 20 }, // reduced size
-  label: { fontSize: 18, fontWeight: "600", marginBottom: 20 },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 60,
+    backgroundColor: "#f7f3ec",
+  },
+  backBtn: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    zIndex: 10,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#416d3e",
+  },
+  journalImage: {
+    height: Dimensions.get("window").height * 0.6 ,
+    width: Dimensions.get("window").width * 0.9,
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#2b4d2c",
+  },
+  buttonArea: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+  },
   openButton: {
     backgroundColor: "#416d3e",
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 20,
+    marginBottom: 10,
   },
-  openButtonText: { color: "#fff", fontSize: 16 },
-  backBtn: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-    zIndex: 10,
+  openButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  viewBtn: {
+    padding: 8,
+  },
+  viewText: {
+    color: "#527754",
+    textDecorationLine: "underline",
+    fontSize: 14,
   },
 });
 

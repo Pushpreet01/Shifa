@@ -41,7 +41,7 @@ const dashboardButtons: DashboardButton[] = [
   { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
   { label: "Journal", color: "#527754", route: "JournalScreen" },
   { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-  { label: "Manage Events", color: "#9DC08B", route: "EventsFormScreen" },
+  { label: "Manage Events", color: "#9DC08B", route: "Events" },
 ];
 
 

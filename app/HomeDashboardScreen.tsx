@@ -32,18 +32,22 @@ const HomeDashboardScreen = () => {
   ];
 
   type DashboardButton = {
-  label: string;
-  color: string;
-  route: string;
-};
+    label: string;
+    color: string;
+    route: string;
+  };
 
-const dashboardButtons: DashboardButton[] = [
-  { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
-  { label: "Journal", color: "#527754", route: "JournalScreen" },
-  { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-  { label: "Manage Events", color: "#9DC08B", route: "Events" },
-];
+  const dashboardButtons: DashboardButton[] = [
+    { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
+    { label: "Journal", color: "#527754", route: "JournalScreen" },
+    { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
+    { label: "Manage Events", color: "#9DC08B", route: "Events" }, // Changed to Events
+  ];
 
+  const handleEventPress = (eventId: string) => {
+    // Navigate to Events screen when an event is pressed
+    navigation.navigate("Events");
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -53,9 +57,9 @@ const dashboardButtons: DashboardButton[] = [
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
               <Ionicons name="notifications-outline" size={24} color="#C44536" />
-              <View style={styles.sosWrapper}>
+              <TouchableOpacity style={styles.sosWrapper}>
                 <Text style={styles.sosText}>SOS</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
           <View style={styles.avatarContainer}>
@@ -72,7 +76,7 @@ const dashboardButtons: DashboardButton[] = [
 
         <View style={styles.descriptionSection}>
           <Text style={styles.descriptionText}>
-            We’re here to help you connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
+            We're here to help you connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
           </Text>
         </View>
 
@@ -88,13 +92,20 @@ const dashboardButtons: DashboardButton[] = [
           ))}
         </View>
 
-        <View style={styles.sectionHeader}>
+        <TouchableOpacity 
+          style={styles.sectionHeader}
+          onPress={() => navigation.navigate("Events")}
+        >
           <Ionicons name="calendar-outline" size={20} color="black" />
           <Text style={styles.sectionTitle}> Upcoming Events</Text>
-        </View>
+        </TouchableOpacity>
 
         {events.map((event) => (
-          <View key={event.id} style={styles.eventCard}>
+          <TouchableOpacity
+            key={event.id}
+            style={styles.eventCard}
+            onPress={() => handleEventPress(event.id)}
+          >
             <View style={styles.eventStripe} />
             <View style={styles.eventText}>
               <Text style={styles.eventTitle}>{event.title}</Text>
@@ -102,7 +113,7 @@ const dashboardButtons: DashboardButton[] = [
               <Text style={styles.eventTime}>{event.time}</Text>
               <Text style={styles.eventDate}>{event.date}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
 
         <View style={styles.supportBox}>
@@ -113,6 +124,25 @@ const dashboardButtons: DashboardButton[] = [
           </Text>
         </View>
       </ScrollView>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.curvedNav}>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="home" size={24} color="#3A7D44" />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Events")}
+        >
+          <Ionicons name="calendar-outline" size={24} color="#666" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="person-outline" size={24} color="#666" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="settings-outline" size={24} color="#666" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -297,13 +327,18 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 100,
+    height: 80,
     backgroundColor: "#D6EFC7",
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     justifyContent: "space-around",
     alignItems: "center",
     flexDirection: "row",
+    paddingBottom: 20,
+  },
+  navItem: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

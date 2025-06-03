@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   shifaLabelContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 5,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',

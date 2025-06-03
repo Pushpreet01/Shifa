@@ -1,4 +1,4 @@
-import React from "react"; 
+import React from "react";
 import {
   View,
   Text,
@@ -10,9 +10,13 @@ import {
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { RootTabParamList } from "../navigation/AppNavigator";
+
+type NavigationProp = BottomTabNavigationProp<RootTabParamList, "Home">;
 
 const HomeDashboardScreen = () => {
-  const navigation: any = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
 
   const events = [
     {
@@ -31,19 +35,12 @@ const HomeDashboardScreen = () => {
     },
   ];
 
-  type DashboardButton = {
-  label: string;
-  color: string;
-  route: string;
-};
-
-const dashboardButtons: DashboardButton[] = [
-  { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
-  { label: "Journal", color: "#527754", route: "JournalScreen" },
-  { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-  { label: "Manage Events", color: "#9DC08B", route: "EventsFormScreen" },
-];
-
+  const dashboardButtons = [
+    { label: "Manage Volunteering", color: "#9DC08B" },
+    { label: "Journal", color: "#527754" },
+    { label: "SOS Dial", color: "#527754" },
+    { label: "Manage Events", color: "#9DC08B" },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -78,11 +75,7 @@ const dashboardButtons: DashboardButton[] = [
 
         <View style={styles.buttonGrid}>
           {dashboardButtons.map((item, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.gridButton, { backgroundColor: item.color }]}
-              onPress={() => navigation.navigate(item.route)}
-            >
+            <TouchableOpacity key={i} style={[styles.gridButton, { backgroundColor: item.color }]}>
               <Text style={styles.gridButtonText}>{item.label}</Text>
             </TouchableOpacity>
           ))}
@@ -116,7 +109,13 @@ const dashboardButtons: DashboardButton[] = [
 
       <View style={styles.curvedNav}>
         <Ionicons name="people-outline" size={24} color="#3A7D44" />
+<<<<<<< Updated upstream
         <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />
+=======
+        <TouchableOpacity onPress={() => navigation.navigate("Resources")}>
+          <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />
+        </TouchableOpacity>
+>>>>>>> Stashed changes
         <Ionicons name="settings-outline" size={24} color="#3A7D44" />
       </View>
     </SafeAreaView>

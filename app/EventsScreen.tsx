@@ -120,11 +120,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleAddEvent = () => {
-    if (!user) {
-      Alert.alert("Login Required", "Please login to create events");
-      navigation.navigate("Login");
-      return;
-    }
     navigation.navigate("EventsForm");
   };
 

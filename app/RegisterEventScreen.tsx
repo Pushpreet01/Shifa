@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
-import { db, auth } from "../config/firebaseConfig"; // Import auth from firebaseConfig
+import { db, auth } from "../config/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -26,7 +26,7 @@ import {
 } from "firebase/firestore";
 import { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
-import { useAuth } from "../context/AuthContext"; // Add this import
+import { useAuth } from "../context/AuthContext";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "RegisterEvent">;
 
@@ -38,7 +38,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const { eventId } = route.params;
-  const { user } = useAuth(); // Get user from context
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchUserData = async () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import firebaseEventService from "../services/firebaseEventService";
 import {
@@ -21,6 +21,9 @@ import {
   doc,
   getDoc,
   updateDoc,
+  orderBy,
+  limit,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 
@@ -32,93 +35,111 @@ interface EventData {
   startTime: string;
 }
 
+interface ProcessedEventData {
+  id: string;
+  title: string;
+  subtitle: string;
+  time: string;
+  date: string;
+}
+
 const HomeDashboardScreen = () => {
   const navigation: any = useNavigation();
   const { user } = useAuth();
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<ProcessedEventData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchRegisteredEvents = async () => {
-      if (user) {
-        try {
-          setLoading(true);
-          // Get user registrations first
-          const registrations =
-            await firebaseEventService.getUserRegistrations();
-          const eventIds = registrations.map((reg) => reg.eventId);
+  const fetchRegisteredEvents = useCallback(async () => {
+    if (!user) return;
 
-          if (eventIds.length === 0) {
-            setEvents([]);
-            setLoading(false);
-            return;
-          }
+    try {
+      setLoading(true);
+      // Get user registrations first
+      const registrations = await firebaseEventService.getUserRegistrations();
+      const eventIds = registrations.map((reg) => reg.eventId);
 
-          // Split eventIds into chunks of 10 (Firebase's limit for 'in' queries)
-          const chunks = [];
-          for (let i = 0; i < eventIds.length; i += 10) {
-            chunks.push(eventIds.slice(i, i + 10));
-          }
-
-          // Fetch events for each chunk
-          const allEvents = [];
-          for (const chunk of chunks) {
-            const eventsQuery = query(
-              collection(db, "events"),
-              where("__name__", "in", chunk)
-            );
-            const querySnapshot = await getDocs(eventsQuery);
-            allEvents.push(...querySnapshot.docs);
-          }
-
-          const now = new Date();
-          const fetchedEvents = allEvents
-            .map(
-              (doc) =>
-                ({
-                  id: doc.id,
-                  ...doc.data(),
-                } as EventData)
-            )
-            .map((event) => ({
-              ...event,
-              date: event.date.toDate(),
-            }))
-            .filter((event) => event.date >= now) // Filter future events
-            .sort((a, b) => a.date - b.date) // Sort by date ascending
-            .slice(0, 3); // Take only the 3 closest events
-
-          setEvents(
-            fetchedEvents.map((event) => ({
-              id: event.id,
-              title: event.title,
-              subtitle: event.description || "Event details",
-              time: event.startTime,
-              date: event.date.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              }),
-            }))
-          );
-        } catch (error) {
-          console.error("Error:", error);
-        } finally {
-          setLoading(false);
-        }
+      if (eventIds.length === 0) {
+        setEvents([]);
+        return;
       }
-    };
 
+      // Get current date at midnight for more efficient querying
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      // Fetch events in chunks, but only filter by document ID
+      const allEvents = [];
+      for (const chunk of chunkArray(eventIds, 10)) {
+        const eventsQuery = query(
+          collection(db, "events"),
+          where("__name__", "in", chunk)
+        );
+        const querySnapshot = await getDocs(eventsQuery);
+        allEvents.push(...querySnapshot.docs);
+      }
+
+      // Process all events first
+      const processedEvents = allEvents.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date.toDate(),
+      })) as EventData[];
+
+      // Filter and sort the events
+      const fetchedEvents = processedEvents
+        .filter((event) => event.date >= now)
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(0, 3);
+
+      // Format events for display
+      const formattedEvents = fetchedEvents.map((event) => ({
+        id: event.id,
+        title: event.title,
+        subtitle: event.description || "Event details",
+        time: event.startTime,
+        date: event.date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+      }));
+
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Helper function to chunk array
+  const chunkArray = (array: any[], size: number) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  };
+
+  // Refresh events when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchRegisteredEvents();
+    }, [fetchRegisteredEvents])
+  );
+
+  // Initial load and periodic refresh
+  useEffect(() => {
     fetchRegisteredEvents();
 
-    // Set up a refresh interval
-    const refreshInterval = setInterval(fetchRegisteredEvents, 30000); // Refresh every 30 seconds
+    // Set up a refresh interval (optional, can be removed if not needed)
+    const refreshInterval = setInterval(fetchRegisteredEvents, 60000); // Refresh every minute
 
     return () => {
       clearInterval(refreshInterval);
     };
-  }, [user]);
+  }, [fetchRegisteredEvents]);
 
   const dashboardButtons = [
     {

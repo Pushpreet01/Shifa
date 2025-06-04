@@ -40,7 +40,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onRegister, onPress, style
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#EFF6F6',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,

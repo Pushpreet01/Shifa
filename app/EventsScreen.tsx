@@ -315,12 +315,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   localEvent: {
-    backgroundColor: '#FFFFFF',
+    // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
     borderLeftColor: '#F4A941',
   },
   firebaseEvent: {
-    backgroundColor: '#FDF6EC',
+    // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
     borderLeftColor: '#F4A941',
   },

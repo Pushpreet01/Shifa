@@ -11,7 +11,7 @@ const JournalScreen = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-        <Ionicons name="arrow-back" size={26} color="#3A7D44" />
+        <Ionicons name="chevron-back-outline" size={24} color="#3A7D44" />
       </TouchableOpacity>
 
       <Text style={styles.header}>Journal</Text>

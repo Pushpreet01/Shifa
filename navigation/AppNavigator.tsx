@@ -13,6 +13,7 @@ import RegisterEventScreen from "../app/RegisterEventScreen";
 import HomeDashboardScreen from "../app/HomeDashboardScreen";
 import JournalScreen from "../app/JournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
+import AnnouncementsScreen from "../app/AnnouncementsScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
@@ -37,6 +38,7 @@ export type HomeStackParamList = {
   Events: undefined;
   EventsForm: undefined;
   RegisterEvent: { eventId: string };
+  Announcements: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -73,6 +75,7 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
     {/* New journal entry screen */}
     <HomeStack.Screen name="NewJournalEntryScreen" component={NewJournalEntryScreen} />
+    <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
   </HomeStack.Navigator>
 );
 

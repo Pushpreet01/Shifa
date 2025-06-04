@@ -1,4 +1,4 @@
-import React from "react"; 
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,44 +10,126 @@ import {
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
+import firebaseEventService from "../services/firebaseEventService";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../config/firebaseConfig";
+
+interface EventData {
+  id: string;
+  title: string;
+  description?: string;
+  date: any; // Firebase Timestamp
+  startTime: string;
+}
 
 const HomeDashboardScreen = () => {
   const navigation: any = useNavigation();
+  const { user } = useAuth();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const events = [
+  useEffect(() => {
+    const fetchRegisteredEvents = async () => {
+      if (user) {
+        try {
+          setLoading(true);
+          // Get user registrations first
+          const registrations =
+            await firebaseEventService.getUserRegistrations();
+          const eventIds = registrations.map((reg) => reg.eventId);
+
+          if (eventIds.length === 0) {
+            setEvents([]);
+            setLoading(false);
+            return;
+          }
+
+          // Split eventIds into chunks of 10 (Firebase's limit for 'in' queries)
+          const chunks = [];
+          for (let i = 0; i < eventIds.length; i += 10) {
+            chunks.push(eventIds.slice(i, i + 10));
+          }
+
+          // Fetch events for each chunk
+          const allEvents = [];
+          for (const chunk of chunks) {
+            const eventsQuery = query(
+              collection(db, "events"),
+              where("__name__", "in", chunk)
+            );
+            const querySnapshot = await getDocs(eventsQuery);
+            allEvents.push(...querySnapshot.docs);
+          }
+
+          const now = new Date();
+          const fetchedEvents = allEvents
+            .map(
+              (doc) =>
+                ({
+                  id: doc.id,
+                  ...doc.data(),
+                } as EventData)
+            )
+            .map((event) => ({
+              ...event,
+              date: event.date.toDate(),
+            }))
+            .filter((event) => event.date >= now) // Filter future events
+            .sort((a, b) => a.date - b.date) // Sort by date ascending
+            .slice(0, 3); // Take only the 3 closest events
+
+          setEvents(
+            fetchedEvents.map((event) => ({
+              id: event.id,
+              title: event.title,
+              subtitle: event.description || "Event details",
+              time: event.startTime,
+              date: event.date.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              }),
+            }))
+          );
+        } catch (error) {
+          console.error("Error:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRegisteredEvents();
+
+    // Set up a refresh interval
+    const refreshInterval = setInterval(fetchRegisteredEvents, 30000); // Refresh every 30 seconds
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [user]);
+
+  const dashboardButtons = [
     {
-      id: "1",
-      title: "Community Wellness Center",
-      subtitle: "Mental Health & Addiction Workshop",
-      time: "Today - 6:00 PM",
-      date: "Monday, March 4",
+      label: "Manage Volunteering",
+      color: "#9DC08B",
+      route: "VolunteerScreen",
     },
-    {
-      id: "2",
-      title: "Shifa Community Hall",
-      subtitle: "Volunteer Orientation Session",
-      time: "In 2 Days - 5:30 PM",
-      date: "Wednesday, March 6",
-    },
-  ];
-
-  type DashboardButton = {
-    label: string;
-    color: string;
-    route: string;
-  };
-
-  const dashboardButtons: DashboardButton[] = [
-    { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
     { label: "Journal", color: "#527754", route: "JournalScreen" },
     { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-    { label: "Manage Events", color: "#9DC08B", route: "Events" }, // Changed to Events
+    { label: "Manage Events", color: "#9DC08B", route: "Events" },
   ];
-
-  const handleEventPress = (eventId: string) => {
-    // Navigate to Events screen when an event is pressed
-    navigation.navigate("Events");
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -56,14 +138,21 @@ const HomeDashboardScreen = () => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
               <TouchableOpacity style={styles.sosWrapper}>
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.avatarContainer}>
-            <Image source={require("../assets/image.png")} style={styles.avatarImage} />
+            <Image
+              source={require("../assets/image.png")}
+              style={styles.avatarImage}
+            />
             <Text style={styles.avatarLabel}>User</Text>
           </View>
         </View>
@@ -76,7 +165,8 @@ const HomeDashboardScreen = () => {
 
         <View style={styles.descriptionSection}>
           <Text style={styles.descriptionText}>
-            We're here to help you connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
+            We're here to help you connect with events, resources, and
+            volunteers dedicated to mental health and addiction recovery.
           </Text>
         </View>
 
@@ -92,7 +182,7 @@ const HomeDashboardScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => navigation.navigate("Events")}
         >
@@ -104,7 +194,7 @@ const HomeDashboardScreen = () => {
           <TouchableOpacity
             key={event.id}
             style={styles.eventCard}
-            onPress={() => handleEventPress(event.id)}
+            onPress={() => navigation.navigate("Events")}
           >
             <View style={styles.eventStripe} />
             <View style={styles.eventText}>
@@ -119,18 +209,18 @@ const HomeDashboardScreen = () => {
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
-            Need help? Dial 911 for immediate mental health assistance or browse our Resource
-            Library for self-help guides and professional contacts. You are not alone 💙
+            Need help? Dial 911 for immediate mental health assistance or browse
+            our Resource Library for self-help guides and professional contacts.
+            You are not alone 💙
           </Text>
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation Bar */}
       <View style={styles.curvedNav}>
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="home" size={24} color="#3A7D44" />
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate("Events")}
         >

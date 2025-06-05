@@ -18,6 +18,7 @@ import EventCard from "../components/EventCard";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { isDateValidForEvent } from "../utils/dateUtils";
+import { Ionicons } from "@expo/vector-icons";
 
 const USE_FIREBASE_SERVICE = true;
 
@@ -169,22 +170,18 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButtonContainer}
-        >
-          <Text style={styles.backButton}>←</Text>
+      <View style={styles.heroBox}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
+            <Ionicons name="chevron-back-outline" size={24} color="#2E2E2E" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleAddEvent}
-          style={styles.addEventButton}
-        >
-          <Text style={styles.addEventButtonText}>+</Text>
-        </TouchableOpacity>
+          <View style={{ width: 24 }} />
+        </View>
       </View>
-
       <View style={styles.dateSelectionContainer}>
         <View style={styles.selectedDateContainer}>
           <Text style={styles.selectedDateText}>
@@ -212,7 +209,7 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
       <ScrollView style={styles.eventsListContainer}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#3A7D44" />
+            <ActivityIndicator size="large" color="#F4A941" />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
@@ -248,26 +245,27 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F0",
-  },
-  header: {
-    height: 80,
-    paddingHorizontal: 20,
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    flexDirection: "row",
-    paddingBottom: 15,
     backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+  },
+  heroBox: {
+    backgroundColor: "#FDF6EC",
+    paddingTop: 28,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
     elevation: 3,
+  },
+  header: { 
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   backButtonContainer: {
     flexDirection: "row",
@@ -275,19 +273,20 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 24,
-    color: "#3A7D44",
+    color: "#F4A941",
     marginRight: 10,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
+    marginLeft: 10,
   },
   addEventButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -297,10 +296,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dateSelectionContainer: {
-    backgroundColor: "#FFFFFF",
+    // backgroundColor: "#FFFFFF",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
   selectedDateContainer: {
     marginBottom: 15,
@@ -308,7 +305,7 @@ const styles = StyleSheet.create({
   selectedDateText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#2E2E2E",
   },
   eventsListContainer: {
     flex: 1,
@@ -322,7 +319,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#3A7D44",
+    color: "#2E2E2E",
     fontSize: 16,
   },
   noEventsContainer: {
@@ -330,12 +327,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noEventsText: {
-    color: "#666",
+    color: "#2E2E2E",
     fontSize: 16,
     marginBottom: 15,
   },
   addEventSmallButton: {
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -345,14 +342,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   localEvent: {
-    backgroundColor: "#e3f2fd",
+    // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
-    borderLeftColor: "#2196f3",
+    borderLeftColor: '#F4A941',
   },
   firebaseEvent: {
-    backgroundColor: "#fff",
+    // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
-    borderLeftColor: "#4caf50",
+    borderLeftColor: '#F4A941',
   },
 });
 

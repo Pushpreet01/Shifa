@@ -159,11 +159,9 @@ const HomeDashboardScreen = () => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
+              <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+                <Ionicons name="notifications-outline" size={24} color="#C44536" />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.sosWrapper}>
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
@@ -230,9 +228,8 @@ const HomeDashboardScreen = () => {
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
-            Need help? Dial 911 for immediate mental health assistance or browse
-            our Resource Library for self-help guides and professional contacts.
-            You are not alone 💙
+            Need help? Dial 911 for immediate mental health assistance or browse our Resource
+            Library for self-help guides and professional contacts. You are not alone 💚
           </Text>
         </View>
       </ScrollView>

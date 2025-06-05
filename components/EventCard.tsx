@@ -1,12 +1,6 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ViewStyle,
-} from "react-native";
-import { CalendarEvent } from "../services/calendarService";
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { CalendarEvent } from '../services/calendarService';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -54,11 +48,11 @@ const EventCard: React.FC<EventCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#EFF6F6',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: '#2E2E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -71,23 +65,23 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#3A7D44",
+    fontWeight: 'bold',
+    color: '#2E2E2E',
     marginBottom: 4,
   },
   time: {
     fontSize: 14,
-    color: "#666",
+    color: '#2E2E2E',
     marginBottom: 4,
   },
   location: {
     fontSize: 14,
-    color: "#666",
+    color: '#2E2E2E',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: "#333",
+    color: '#2E2E2E',
   },
   registerButton: {
     paddingHorizontal: 12,
@@ -97,10 +91,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   registered: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#1B6B63',
   },
   unregistered: {
-    backgroundColor: "#3A7D44",
+    backgroundColor: '#1B6B63',
   },
   registerButtonText: {
     color: "#FFFFFF",

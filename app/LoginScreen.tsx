@@ -19,17 +19,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-<<<<<<< Updated upstream
   const { setUser } = useAuth();
-=======
-  const { user, setUser } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      navigation.replace("HomeDashboard"); 
-    }
-  }, [user, navigation]);
->>>>>>> Stashed changes
 
   const handleLogin = async () => {
     try {

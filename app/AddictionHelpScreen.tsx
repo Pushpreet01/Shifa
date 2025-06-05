@@ -8,30 +8,29 @@ import {
 } from "react-native";
 import HeroBox from "../components/HeroBox";
 
-const AddictionHelpScreen = ({ navigation }) => {
+const AddictionHelpScreen = () => {
   const topics = [
     {
       title: "Crisis Helplines",
-      description: "If you're in crisis, call the local helpline or talk to someone immediately.",
+      description:
+        "If you're in crisis, call the local helpline or talk to someone immediately.",
     },
     {
       title: "Domestic Violence Support",
-      description: "Support services and shelters are available. You are not alone.",
+      description:
+        "Support services and shelters are available. You are not alone.",
     },
     {
       title: "Suicide Prevention",
-      description: "Get confidential support from trained professionals anytime.",
+      description:
+        "Get confidential support from trained professionals anytime.",
     },
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox
-          title="Addiction Help"
-          showBackButton={true}
-          customBackRoute="ResourcesMain"
-        />
+        <HeroBox title="Addiction Help" />
 
         <View style={styles.cardSection}>
           {topics.map((topic, index) => (
@@ -49,7 +48,7 @@ const AddictionHelpScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC", // Matching home/dashboard background
+    backgroundColor: "#F8F5E9",
   },
   container: {
     flexGrow: 1,
@@ -60,19 +59,19 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   card: {
-    backgroundColor: "#E0F2F1", // Soft light teal/blue
+    backgroundColor: "#CEEBC2", // lighter green
     borderRadius: 20,
     padding: 15,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 4,
   },
   cardTitle: {
     fontWeight: "bold",
-    color: "#1B6B63", // Deep teal (title)
+    color: "#1f4e2a",
     marginBottom: 5,
     fontSize: 16,
   },

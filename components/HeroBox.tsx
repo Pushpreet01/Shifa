@@ -1,50 +1,29 @@
+// components/HeroBox.tsx
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
 interface HeroBoxProps {
   title: string;
-  showBackButton?: boolean;
-  customBackRoute?: string;
 }
 
-const HeroBox: React.FC<HeroBoxProps> = ({ title, showBackButton = false, customBackRoute }) => {
-  const navigation = useNavigation();
-
-  return (
-    <View style={styles.heroBox}>
-      <View style={styles.header}>
-        {/* Left: Back Button + Title */}
-        <View style={styles.leftSection}>
-          {showBackButton && (
-            <TouchableOpacity
-              onPress={() =>
-                customBackRoute ? navigation.navigate(customBackRoute) : navigation.goBack()
-              }
-              style={styles.backIcon}
-            >
-              <Ionicons name="chevron-back" size={24} color="#1B6B63" />
-            </TouchableOpacity>
-          )}
-          <Text style={styles.headerTitle}>{title}</Text>
-        </View>
-
-        {/* Right: Notifications + SOS */}
-        <View style={styles.headerIcons}>
-          <Ionicons name="notifications-outline" size={24} color="#F4A941" />
-          <View style={styles.sosWrapper}>
-            <Text style={styles.sosText}>SOS</Text>
-          </View>
+const HeroBox: React.FC<HeroBoxProps> = ({ title }) => (
+  <View style={styles.heroBox}>
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>{title}</Text>
+      <View style={styles.headerIcons}>
+        <Ionicons name="notifications-outline" size={24} color="#C44536" />
+        <View style={styles.sosWrapper}>
+          <Text style={styles.sosText}>SOS</Text>
         </View>
       </View>
     </View>
-  );
-};
+  </View>
+);
 
 const styles = StyleSheet.create({
   heroBox: {
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#F8F5E9",
     paddingTop: 50,
     paddingBottom: 60,
     paddingHorizontal: 20,
@@ -63,18 +42,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backIcon: {
-    marginRight: 10, 
-    marginTop:4,
-  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#1B6B63",
+    color: "#3A7D44",
+    marginLeft: 10,
   },
   headerIcons: {
     flexDirection: "row",
@@ -83,13 +55,13 @@ const styles = StyleSheet.create({
   sosWrapper: {
     marginLeft: 10,
     borderWidth: 1,
-    borderColor: "#F4A941",
+    borderColor: "#C44536",
     borderRadius: 50,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   sosText: {
-    color: "#F4A941",
+    color: "#C44536",
     fontWeight: "bold",
   },
 });

@@ -1,86 +1,128 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../config/firebaseConfig";
+import { db, auth } from "../config/firebaseConfig";
+import { Ionicons } from "@expo/vector-icons";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { HomeStackParamList } from "../types/navigation";
+import { saveJournalEntry } from "../services/firebaseJournalService";
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
 
-  const saveJournal = async () => {
-    const user = auth.currentUser;
-    if (!user) return Alert.alert("Error", "You must be logged in.");
-
+  const handleSave = async () => {
     try {
-      await addDoc(collection(db, "journals"), {
-        userId: user.uid,
-        title,
-        body,
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert("Success", "Your journal entry has been saved.");
-      setTitle("");
-      setBody("");
-    } catch (err) {
-      console.error("Error saving journal:", err);
-      Alert.alert("Error", "Failed to save entry.");
+      await saveJournalEntry(title, body);
+      Alert.alert("Success", "Journal saved successfully.");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error saving:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Journal</Text>
-      <View style={styles.notebook}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.wrapper}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+        >
+          <Ionicons name="chevron-back-outline" size={24} color="#3A7D44" />
+        </TouchableOpacity>
+
+        <Text style={styles.title}>New Journal Entry</Text>
+
         <TextInput
-          style={styles.titleInput}
           placeholder="Enter Title"
           value={title}
           onChangeText={setTitle}
+          style={styles.input}
         />
+
         <TextInput
-          style={styles.bodyInput}
           placeholder="How Are You Feeling Today?"
-          multiline
           value={body}
           onChangeText={setBody}
+          multiline
+          style={[styles.input, styles.textArea]}
+          textAlignVertical="top"
         />
-      </View>
-      <TouchableOpacity style={styles.saveButton} onPress={saveJournal}>
-        <Text style={styles.saveButtonText}>Save</Text>
-      </TouchableOpacity>
-    </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleSave}>
+          <Text style={styles.buttonText}>Save</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f7f3ec", alignItems: "center", padding: 20 },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#416d3e" },
-  notebook: {
-    backgroundColor: "#fff",
-    width: "90%",
-    borderRadius: 10,
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#F8F5E9",
+  },
+  container: {
     padding: 20,
-    marginVertical: 20,
-    elevation: 4
+    paddingBottom: 40,
   },
-  titleInput: {
-    borderBottomWidth: 1,
+  backBtn: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#3A7D44",
+    textAlign: "center",
+    marginTop: 60,
+    marginBottom: 20,
+  },
+  input: {
     borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: "#fff",
     fontSize: 16,
-    marginBottom: 15,
   },
-  bodyInput: {
-    height: 150,
-    textAlignVertical: "top",
+  textArea: {
+    height: 220,
+  },
+  button: {
+    backgroundColor: "#527754",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
     fontSize: 16,
+    fontWeight: "bold",
   },
-  saveButton: {
-    backgroundColor: "#416d3e",
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 20,
-  },
-  saveButtonText: { color: "#fff", fontSize: 16 },
 });
 
 export default NewJournalEntryScreen;

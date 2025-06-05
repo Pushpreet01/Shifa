@@ -7,6 +7,8 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
+  increment,
 } from "firebase/firestore";
 import { CalendarEvent } from "./calendarService";
 
@@ -33,7 +35,7 @@ class FirebaseEventService {
           location: data.location,
           description: data.description || "",
           registered: false,
-          source: 'firebase',
+          source: "firebase",
         });
       });
 
@@ -66,11 +68,12 @@ class FirebaseEventService {
     }
   }
 
-  async registerForEvent(eventId: string): Promise<boolean> {
+  async registerForEvent(eventId: string, phone?: string): Promise<boolean> {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Not logged in");
 
+      // First check if already registered
       const q = query(
         collection(db, "registrations"),
         where("eventId", "==", eventId),
@@ -79,17 +82,25 @@ class FirebaseEventService {
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
+        // Add registration
         await addDoc(collection(db, "registrations"), {
           eventId,
           userId: currentUser.uid,
           name: currentUser.displayName || "",
           email: currentUser.email || "",
-          phone: "",
-          timestamp: new Date()
+          phone: phone || "",
+          timestamp: new Date(),
         });
-      }
 
-      return true;
+        // Update event document to increment registration count
+        const eventRef = doc(db, "events", eventId);
+        await updateDoc(eventRef, {
+          registrationCount: increment(1),
+        });
+
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error("Error registering:", error);
       return false;
@@ -109,10 +120,18 @@ class FirebaseEventService {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
+        // Delete registration
         await deleteDoc(doc(db, "registrations", snapshot.docs[0].id));
-      }
 
-      return true;
+        // Update event document to decrement registration count
+        const eventRef = doc(db, "events", eventId);
+        await updateDoc(eventRef, {
+          registrationCount: increment(-1),
+        });
+
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error("Error cancelling registration:", error);
       return false;
@@ -120,21 +139,44 @@ class FirebaseEventService {
   }
 
   async getUserRegistrations(): Promise<any[]> {
-    const currentUser = auth.currentUser;
-    if (!currentUser) throw new Error("Not logged in");
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("Not logged in");
 
-    const q = query(
-      collection(db, "registrations"),
-      where("userId", "==", currentUser.uid)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const q = query(
+        collection(db, "registrations"),
+        where("userId", "==", currentUser.uid)
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error getting user registrations:", error);
+      return [];
+    }
+  }
+
+  async checkRegistration(eventId: string): Promise<boolean> {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return false;
+
+      const q = query(
+        collection(db, "registrations"),
+        where("eventId", "==", eventId),
+        where("userId", "==", currentUser.uid)
+      );
+      const snapshot = await getDocs(q);
+      return !snapshot.empty;
+    } catch (error) {
+      console.error("Error checking registration:", error);
+      return false;
+    }
   }
 
   formatDate(date: Date): string {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
 }

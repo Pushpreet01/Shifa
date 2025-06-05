@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CalendarDay } from '../types/calendar';
 import { CalendarEvent } from '../services/calendarService';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CalendarProps {
   selectedDate: Date;
@@ -20,6 +21,7 @@ const Calendar: React.FC<CalendarProps> = ({
   onNextMonth,
   onPrevMonth
 }) => {
+  const [pressedIndex, setPressedIndex] = useState<number | null>(null);
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const generateCalendarDays = (): CalendarDay[] => {
@@ -60,13 +62,13 @@ const Calendar: React.FC<CalendarProps> = ({
       {/* Month Navigation */}
       <View style={styles.monthNavigation}>
         <TouchableOpacity onPress={onPrevMonth}>
-          <Text style={styles.arrowButton}>←</Text>
+          <Ionicons name="chevron-back-outline" size={24} color={styles.arrowButton.color} />
         </TouchableOpacity>
         <Text style={styles.monthYearText}>
           {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </Text>
         <TouchableOpacity onPress={onNextMonth}>
-          <Text style={styles.arrowButton}>→</Text>
+          <Ionicons name="chevron-forward-outline" size={24} color={styles.arrowButton.color} />
         </TouchableOpacity>
       </View>
 
@@ -87,8 +89,11 @@ const Calendar: React.FC<CalendarProps> = ({
               style={[
                 styles.calendarDay,
                 day.isSelected && styles.selectedDay,
+                pressedIndex === index && styles.pressedDay,
               ]}
               onPress={() => day.date && onDateSelect(day.date)}
+              onPressIn={() => setPressedIndex(index)}
+              onPressOut={() => setPressedIndex(null)}
               disabled={!day.date}
             >
               {day.date ? (
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 20,
-    shadowColor: "#000",
+    shadowColor: "#2E2E2E",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -134,12 +139,12 @@ const styles = StyleSheet.create({
   monthYearText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#2E2E2E",
   },
   arrowButton: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#3A7D44',
+    color: '#2E2E2E',
     paddingHorizontal: 15,
   },
   daysOfWeekRow: {
@@ -155,7 +160,7 @@ const styles = StyleSheet.create({
   dayOfWeekText: {
     fontSize: 12,
     fontWeight: '500',
-    color: "#3A7D44",
+    color: "#2E2E2E",
     textAlign: 'center',
   },
   calendarGrid: {
@@ -176,25 +181,30 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   calendarDayText: {
     fontSize: 14,
     fontWeight: '500',
-    color: "#3A7D44",
+    color: "#2E2E2E",
     textAlign: 'center',
   },
   selectedDay: {
-    backgroundColor: '#3A7D44',
+    backgroundColor: '#1B6B63',
   },
   selectedDayText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   eventDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#3A7D44',
+    backgroundColor: '#F4A941',
     marginTop: 2,
+  },
+  pressedDay: {
+    backgroundColor: '#2A9D8F',
   },
 });
 

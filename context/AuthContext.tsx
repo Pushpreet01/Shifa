@@ -1,34 +1,45 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../config/firebaseConfig";
-import { User, onAuthStateChanged } from 'firebase/auth';
+import { User, onAuthStateChanged } from "firebase/auth";
 
-// Extend the AuthContextType to include isAuthenticated
-interface AuthContextType {
-  user: User | null | { uid: string; email: string; displayName: string };
-  loading: boolean;
-  setUser: (user: any) => void;
-  isAuthenticated: boolean; // ✅ Added here
+interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
 }
 
-// Provide default values
+interface AuthContextType {
+  user: AuthUser | null;
+  loading: boolean;
+  setUser: (user: AuthUser | null) => void;
+  isAuthenticated: boolean;
+}
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   setUser: () => {},
-  isAuthenticated: false, // ✅ Added default
+  isAuthenticated: false,
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null | { uid: string; email: string; displayName: string }>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // isAuthenticated is derived from whether user exists
   const isAuthenticated = !!user;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
+        // Convert Firebase User to AuthUser
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName:
+            firebaseUser.displayName || auth.currentUser?.displayName || "",
+        });
       } else {
         setUser(null);
       }

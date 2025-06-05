@@ -10,29 +10,40 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../types/navigation";
 import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { isDateValidForEvent } from "../utils/dateUtils";
+import { Ionicons } from "@expo/vector-icons";
 
 const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Events">;
 
-const EventsScreen: React.FC<Props> = ({ navigation }) => {
+const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   // Set to current date instead of hardcoded value
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today);
-  const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const service = USE_FIREBASE_SERVICE ? firebaseEventService : CalendarService;
+
+  // Handle refresh from route params
+  useEffect(() => {
+    if (route.params?.refresh) {
+      setRefreshKey((prev) => prev + 1);
+    }
+  }, [route.params?.refresh]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,9 +61,21 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
             0
           );
           const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
-          
-          // Filter out past events
-          const validEvents = fetchedEvents.filter(event => isDateValidForEvent(event.date));
+
+          // Get user registrations to mark registered events
+          const registrations = await service.getUserRegistrations();
+          const registeredEventIds = registrations.map(
+            (reg: { eventId: string }) => reg.eventId
+          );
+
+          // Filter out past events and mark registered ones
+          const validEvents = fetchedEvents
+            .filter((event) => isDateValidForEvent(event.date))
+            .map((event) => ({
+              ...event,
+              registered: registeredEventIds.includes(event.id),
+            }));
+
           setEvents(validEvents);
         } catch (error) {
           console.error("Error fetching events:", error);
@@ -61,14 +84,24 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         }
       };
       fetchEventsForMonth();
-    }, [currentMonth])
+    }, [currentMonth, refreshKey]) // Add refreshKey to dependencies
   );
 
   const goToPreviousMonth = () => {
     // Don't allow navigating to past months
-    const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    if (previousMonth.getMonth() < today.getMonth() && previousMonth.getFullYear() <= today.getFullYear()) {
-      Alert.alert("Cannot view past months", "Only current and future months are available");
+    const previousMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1,
+      1
+    );
+    if (
+      previousMonth.getMonth() < today.getMonth() &&
+      previousMonth.getFullYear() <= today.getFullYear()
+    ) {
+      Alert.alert(
+        "Cannot view past months",
+        "Only current and future months are available"
+      );
       return;
     }
     setCurrentMonth(previousMonth);
@@ -85,46 +118,38 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     if (isDateValidForEvent(date)) {
       setSelectedDate(date);
     } else {
-      Alert.alert("Invalid Date", "You can only view events for today and future dates");
+      Alert.alert(
+        "Invalid Date",
+        "You can only view events for today and future dates"
+      );
     }
   };
 
   const handleRegister = async (eventId: string) => {
-    try {
-      const event = events.find((e) => e.id === eventId);
-      if (event) {
-        let success;
-        if (event.registered) {
-          success = await service.cancelRegistration(eventId);
-        } else {
-          success = await service.registerForEvent(eventId);
-        }
-
-        if (success) {
-          setEvents(
-            events.map((event) =>
-              event.id === eventId
-                ? { ...event, registered: !event.registered }
-                : event
-            )
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error updating registration:", error);
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to register for events.");
+      return;
     }
+
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    navigation.navigate("RegisterEvent", { eventId });
   };
 
   const handleEventClick = (eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to view event details.");
+      return;
+    }
+
     navigation.navigate("RegisterEvent", { eventId });
   };
 
   const handleAddEvent = () => {
-    if (!user) {
-      Alert.alert("Login Required", "Please login to create events");
-      navigation.navigate("Login");
-      return;
-    }
     navigation.navigate("EventsForm");
   };
 
@@ -145,22 +170,18 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButtonContainer}
-        >
-          <Text style={styles.backButton}>←</Text>
+      <View style={styles.heroBox}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
+            <Ionicons name="chevron-back-outline" size={24} color="#2E2E2E" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleAddEvent}
-          style={styles.addEventButton}
-        >
-          <Text style={styles.addEventButtonText}>+</Text>
-        </TouchableOpacity>
+          <View style={{ width: 24 }} />
+        </View>
       </View>
-
       <View style={styles.dateSelectionContainer}>
         <View style={styles.selectedDateContainer}>
           <Text style={styles.selectedDateText}>
@@ -188,7 +209,7 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView style={styles.eventsListContainer}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#3A7D44" />
+            <ActivityIndicator size="large" color="#F4A941" />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
@@ -198,7 +219,11 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
               event={event}
               onRegister={handleRegister}
               onPress={() => handleEventClick(event.id)}
-              style={event.source === 'local' ? styles.localEvent : styles.firebaseEvent}
+              style={
+                event.source === "local"
+                  ? styles.localEvent
+                  : styles.firebaseEvent
+              }
             />
           ))
         ) : (
@@ -217,30 +242,30 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F0",
+    backgroundColor: "#FFFFFF",
+  },
+  heroBox: {
+    backgroundColor: "#FDF6EC",
+    paddingTop: 28,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 3,
   },
   header: {
-    height: 80,
-    paddingHorizontal: 20,
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+    width: "100%",
     flexDirection: "row",
-    paddingBottom: 15,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   backButtonContainer: {
     flexDirection: "row",
@@ -248,19 +273,20 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 24,
-    color: "#3A7D44",
+    color: "#F4A941",
     marginRight: 10,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
+    marginLeft: 10,
   },
   addEventButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -270,10 +296,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dateSelectionContainer: {
-    backgroundColor: "#FFFFFF",
+    // backgroundColor: "#FFFFFF",
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
   },
   selectedDateContainer: {
     marginBottom: 15,
@@ -281,7 +305,7 @@ const styles = StyleSheet.create({
   selectedDateText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#2E2E2E",
   },
   eventsListContainer: {
     flex: 1,
@@ -295,7 +319,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: "#3A7D44",
+    color: "#2E2E2E",
     fontSize: 16,
   },
   noEventsContainer: {
@@ -303,12 +327,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noEventsText: {
-    color: "#666",
+    color: "#2E2E2E",
     fontSize: 16,
     marginBottom: 15,
   },
   addEventSmallButton: {
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -318,14 +342,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   localEvent: {
-    backgroundColor: '#e3f2fd',
+    // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
-    borderLeftColor: '#2196f3',
+    borderLeftColor: "#F4A941",
   },
   firebaseEvent: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
-    borderLeftColor: '#4caf50',
+    borderLeftColor: "#F4A941",
   },
 });
 

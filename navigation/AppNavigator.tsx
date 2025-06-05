@@ -115,10 +115,14 @@ const HomeStackScreen = () => (
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <SettingsStack.Screen
       name="Settings"
       component={() => <>Settings coming soon</>}
     />
+=======
+    <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+>>>>>>> Stashed changes
 =======
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
 >>>>>>> Stashed changes
@@ -139,6 +143,9 @@ const ResourcesStackScreen = () => (
     <ResourcesStack.Screen name="FindTherapist" component={FindTherapistScreen} />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   </ResourcesStack.Navigator>
 );

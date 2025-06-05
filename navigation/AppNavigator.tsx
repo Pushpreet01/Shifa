@@ -17,6 +17,12 @@ import AnnouncementsScreen from "../app/AnnouncementsScreen";
 import VolunteerScreen from "../app/VolunteerScreen";
 import OpportunitiesScreen from "../app/OpportunitiesScreen";
 import EmergencyScreen from "../app/EmergencyScreen";
+import ResourcesScreen from "../app/ResourcesScreen";
+import AddictionHelpScreen from "../app/AddictionHelpScreen";
+import FindTherapistScreen from "../app/FindTherapistScreen";
+import CounsellingScreen from "../app/CounsellingScreen";
+import AwarenessScreen from "../app/AwarenessScreen";
+import SettingsScreen from "../app/SettingsScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
@@ -53,6 +59,11 @@ export type SettingsStackParamList = {
 
 export type ResourcesStackParamList = {
   Resources: undefined;
+  AddictionHelp: undefined;
+  FindTherapist: undefined;
+  Counselling: undefined;
+  Awareness: undefined;
+  SupportSystem: undefined;
 };
 
 export type RootTabParamList = {
@@ -80,7 +91,10 @@ const HomeStackScreen = () => (
     {/* Journal listing screen */}
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
     {/* New journal entry screen */}
-    <HomeStack.Screen name="NewJournalEntryScreen" component={NewJournalEntryScreen} />
+    <HomeStack.Screen
+      name="NewJournalEntryScreen"
+      component={NewJournalEntryScreen}
+    />
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <HomeStack.Screen name="VolunteerScreen" component={VolunteerScreen} />
     <HomeStack.Screen name="Opportunities" component={OpportunitiesScreen} />
@@ -88,23 +102,27 @@ const HomeStackScreen = () => (
   </HomeStack.Navigator>
 );
 
-// 👇 Settings stack includes event-related screens
+// 👇 Settings stack includes settings-related screens
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
-    <SettingsStack.Screen
-      name="Settings"
-      component={() => <>Settings coming soon</>}
-    />
+    <SettingsStack.Screen name="Settings" component={SettingsScreen} />
   </SettingsStack.Navigator>
 );
 
-// 👇 Placeholder Resources stack
+// 👇 Resources stack with all resource-related screens
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
+    <ResourcesStack.Screen name="Resources" component={ResourcesScreen} />
     <ResourcesStack.Screen
-      name="Resources"
-      component={() => <>Resources coming soon</>}
+      name="AddictionHelp"
+      component={AddictionHelpScreen}
     />
+    <ResourcesStack.Screen
+      name="FindTherapist"
+      component={FindTherapistScreen}
+    />
+    <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
+    <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
   </ResourcesStack.Navigator>
 );
 

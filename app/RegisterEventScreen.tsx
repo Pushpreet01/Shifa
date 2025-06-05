@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
-import { db, auth } from "../config/firebaseConfig"; // Import auth from firebaseConfig
+import { db, auth } from "../config/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -22,31 +22,55 @@ import {
   doc,
   getDoc,
   updateDoc,
+  setDoc,
 } from "firebase/firestore";
 import { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
-import eventsData from "../event.json";
+import { useAuth } from "../context/AuthContext";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "RegisterEvent">;
 
 const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState(""); // Email state will be set from Firebase Auth
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [event, setEvent] = useState<CalendarEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const { eventId } = route.params;
+  const { user } = useAuth();
 
-  // Set the email input with the current user's email from Firebase Auth
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setEmail(currentUser.email || ""); // Set email from the authenticated user
-    } else {
-      Alert.alert("Error", "You must be logged in to register for an event.");
-      navigation.navigate("Login"); // Redirect to login if not authenticated
-    }
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      console.log("Current user data:", currentUser); // Debug log
+      if (currentUser) {
+        console.log("User email:", currentUser.email);
+        console.log("User displayName:", currentUser.displayName);
+        console.log("User metadata:", currentUser.metadata);
+
+        // Get the user's data from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            console.log("User data from Firestore:", userData);
+            setName(userData.fullName); // Changed from name to fullName
+          }
+        } catch (error) {
+          console.error("Error getting user data:", error);
+          Alert.alert("Error", "Could not load user data. Please try again.");
+          navigation.goBack();
+        }
+
+        setEmail(currentUser.email || "");
+      } else {
+        Alert.alert("Error", "You must be logged in to register for an event.");
+        navigation.goBack();
+      }
+    };
+
+    fetchUserData();
   }, [navigation]);
 
   useEffect(() => {
@@ -71,12 +95,15 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
             location: eventData.location,
             description: eventData.description || "",
             registered: isRegistered,
+            source: "firebase",
           });
         } else {
           // Fallback to local JSON data
           try {
             const eventsData = await import("../event.json");
-            const foundEvent = eventsData.events.find((e: any) => e.id === eventId);
+            const foundEvent = eventsData.events.find(
+              (e: any) => e.id === eventId
+            );
 
             if (foundEvent) {
               setEvent({
@@ -88,6 +115,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
                 location: foundEvent.location,
                 description: foundEvent.description || "",
                 registered: foundEvent.registered || false,
+                source: "local",
               });
             } else {
               Alert.alert("Error", "Event not found");
@@ -130,56 +158,29 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
-  const validateForm = () => {
-    if (!name.trim()) {
-      Alert.alert("Error", "Please enter your name");
-      return false;
-    }
-    if (!email.trim()) {
-      Alert.alert("Error", "Please enter your email");
-      return false;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return false;
-    }
-    return true;
-  };
-
   const handleRegister = async () => {
-    if (!validateForm()) return;
     if (!event) return;
 
-    setIsRegistering(true);
     try {
-      // Add registration to Firestore
-      await addDoc(collection(db, "registrations"), {
-        eventId: event.id,
-        userId: auth.currentUser?.uid || "current-user", // Use authenticated user ID
-        name,
-        email,
-        phone,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Toggle the registered field in the event state
-      setEvent((prevEvent) => {
-        if (prevEvent) {
-          return { ...prevEvent, registered: true };
-        }
-        return prevEvent;
-      });
-
-      // Optionally update Firestore event document (if it exists)
-      const eventRef = doc(db, "events", event.id);
-      await updateDoc(eventRef, { registered: true });
-
-      Alert.alert(
-        "Registration Successful",
-        `You have registered for ${event.title}!`,
-        [{ text: "OK", onPress: () => navigation.navigate("Events") }]
+      setIsRegistering(true);
+      const success = await firebaseEventService.registerForEvent(
+        event.id,
+        phone
       );
+
+      if (success) {
+        setEvent((prevEvent) => {
+          if (!prevEvent) return null;
+          return { ...prevEvent, registered: true };
+        });
+
+        const eventRef = doc(db, "events", event.id);
+        await updateDoc(eventRef, { registered: true });
+
+        Alert.alert("Success", `You have registered for ${event.title}!`, [
+          { text: "OK", onPress: () => navigation.navigate("Events") },
+        ]);
+      }
     } catch (error) {
       console.error("Error registering for event:", error);
       Alert.alert("Error", "Failed to register. Please try again.");
@@ -315,23 +316,18 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
             <Text style={styles.label}>Full Name</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter your full name"
+              style={[styles.input, { backgroundColor: "#f0f0f0" }]} // Grayed out background to indicate non-editable
               value={name}
-              onChangeText={setName}
+              editable={false}
               placeholderTextColor="#999"
             />
 
             <Text style={styles.label}>Email Address</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter your email address"
+              style={[styles.input, { backgroundColor: "#f0f0f0" }]} // Grayed out background to indicate non-editable
               value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              editable={false}
               placeholderTextColor="#999"
-              editable={false} // Make the email field non-editable since it's from Firebase Auth
             />
 
             <Text style={styles.label}>Phone Number (Optional)</Text>

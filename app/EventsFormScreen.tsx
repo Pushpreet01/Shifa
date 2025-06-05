@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../services/firebaseEventService";
+import { auth, db } from "../config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
@@ -21,9 +23,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   // Initialize with today's date instead of new Date()
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set time to beginning of the day for clear comparison
-  
+
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(today);
+  const [name, setName] = useState("");
   const [dateString, setDateString] = useState(
     today.toLocaleDateString("en-US", {
       weekday: "long",
@@ -39,21 +42,41 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fetch user's name when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setName(userData.fullName || "");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
       // Check if the selected date is not before today
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
-      
+
       if (selectedDate < currentDate) {
         Alert.alert(
-          "Invalid Date", 
+          "Invalid Date",
           "You cannot select a date in the past. Please choose today or a future date."
         );
         return;
       }
-      
+
       setDate(selectedDate);
       setDateString(
         selectedDate.toLocaleDateString("en-US", {
@@ -75,16 +98,16 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert("Error", "Event location is required");
       return false;
     }
-    
+
     // Validate that the date is not in the past
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
-    
+
     if (date < currentDate) {
       Alert.alert("Error", "Event date cannot be in the past");
       return false;
     }
-    
+
     return true;
   };
 
@@ -135,6 +158,14 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.formContainer}>
+        <Text style={styles.label}>Your Name</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+          value={name}
+          editable={false}
+          placeholderTextColor="#999"
+        />
+
         <Text style={styles.label}>Event Title</Text>
         <TextInput
           style={styles.input}
@@ -160,7 +191,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             minimumDate={today} // Set minimum date to today
           />
         )}
-        <Text style={styles.helperText}>Events can only be scheduled for today or future dates</Text>
+        <Text style={styles.helperText}>
+          Events can only be scheduled for today or future dates
+        </Text>
 
         <View style={styles.timeContainer}>
           <View style={styles.timeField}>

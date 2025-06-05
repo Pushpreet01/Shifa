@@ -2,7 +2,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../context/AuthContext";
 
 // Import screens
 import LoginScreen from "../app/LoginScreen";
@@ -35,7 +35,7 @@ export type HomeStackParamList = {
   HomeDashboard: undefined;
   JournalScreen: undefined;
   NewJournalEntryScreen: undefined;
-  Events: undefined;
+  Events: { refresh?: number } | undefined;
   EventsForm: undefined;
   RegisterEvent: { eventId: string };
   Announcements: undefined;
@@ -82,14 +82,20 @@ const HomeStackScreen = () => (
 // 👇 Settings stack includes event-related screens
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
-    <SettingsStack.Screen name="Settings" component={() => <>Settings coming soon</>} />
+    <SettingsStack.Screen
+      name="Settings"
+      component={() => <>Settings coming soon</>}
+    />
   </SettingsStack.Navigator>
 );
 
 // 👇 Placeholder Resources stack
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
-    <ResourcesStack.Screen name="Resources" component={() => <>Resources coming soon</>} />
+    <ResourcesStack.Screen
+      name="Resources"
+      component={() => <>Resources coming soon</>}
+    />
   </ResourcesStack.Navigator>
 );
 
@@ -108,7 +114,10 @@ const TabNavigator = () => (
 
 // 👇 Authentication stack for login/signup flow
 const AuthStackScreen = () => (
-  <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+  <AuthStack.Navigator
+    initialRouteName="Login"
+    screenOptions={{ headerShown: false }}
+  >
     <AuthStack.Screen name="Login" component={LoginScreen} />
     <AuthStack.Screen name="SignUp" component={SignUpScreen} />
   </AuthStack.Navigator>

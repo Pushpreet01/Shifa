@@ -15,7 +15,7 @@ import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
 import EventCard from "../components/EventCard";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { isDateValidForEvent } from "../utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,16 +24,26 @@ const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Events">;
 
-const EventsScreen: React.FC<Props> = ({ navigation }) => {
+const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   // Set to current date instead of hardcoded value
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today);
-  const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const service = USE_FIREBASE_SERVICE ? firebaseEventService : CalendarService;
+
+  // Handle refresh from route params
+  useEffect(() => {
+    if (route.params?.refresh) {
+      setRefreshKey((prev) => prev + 1);
+    }
+  }, [route.params?.refresh]);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,9 +61,21 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
             0
           );
           const fetchedEvents = await service.fetchEvents(firstDay, lastDay);
-          
-          // Filter out past events
-          const validEvents = fetchedEvents.filter(event => isDateValidForEvent(event.date));
+
+          // Get user registrations to mark registered events
+          const registrations = await service.getUserRegistrations();
+          const registeredEventIds = registrations.map(
+            (reg: { eventId: string }) => reg.eventId
+          );
+
+          // Filter out past events and mark registered ones
+          const validEvents = fetchedEvents
+            .filter((event) => isDateValidForEvent(event.date))
+            .map((event) => ({
+              ...event,
+              registered: registeredEventIds.includes(event.id),
+            }));
+
           setEvents(validEvents);
         } catch (error) {
           console.error("Error fetching events:", error);
@@ -62,14 +84,24 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
         }
       };
       fetchEventsForMonth();
-    }, [currentMonth])
+    }, [currentMonth, refreshKey]) // Add refreshKey to dependencies
   );
 
   const goToPreviousMonth = () => {
     // Don't allow navigating to past months
-    const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    if (previousMonth.getMonth() < today.getMonth() && previousMonth.getFullYear() <= today.getFullYear()) {
-      Alert.alert("Cannot view past months", "Only current and future months are available");
+    const previousMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1,
+      1
+    );
+    if (
+      previousMonth.getMonth() < today.getMonth() &&
+      previousMonth.getFullYear() <= today.getFullYear()
+    ) {
+      Alert.alert(
+        "Cannot view past months",
+        "Only current and future months are available"
+      );
       return;
     }
     setCurrentMonth(previousMonth);
@@ -86,46 +118,38 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     if (isDateValidForEvent(date)) {
       setSelectedDate(date);
     } else {
-      Alert.alert("Invalid Date", "You can only view events for today and future dates");
+      Alert.alert(
+        "Invalid Date",
+        "You can only view events for today and future dates"
+      );
     }
   };
 
   const handleRegister = async (eventId: string) => {
-    try {
-      const event = events.find((e) => e.id === eventId);
-      if (event) {
-        let success;
-        if (event.registered) {
-          success = await service.cancelRegistration(eventId);
-        } else {
-          success = await service.registerForEvent(eventId);
-        }
-
-        if (success) {
-          setEvents(
-            events.map((event) =>
-              event.id === eventId
-                ? { ...event, registered: !event.registered }
-                : event
-            )
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error updating registration:", error);
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to register for events.");
+      return;
     }
+
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    navigation.navigate("RegisterEvent", { eventId });
   };
 
   const handleEventClick = (eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to view event details.");
+      return;
+    }
+
     navigation.navigate("RegisterEvent", { eventId });
   };
 
   const handleAddEvent = () => {
-    if (!user) {
-      Alert.alert("Login Required", "Please login to create events");
-      navigation.navigate("Login");
-      return;
-    }
     navigation.navigate("EventsForm");
   };
 
@@ -195,7 +219,11 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
               event={event}
               onRegister={handleRegister}
               onPress={() => handleEventClick(event.id)}
-              style={event.source === 'local' ? styles.localEvent : styles.firebaseEvent}
+              style={
+                event.source === "local"
+                  ? styles.localEvent
+                  : styles.firebaseEvent
+              }
             />
           ))
         ) : (
@@ -213,7 +241,6 @@ const EventsScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

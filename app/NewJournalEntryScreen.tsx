@@ -16,33 +16,25 @@ import { db, auth } from "../config/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { saveJournalEntry } from "../services/firebaseJournalService";
+
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const handleSave = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Please login first.");
-
-      await addDoc(collection(db, "journals"), {
-        title,
-        body,
-        userId: currentUser.uid,
-        createdAt: serverTimestamp(),
-      });
-
-      Alert.alert("Success", "Journal saved successfully.");
-      navigation.goBack();
-    } catch (error) {
-      console.error("Save failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      Alert.alert("Error", errorMessage);
-    }
-  };
+ const handleSave = async () => {
+  try {
+    await saveJournalEntry(title, body);
+    Alert.alert("Success", "Journal saved successfully.");
+    navigation.goBack();
+  } catch (error) {
+    console.error("Error saving:", error);
+    Alert.alert("Error", error instanceof Error ? error.message : "Unknown error");
+  }
+};
+  
 
   return (
     <KeyboardAvoidingView

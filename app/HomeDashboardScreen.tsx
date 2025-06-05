@@ -1,4 +1,4 @@
-import React from "react"; 
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,45 +9,148 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
+import firebaseEventService from "../services/firebaseEventService";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  getDoc,
+  updateDoc,
+  orderBy,
+  limit,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "../config/firebaseConfig";
+
+interface EventData {
+  id: string;
+  title: string;
+  description?: string;
+  date: any; // Firebase Timestamp
+  startTime: string;
+}
+
+interface ProcessedEventData {
+  id: string;
+  title: string;
+  subtitle: string;
+  time: string;
+  date: string;
+}
 
 const HomeDashboardScreen = () => {
   const navigation: any = useNavigation();
+  const { user } = useAuth();
+  const [events, setEvents] = useState<ProcessedEventData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const events = [
-    {
-      id: "1",
-      title: "Community Wellness Center",
-      subtitle: "Mental Health & Addiction Workshop",
-      time: "Today - 6:00 PM",
-      date: "Monday, March 4",
-    },
-    {
-      id: "2",
-      title: "Shifa Community Hall",
-      subtitle: "Volunteer Orientation Session",
-      time: "In 2 Days - 5:30 PM",
-      date: "Wednesday, March 6",
-    },
-  ];
+  const fetchRegisteredEvents = useCallback(async () => {
+    if (!user) return;
 
-  type DashboardButton = {
-    label: string;
-    color: string;
-    route: string;
+    try {
+      setLoading(true);
+      // Get user registrations first
+      const registrations = await firebaseEventService.getUserRegistrations();
+      const eventIds = registrations.map((reg) => reg.eventId);
+
+      if (eventIds.length === 0) {
+        setEvents([]);
+        return;
+      }
+
+      // Get current date at midnight for more efficient querying
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      // Fetch events in chunks, but only filter by document ID
+      const allEvents = [];
+      for (const chunk of chunkArray(eventIds, 10)) {
+        const eventsQuery = query(
+          collection(db, "events"),
+          where("__name__", "in", chunk)
+        );
+        const querySnapshot = await getDocs(eventsQuery);
+        allEvents.push(...querySnapshot.docs);
+      }
+
+      // Process all events first
+      const processedEvents = allEvents.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date.toDate(),
+      })) as EventData[];
+
+      // Filter and sort the events
+      const fetchedEvents = processedEvents
+        .filter((event) => event.date >= now)
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .slice(0, 3);
+
+      // Format events for display
+      const formattedEvents = fetchedEvents.map((event) => ({
+        id: event.id,
+        title: event.title,
+        subtitle: event.description || "Event details",
+        time: event.startTime,
+        date: event.date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+      }));
+
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Helper function to chunk array
+  const chunkArray = (array: any[], size: number) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
   };
 
-  const dashboardButtons: DashboardButton[] = [
-    { label: "Manage Volunteering", color: "#9DC08B", route: "VolunteerScreen" },
+  // Refresh events when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchRegisteredEvents();
+    }, [fetchRegisteredEvents])
+  );
+
+  // Initial load and periodic refresh
+  useEffect(() => {
+    fetchRegisteredEvents();
+
+    // Set up a refresh interval (optional, can be removed if not needed)
+    const refreshInterval = setInterval(fetchRegisteredEvents, 60000); // Refresh every minute
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [fetchRegisteredEvents]);
+
+  const dashboardButtons = [
+    {
+      label: "Manage Volunteering",
+      color: "#9DC08B",
+      route: "VolunteerScreen",
+    },
     { label: "Journal", color: "#527754", route: "JournalScreen" },
     { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-    { label: "Manage Events", color: "#9DC08B", route: "Events" }, // Changed to Events
+    { label: "Manage Events", color: "#9DC08B", route: "Events" },
   ];
-
-  const handleEventPress = (eventId: string) => {
-    // Navigate to Events screen when an event is pressed
-    navigation.navigate("Events");
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -65,7 +168,10 @@ const HomeDashboardScreen = () => {
             </View>
           </View>
           <View style={styles.avatarContainer}>
-            <Image source={require("../assets/image.png")} style={styles.avatarImage} />
+            <Image
+              source={require("../assets/image.png")}
+              style={styles.avatarImage}
+            />
             <Text style={styles.avatarLabel}>User</Text>
           </View>
         </View>
@@ -78,7 +184,8 @@ const HomeDashboardScreen = () => {
 
         <View style={styles.descriptionSection}>
           <Text style={styles.descriptionText}>
-            We're here to help you connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
+            We're here to help you connect with events, resources, and
+            volunteers dedicated to mental health and addiction recovery.
           </Text>
         </View>
 
@@ -94,7 +201,7 @@ const HomeDashboardScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => navigation.navigate("Events")}
         >
@@ -106,7 +213,7 @@ const HomeDashboardScreen = () => {
           <TouchableOpacity
             key={event.id}
             style={styles.eventCard}
-            onPress={() => handleEventPress(event.id)}
+            onPress={() => navigation.navigate("Events")}
           >
             <View style={styles.eventStripe} />
             <View style={styles.eventText}>
@@ -127,12 +234,11 @@ const HomeDashboardScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation Bar */}
       <View style={styles.curvedNav}>
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="home" size={24} color="#3A7D44" />
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.navItem}
           onPress={() => navigation.navigate("Events")}
         >

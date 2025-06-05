@@ -12,7 +12,11 @@
     "@expo/metro-runtime": "~5.0.4",
     "@react-native-community/checkbox": "^0.5.17",
     "@react-native-community/datetimepicker": "^8.2.0",
+<<<<<<< Updated upstream
     "@react-navigation/bottom-tabs": "^7.3.13",
+=======
+    "@react-navigation/bottom-tabs": "^7.3.14",
+>>>>>>> Stashed changes
     "@react-navigation/native": "^7.1.6",
     "@react-navigation/native-stack": "^7.3.10",
     "@react-navigation/stack": "^7.2.10",

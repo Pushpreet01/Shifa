@@ -142,6 +142,7 @@ const HomeDashboardScreen = () => {
   }, [fetchRegisteredEvents]);
 
   const dashboardButtons = [
+<<<<<<< Updated upstream
     {
       label: "Manage Volunteering",
       color: "#9DC08B",
@@ -150,6 +151,12 @@ const HomeDashboardScreen = () => {
     { label: "Journal", color: "#527754", route: "JournalScreen" },
     { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
     { label: "Manage Events", color: "#9DC08B", route: "Events" },
+=======
+    { label: "Manage Volunteering" },
+    { label: "Journal" },
+    { label: "SOS Dial" },
+    { label: "Manage Events" },
+>>>>>>> Stashed changes
   ];
 
   return (
@@ -159,14 +166,20 @@ const HomeDashboardScreen = () => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
+<<<<<<< Updated upstream
               <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
                 <Ionicons name="notifications-outline" size={24} color="#C44536" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.sosWrapper}>
+=======
+              <Ionicons name="notifications-outline" size={24} color="#e5a54e" />
+              <View style={styles.sosWrapper}>
+>>>>>>> Stashed changes
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>
           </View>
+
           <View style={styles.avatarContainer}>
             <Image
               source={require("../assets/image.png")}
@@ -184,28 +197,41 @@ const HomeDashboardScreen = () => {
 
         <View style={styles.descriptionSection}>
           <Text style={styles.descriptionText}>
+<<<<<<< Updated upstream
             We're here to help you connect with events, resources, and
             volunteers dedicated to mental health and addiction recovery.
+=======
+            Connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
+>>>>>>> Stashed changes
           </Text>
         </View>
 
         <View style={styles.buttonGrid}>
           {dashboardButtons.map((item, i) => (
+<<<<<<< Updated upstream
             <TouchableOpacity
               key={i}
               style={[styles.gridButton, { backgroundColor: item.color }]}
               onPress={() => navigation.navigate(item.route)}
             >
+=======
+            <TouchableOpacity key={i} style={styles.gridButton}>
+>>>>>>> Stashed changes
               <Text style={styles.gridButtonText}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
+<<<<<<< Updated upstream
         <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => navigation.navigate("Events")}
         >
           <Ionicons name="calendar-outline" size={20} color="black" />
+=======
+        <View style={styles.sectionHeader}>
+          <Ionicons name="calendar-outline" size={20} color="#3f8390" />
+>>>>>>> Stashed changes
           <Text style={styles.sectionTitle}> Upcoming Events</Text>
         </TouchableOpacity>
 
@@ -228,12 +254,17 @@ const HomeDashboardScreen = () => {
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
+<<<<<<< Updated upstream
             Need help? Dial 911 for immediate mental health assistance or browse our Resource
             Library for self-help guides and professional contacts. You are not alone 💚
+=======
+            Dial 911 for immediate help or explore the Resource Library for support options. You're not alone 💙
+>>>>>>> Stashed changes
           </Text>
         </View>
       </ScrollView>
 
+<<<<<<< Updated upstream
       <View style={styles.curvedNav}>
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="home" size={24} color="#3A7D44" />
@@ -251,6 +282,9 @@ const HomeDashboardScreen = () => {
           <Ionicons name="settings-outline" size={24} color="#666" />
         </TouchableOpacity>
       </View>
+=======
+      
+>>>>>>> Stashed changes
     </SafeAreaView>
   );
 };
@@ -258,13 +292,13 @@ const HomeDashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FDF6EC",
   },
   container: {
     paddingBottom: 120,
   },
   heroBox: {
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FDF6EC",
     paddingTop: 50,
     paddingBottom: 30,
     paddingHorizontal: 20,
@@ -273,7 +307,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 6,
   },
@@ -286,7 +320,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
     marginLeft: 10,
   },
   headerIcons: {
@@ -296,13 +330,13 @@ const styles = StyleSheet.create({
   sosWrapper: {
     marginLeft: 10,
     borderWidth: 1,
-    borderColor: "#C44536",
+    borderColor: "#F4A941",
     borderRadius: 50,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   sosText: {
-    color: "#C44536",
+    color: "#F4A941",
     fontWeight: "bold",
   },
   avatarContainer: {
@@ -317,7 +351,7 @@ const styles = StyleSheet.create({
   avatarLabel: {
     marginTop: 6,
     fontWeight: "600",
-    color: "#3A7D44",
+    color: "#008080",
   },
   separatorWrapper: {
     flexDirection: "row",
@@ -331,12 +365,12 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
   },
   lineFixed: {
     flex: 1,
     height: 2,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F4A941",
     marginHorizontal: 8,
   },
   descriptionSection: {
@@ -344,7 +378,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   descriptionText: {
-    color: "#2B5A32",
+    color: "#2E2E2E",
     fontSize: 14,
     textAlign: "center",
   },
@@ -360,6 +394,7 @@ const styles = StyleSheet.create({
     width: "48%",
     paddingVertical: 12,
     borderRadius: 10,
+    backgroundColor: "#008080",
     marginBottom: 12,
     alignItems: "center",
   },
@@ -377,11 +412,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "black",
+    color: "#2E2E2E",
   },
   eventCard: {
     flexDirection: "row",
-    backgroundColor: "#E7F1E6",
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
     marginBottom: 12,
     marginHorizontal: 20,
@@ -389,7 +424,7 @@ const styles = StyleSheet.create({
   },
   eventStripe: {
     width: 6,
-    backgroundColor: "#C44536",
+    backgroundColor: "#F4A941",
   },
   eventText: {
     padding: 10,
@@ -398,7 +433,7 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontWeight: "bold",
     fontSize: 15,
-    color: "#3A7D44",
+    color: "#2E2E2E",
   },
   eventSubtitle: {
     fontSize: 13,
@@ -406,7 +441,7 @@ const styles = StyleSheet.create({
   },
   eventTime: {
     fontSize: 13,
-    color: "#333",
+    color: "#2E2E2E",
     marginTop: 4,
   },
   eventDate: {
@@ -416,29 +451,36 @@ const styles = StyleSheet.create({
   supportBox: {
     marginTop: 10,
     marginHorizontal: 20,
-    backgroundColor: "#FFF0F0",
+    backgroundColor: "#FDF6EC",
     padding: 15,
     borderRadius: 10,
   },
   supportTitle: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#B00020",
+    color: "#E38933",
     marginBottom: 5,
   },
   supportText: {
     fontSize: 13,
-    color: "#333",
+    color: "#2E2E2E",
   },
   curvedNav: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
+<<<<<<< Updated upstream
     height: 80,
     backgroundColor: "#D6EFC7",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+=======
+    height: 100,
+    backgroundColor: "#F4A941",
+    borderTopLeftRadius: 60,
+    borderTopRightRadius: 60,
+>>>>>>> Stashed changes
     justifyContent: "space-around",
     alignItems: "center",
     flexDirection: "row",
@@ -449,5 +491,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
 export default HomeDashboardScreen;

@@ -23,6 +23,7 @@ import RegisterEventScreen from "../app/RegisterEventScreen";
 import HomeDashboardScreen from "../app/HomeDashboardScreen";
 import JournalScreen from "../app/JournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
+<<<<<<< Updated upstream
 import AnnouncementsScreen from "../app/AnnouncementsScreen";
 import MyJournalsScreen from "../app/MyJournalScreen";
 
@@ -30,6 +31,59 @@ import MyJournalsScreen from "../app/MyJournalScreen";
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
 
 // Create individual stack navigators
+=======
+import ResourceScreen from "../app/ResourcesScreen";
+import AddictionHelpScreen from "../app/AddictionHelpScreen";
+import FindTherapistScreen from "../app/FindTherapistScreen";
+import CounsellingScreen from "../app/CounsellingScreen";
+import AwarenessScreen from "../app/AwarenessScreen";
+import SettingsScreen from "../app/SettingsScreen"; // ✅ properly created
+
+// Custom Tab Bar
+import CustomTabBar from "./CustomTabBar";
+
+// Tab Routes
+enum TabRoutes {
+  Home = "Home",
+  Settings = "Settings",
+  Resources = "Resources",
+}
+
+// Type Definitions
+export type AuthStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+};
+
+export type HomeStackParamList = {
+  HomeDashboard: undefined;
+  JournalScreen: undefined;
+  NewJournalEntryScreen: undefined;
+  Events: undefined;
+  EventsForm: undefined;
+  RegisterEvent: { eventId: string };
+};
+
+export type SettingsStackParamList = {
+  Settings: undefined;
+};
+
+export type ResourcesStackParamList = {
+  ResourcesMain: undefined;
+  AddictionHelp: undefined;
+  FindTherapist: undefined;
+  Counselling: undefined;
+  Awareness: undefined;
+};
+
+export type RootTabParamList = {
+  [TabRoutes.Home]: undefined;
+  [TabRoutes.Settings]: undefined;
+  [TabRoutes.Resources]: undefined;
+};
+
+// Stack Navigators
+>>>>>>> Stashed changes
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
 const SettingsStack = createStackNavigator<SettingsStackParamList>();
@@ -60,20 +114,32 @@ const HomeStackScreen = () => (
 // 👇 Settings stack includes event-related screens
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
+<<<<<<< Updated upstream
     <SettingsStack.Screen
       name="Settings"
       component={() => <>Settings coming soon</>}
     />
+=======
+    <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+>>>>>>> Stashed changes
   </SettingsStack.Navigator>
 );
 
 // 👇 Placeholder Resources stack
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
+<<<<<<< Updated upstream
     <ResourcesStack.Screen
       name="Resources"
       component={() => <>Resources coming soon</>}
     />
+=======
+    <ResourcesStack.Screen name="ResourcesMain" component={ResourceScreen} />
+    <ResourcesStack.Screen name="AddictionHelp" component={AddictionHelpScreen} />
+    <ResourcesStack.Screen name="FindTherapist" component={FindTherapistScreen} />
+    <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
+    <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
+>>>>>>> Stashed changes
   </ResourcesStack.Navigator>
 );
 

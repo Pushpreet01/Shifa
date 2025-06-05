@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../types/navigation";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../services/firebaseEventService";
 import { auth, db } from "../config/firebaseConfig";

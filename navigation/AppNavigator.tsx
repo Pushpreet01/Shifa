@@ -4,6 +4,16 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useAuth } from "../context/AuthContext";
 
+// Import types from the new types file
+import {
+  AuthStackParamList,
+  HomeStackParamList,
+  SettingsStackParamList,
+  ResourcesStackParamList,
+  RootTabParamList,
+  TabRoutes,
+} from "../types/navigation";
+
 // Import screens
 import LoginScreen from "../app/LoginScreen";
 import SignUpScreen from "../app/SignUpScreen";
@@ -14,46 +24,10 @@ import HomeDashboardScreen from "../app/HomeDashboardScreen";
 import JournalScreen from "../app/JournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
 import AnnouncementsScreen from "../app/AnnouncementsScreen";
+import MyJournalsScreen from "../app/MyJournalScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
-
-// Route names used in the bottom tab navigator
-enum TabRoutes {
-  Home = "Home",
-  Settings = "Settings",
-  Resources = "Resources",
-}
-
-// Type definitions for navigation stacks
-export type AuthStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-};
-
-export type HomeStackParamList = {
-  HomeDashboard: undefined;
-  JournalScreen: undefined;
-  NewJournalEntryScreen: undefined;
-  Events: { refresh?: number } | undefined;
-  EventsForm: undefined;
-  RegisterEvent: { eventId: string };
-  Announcements: undefined;
-};
-
-export type SettingsStackParamList = {
-  Settings: undefined;
-};
-
-export type ResourcesStackParamList = {
-  Resources: undefined;
-};
-
-export type RootTabParamList = {
-  [TabRoutes.Home]: undefined;
-  [TabRoutes.Settings]: undefined;
-  [TabRoutes.Resources]: undefined;
-};
 
 // Create individual stack navigators
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -74,8 +48,12 @@ const HomeStackScreen = () => (
     {/* Journal listing screen */}
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
     {/* New journal entry screen */}
-    <HomeStack.Screen name="NewJournalEntryScreen" component={NewJournalEntryScreen} />
+    <HomeStack.Screen
+      name="NewJournalEntryScreen"
+      component={NewJournalEntryScreen}
+    />
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <HomeStack.Screen name="MyJournalsScreen" component={MyJournalsScreen} />
   </HomeStack.Navigator>
 );
 
@@ -104,7 +82,7 @@ const TabNavigator = () => (
   <Tab.Navigator
     tabBar={(props) => <CustomTabBar {...props} />}
     screenOptions={{ headerShown: false }}
-    initialRouteName="Home"
+    initialRouteName={TabRoutes.Home}
   >
     <Tab.Screen name={TabRoutes.Resources} component={ResourcesStackScreen} />
     <Tab.Screen name={TabRoutes.Home} component={HomeStackScreen} />

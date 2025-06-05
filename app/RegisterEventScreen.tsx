@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../types/navigation";
 import { db, auth } from "../config/firebaseConfig";
 import {
   collection,

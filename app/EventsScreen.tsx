@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../types/navigation";
 import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  header: { 
+  header: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -344,12 +344,12 @@ const styles = StyleSheet.create({
   localEvent: {
     // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
-    borderLeftColor: '#F4A941',
+    borderLeftColor: "#F4A941",
   },
   firebaseEvent: {
     // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
-    borderLeftColor: '#F4A941',
+    borderLeftColor: "#F4A941",
   },
 });
 

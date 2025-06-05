@@ -23,15 +23,6 @@ import RegisterEventScreen from "../app/RegisterEventScreen";
 import HomeDashboardScreen from "../app/HomeDashboardScreen";
 import JournalScreen from "../app/JournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
-<<<<<<< Updated upstream
-import AnnouncementsScreen from "../app/AnnouncementsScreen";
-import MyJournalsScreen from "../app/MyJournalScreen";
-
-// Import your custom tab bar
-import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
-
-// Create individual stack navigators
-=======
 import ResourceScreen from "../app/ResourcesScreen";
 import AddictionHelpScreen from "../app/AddictionHelpScreen";
 import FindTherapistScreen from "../app/FindTherapistScreen";
@@ -83,7 +74,6 @@ export type RootTabParamList = {
 };
 
 // Stack Navigators
->>>>>>> Stashed changes
 const AuthStack = createStackNavigator<AuthStackParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
 const SettingsStack = createStackNavigator<SettingsStackParamList>();
@@ -114,32 +104,18 @@ const HomeStackScreen = () => (
 // 👇 Settings stack includes event-related screens
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
-<<<<<<< Updated upstream
-    <SettingsStack.Screen
-      name="Settings"
-      component={() => <>Settings coming soon</>}
-    />
-=======
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
->>>>>>> Stashed changes
   </SettingsStack.Navigator>
 );
 
 // 👇 Placeholder Resources stack
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
-<<<<<<< Updated upstream
-    <ResourcesStack.Screen
-      name="Resources"
-      component={() => <>Resources coming soon</>}
-    />
-=======
     <ResourcesStack.Screen name="ResourcesMain" component={ResourceScreen} />
     <ResourcesStack.Screen name="AddictionHelp" component={AddictionHelpScreen} />
     <ResourcesStack.Screen name="FindTherapist" component={FindTherapistScreen} />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
->>>>>>> Stashed changes
   </ResourcesStack.Navigator>
 );
 

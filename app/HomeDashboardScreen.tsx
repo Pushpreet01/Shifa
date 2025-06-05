@@ -142,7 +142,6 @@ const HomeDashboardScreen = () => {
   }, [fetchRegisteredEvents]);
 
   const dashboardButtons = [
-<<<<<<< Updated upstream
     {
       label: "Manage Volunteering",
       color: "#9DC08B",
@@ -151,12 +150,6 @@ const HomeDashboardScreen = () => {
     { label: "Journal", color: "#527754", route: "JournalScreen" },
     { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
     { label: "Manage Events", color: "#9DC08B", route: "Events" },
-=======
-    { label: "Manage Volunteering" },
-    { label: "Journal" },
-    { label: "SOS Dial" },
-    { label: "Manage Events" },
->>>>>>> Stashed changes
   ];
 
   return (
@@ -166,15 +159,10 @@ const HomeDashboardScreen = () => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
-<<<<<<< Updated upstream
               <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
                 <Ionicons name="notifications-outline" size={24} color="#C44536" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.sosWrapper}>
-=======
-              <Ionicons name="notifications-outline" size={24} color="#e5a54e" />
-              <View style={styles.sosWrapper}>
->>>>>>> Stashed changes
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>
@@ -197,41 +185,28 @@ const HomeDashboardScreen = () => {
 
         <View style={styles.descriptionSection}>
           <Text style={styles.descriptionText}>
-<<<<<<< Updated upstream
             We're here to help you connect with events, resources, and
             volunteers dedicated to mental health and addiction recovery.
-=======
-            Connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
->>>>>>> Stashed changes
           </Text>
         </View>
 
         <View style={styles.buttonGrid}>
           {dashboardButtons.map((item, i) => (
-<<<<<<< Updated upstream
             <TouchableOpacity
               key={i}
               style={[styles.gridButton, { backgroundColor: item.color }]}
               onPress={() => navigation.navigate(item.route)}
             >
-=======
-            <TouchableOpacity key={i} style={styles.gridButton}>
->>>>>>> Stashed changes
               <Text style={styles.gridButtonText}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-<<<<<<< Updated upstream
         <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => navigation.navigate("Events")}
         >
           <Ionicons name="calendar-outline" size={20} color="black" />
-=======
-        <View style={styles.sectionHeader}>
-          <Ionicons name="calendar-outline" size={20} color="#3f8390" />
->>>>>>> Stashed changes
           <Text style={styles.sectionTitle}> Upcoming Events</Text>
         </TouchableOpacity>
 
@@ -254,17 +229,12 @@ const HomeDashboardScreen = () => {
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
-<<<<<<< Updated upstream
             Need help? Dial 911 for immediate mental health assistance or browse our Resource
             Library for self-help guides and professional contacts. You are not alone 💚
-=======
-            Dial 911 for immediate help or explore the Resource Library for support options. You're not alone 💙
->>>>>>> Stashed changes
           </Text>
         </View>
       </ScrollView>
 
-<<<<<<< Updated upstream
       <View style={styles.curvedNav}>
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="home" size={24} color="#3A7D44" />
@@ -282,9 +252,6 @@ const HomeDashboardScreen = () => {
           <Ionicons name="settings-outline" size={24} color="#666" />
         </TouchableOpacity>
       </View>
-=======
-      
->>>>>>> Stashed changes
     </SafeAreaView>
   );
 };
@@ -470,17 +437,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-<<<<<<< Updated upstream
     height: 80,
     backgroundColor: "#D6EFC7",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-=======
-    height: 100,
-    backgroundColor: "#F4A941",
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
->>>>>>> Stashed changes
     justifyContent: "space-around",
     alignItems: "center",
     flexDirection: "row",

@@ -16,6 +16,7 @@ import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
 import AnnouncementsScreen from "../app/AnnouncementsScreen";
 import VolunteerScreen from "../app/VolunteerScreen";
 import OpportunitiesScreen from "../app/OpportunitiesScreen";
+import EmergencyScreen from "../app/EmergencyScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
@@ -43,6 +44,7 @@ export type HomeStackParamList = {
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
+  Emergency: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -82,6 +84,7 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <HomeStack.Screen name="VolunteerScreen" component={VolunteerScreen} />
     <HomeStack.Screen name="Opportunities" component={OpportunitiesScreen} />
+    <HomeStack.Screen name="Emergency" component={EmergencyScreen} />
   </HomeStack.Navigator>
 );
 

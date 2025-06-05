@@ -13,6 +13,14 @@ const VolunteerScreen: React.FC<NativeStackScreenProps<HomeStackParamList, any>>
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Volunteer</Text>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+              <Text style={styles.sosText}>SOS</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -85,6 +93,25 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1B6B63",
     marginLeft: 8,
+  },
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
+  sosWrapper: {
+    backgroundColor: "#C44536",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   scrollContent: {
     padding: 20,

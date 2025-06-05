@@ -162,7 +162,7 @@ const HomeDashboardScreen = () => {
               <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
                 <Ionicons name="notifications-outline" size={24} color="#C44536" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.sosWrapper}>
+              <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>

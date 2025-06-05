@@ -320,7 +320,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dateSelectionContainer: {
-    // backgroundColor: "#FFFFFF",
     padding: 20,
   },
   selectedDateContainer: {

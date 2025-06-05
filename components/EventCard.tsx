@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   registered: {
-    backgroundColor: '#1B6B63',
+    backgroundColor: '#2A9D8F',
   },
   unregistered: {
     backgroundColor: '#1B6B63',

@@ -144,6 +144,7 @@ const HomeDashboardScreen = () => {
   const dashboardButtons = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     {
       label: "Manage Volunteering",
       color: "#9DC08B",
@@ -155,11 +156,16 @@ const HomeDashboardScreen = () => {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     { label: "Manage Volunteering" },
     { label: "Journal" },
     { label: "SOS Dial" },
     { label: "Manage Events" },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -174,11 +180,14 @@ const HomeDashboardScreen = () => {
             <View style={styles.headerIcons}>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
                 <Ionicons name="notifications-outline" size={24} color="#C44536" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.sosWrapper}>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
               <Ionicons name="notifications-outline" size={24} color="#e5a54e" />
@@ -208,8 +217,12 @@ const HomeDashboardScreen = () => {
           <Text style={styles.descriptionText}>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             We're here to help you connect with events, resources, and
             volunteers dedicated to mental health and addiction recovery.
+=======
+            Connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
+>>>>>>> Stashed changes
 =======
             Connect with events, resources, and volunteers dedicated to mental health and addiction recovery.
 >>>>>>> Stashed changes
@@ -223,11 +236,15 @@ const HomeDashboardScreen = () => {
           {dashboardButtons.map((item, i) => (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             <TouchableOpacity
               key={i}
               style={[styles.gridButton, { backgroundColor: item.color }]}
               onPress={() => navigation.navigate(item.route)}
             >
+=======
+            <TouchableOpacity key={i} style={styles.gridButton}>
+>>>>>>> Stashed changes
 =======
             <TouchableOpacity key={i} style={styles.gridButton}>
 >>>>>>> Stashed changes
@@ -241,11 +258,16 @@ const HomeDashboardScreen = () => {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <TouchableOpacity
           style={styles.sectionHeader}
           onPress={() => navigation.navigate("Events")}
         >
           <Ionicons name="calendar-outline" size={20} color="black" />
+=======
+        <View style={styles.sectionHeader}>
+          <Ionicons name="calendar-outline" size={20} color="#3f8390" />
+>>>>>>> Stashed changes
 =======
         <View style={styles.sectionHeader}>
           <Ionicons name="calendar-outline" size={20} color="#3f8390" />
@@ -278,8 +300,12 @@ const HomeDashboardScreen = () => {
           <Text style={styles.supportText}>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             Need help? Dial 911 for immediate mental health assistance or browse our Resource
             Library for self-help guides and professional contacts. You are not alone 💚
+=======
+            Dial 911 for immediate help or explore the Resource Library for support options. You're not alone 💙
+>>>>>>> Stashed changes
 =======
             Dial 911 for immediate help or explore the Resource Library for support options. You're not alone 💙
 >>>>>>> Stashed changes
@@ -290,6 +316,7 @@ const HomeDashboardScreen = () => {
         </View>
       </ScrollView>
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       <View style={styles.curvedNav}>
@@ -309,6 +336,9 @@ const HomeDashboardScreen = () => {
           <Ionicons name="settings-outline" size={24} color="#666" />
         </TouchableOpacity>
       </View>
+=======
+      
+>>>>>>> Stashed changes
 =======
       
 >>>>>>> Stashed changes
@@ -502,11 +532,14 @@ const styles = StyleSheet.create({
     right: 0,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     height: 80,
     backgroundColor: "#D6EFC7",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     height: 100,

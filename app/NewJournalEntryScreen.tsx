@@ -15,27 +15,26 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../config/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { HomeStackParamList } from "../types/navigation";
+import type { RootStackParamList } from "../navigation/AppNavigator";
 import { saveJournalEntry } from "../services/firebaseJournalService";
+
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const handleSave = async () => {
-    try {
-      await saveJournalEntry(title, body);
-      Alert.alert("Success", "Journal saved successfully.");
-      navigation.goBack();
-    } catch (error) {
-      console.error("Error saving:", error);
-      Alert.alert(
-        "Error",
-        error instanceof Error ? error.message : "Unknown error"
-      );
-    }
-  };
+ const handleSave = async () => {
+  try {
+    await saveJournalEntry(title, body);
+    Alert.alert("Success", "Journal saved successfully.");
+    navigation.goBack();
+  } catch (error) {
+    console.error("Error saving:", error);
+    Alert.alert("Error", error instanceof Error ? error.message : "Unknown error");
+  }
+};
+  
 
   return (
     <KeyboardAvoidingView
@@ -43,10 +42,7 @@ const NewJournalEntryScreen = () => {
       style={styles.wrapper}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back-outline" size={24} color="#3A7D44" />
         </TouchableOpacity>
 

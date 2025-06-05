@@ -8,11 +8,14 @@ interface AuthUser {
   displayName: string | null;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   setUser: (user: AuthUser | null) => void;
   isAuthenticated: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +23,9 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   setUser: () => {},
   isAuthenticated: false,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -50,7 +56,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        setUser,
+        isAuthenticated,
+        signIn: async () => {},
+        signUp: async () => {},
+        signOut: async () => {},
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

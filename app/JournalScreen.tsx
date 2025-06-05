@@ -9,18 +9,15 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { HomeStackParamList } from "../types/navigation";
+import type { RootStackParamList } from "../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 
 const JournalScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backBtn}
-      >
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
         <Ionicons name="chevron-back-outline" size={24} color="#3A7D44" />
       </TouchableOpacity>
 
@@ -74,7 +71,7 @@ const styles = StyleSheet.create({
     color: "#416d3e",
   },
   journalImage: {
-    height: Dimensions.get("window").height * 0.6,
+    height: Dimensions.get("window").height * 0.6 ,
     width: Dimensions.get("window").width * 0.9,
     marginBottom: 20,
   },

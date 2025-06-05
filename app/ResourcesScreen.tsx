@@ -17,10 +17,10 @@ const { width } = Dimensions.get("window");
 const ResourcesScreen = ({ navigation }) => {
   const resources = [
     { label: "Addiction Help", route: "AddictionHelp" },
-    { label: "Find a Therapist" },
-    { label: "Counselling" },
-    { label: "Awareness" },
-    { label: "Support System" },
+    { label: "Find a Therapist", route: "FindTherapist" },
+    { label: "Counselling", route: "Counselling" },
+    { label: "Awareness", route: "Awareness" },
+    { label: "Support System", route: "SupportSystem" },
   ];
 
   return (
@@ -40,9 +40,7 @@ const ResourcesScreen = ({ navigation }) => {
               <TouchableOpacity
                 key={index}
                 style={styles.resourceButton}
-                onPress={() =>
-                  item.route && navigation.navigate(item.route)
-                }
+                onPress={() => item.route && navigation.navigate(item.route)}
               >
                 <Text style={styles.buttonText}>{item.label}</Text>
               </TouchableOpacity>

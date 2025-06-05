@@ -9,13 +9,13 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../types/navigation";
+import { RootStackParamList } from "../navigation/AppNavigator";
 import { auth, db } from "../config/firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
+type Props = NativeStackScreenProps<RootStackParamList, "SignUp">;
 
 const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const [fullName, setFullName] = useState("");
@@ -60,7 +60,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    // Validate phone number
+    // Validate phone number 
     if (!validatePhoneNumber(phoneNumber)) {
       Alert.alert("Error", "Phone number must contain exactly 10 digits.");
       return;
@@ -68,11 +68,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       // Create user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Store additional user details in Firestore
@@ -83,12 +79,8 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         createdAt: new Date().toISOString(),
       });
 
-      // Update the user in context
-      setUser({
-        uid: user.uid,
-        email: user.email,
-        displayName: fullName,
-      });
+      setUser(user);
+      navigation.replace("HomeDashboard");
     } catch (error: any) {
       let errorMessage = "Sign-up failed. Please try again.";
       if (error.code === "auth/email-already-in-use") {
@@ -157,7 +149,10 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {/* Sign Up Button */}
-      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={handleSignUp}
+      >
         <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
 

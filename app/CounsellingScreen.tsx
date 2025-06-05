@@ -18,12 +18,11 @@ const CounsellingScreen = ({ navigation }) => {
         <HeroBox
           title="Counselling"
           showBackButton={true}
-          customBackRoute="ResourcesMain"
+          customBackRoute="Resources"
         />
 
         {/* Image Section */}
         <View style={styles.imageWrapper}>
-          
           <Image
             source={require("../assets/counselling-placeholder.jpg")}
             style={styles.image}
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     backgroundColor: "#FCE9C8",
-    borderRadius:30,
+    borderRadius: 30,
     padding: 20,
     marginTop: 30,
     width: "85%",

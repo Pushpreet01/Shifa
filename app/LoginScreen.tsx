@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -9,61 +10,87 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../types/navigation";
+import { RootStackParamList } from "../navigation/AppNavigator";
 import { auth } from "../config/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "../context/AuthContext";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
+type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigation.replace("HomeDashboard"); // <- You might want to change this to "HomeDashboard"
+    }
+  }, [user, navigation]);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in both email and password.");
+      return;
+    }
+
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      if (userCredential.user) {
-        setUser({
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          displayName: userCredential.user.displayName,
-        });
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setUser(userCredential.user);
+    } catch (error: any) {
+      let errorMessage = "Login failed. Please try again.";
+      if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === "auth/user-not-found") {
+        errorMessage = "No user found with this email.";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password.";
       }
-    } catch (error) {
-      Alert.alert("Error", "Invalid email or password");
+      Alert.alert("Error", errorMessage);
     }
   };
 
   return (
     <View style={styles.container}>
       <Image source={require("../assets/logo.png")} style={styles.logo} />
-      <Text style={styles.title}>Welcome Back!</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#3A7D44"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#3A7D44"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <TouchableOpacity>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-        <Text style={styles.signupText}>Don't have an account? Sign up</Text>
+
+      <Text style={styles.Text}>Don't have an account?</Text>
+
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={() => navigation.navigate("SignUp")}
+      >
+        <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -82,9 +109,8 @@ const styles = StyleSheet.create({
     height: 200,
     marginBottom: 80,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+  inputContainer: {
+    width: "75%",
     marginBottom: 20,
   },
   input: {
@@ -93,26 +119,39 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 14,
     color: "#3A7D44",
-    width: "75%",
-    marginBottom: 20,
   },
-  button: {
+  forgotPassword: {
+    color: "#3A7D44",
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "right",
+    marginTop: 5,
+  },
+  loginButton: {
     backgroundColor: "#9DC08B",
     paddingVertical: 12,
     paddingHorizontal: 100,
     borderRadius: 25,
     marginTop: 30,
   },
-  buttonText: {
+  loginButtonText: {
     color: "#F8F5E9",
     fontSize: 16,
     fontWeight: "bold",
   },
-  signupText: {
+  signUpButton: {
+    marginTop: 0,
+  },
+  signUpButtonText: {
     color: "#3A7D44",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  Text: {
     marginTop: 20,
+    color: "#3A7D44",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
 

@@ -11,7 +11,7 @@ import { getUserJournals } from "../services/firebaseJournalService";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { RootStackParamList } from "../types/navigation";
+import type { RootStackParamList } from "../navigation/AppNavigator";
 
 const MyJournalsScreen = () => {
   const [journals, setJournals] = useState<any[]>([]);

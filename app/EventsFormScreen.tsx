@@ -11,11 +11,12 @@ import {
   Platform,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../types/navigation";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../services/firebaseEventService";
 import { auth, db } from "../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
@@ -147,14 +148,24 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButtonContainer}
-        >
-          <Text style={styles.backButton}>←</Text>
+      <View style={styles.heroBox}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Add New Event</Text>
-        </TouchableOpacity>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+              <Text style={styles.sosText}>SOS</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       <ScrollView style={styles.formContainer}>
@@ -256,46 +267,70 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F0",
-  },
-  header: {
-    height: 80,
-    paddingHorizontal: 20,
-    justifyContent: "flex-end",
-    paddingBottom: 15,
     backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+  },
+  heroBox: {
+    backgroundColor: "#FDF6EC",
+    paddingTop: 40,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
     elevation: 3,
   },
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingRight: 0,
+  },
+
   backButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  backButton: {
-    fontSize: 24,
-    color: "#3A7D44",
-    marginRight: 10,
-  },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
+    marginLeft: 8,
+  },
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
+  sosWrapper: {
+    backgroundColor: "#C44536",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   formContainer: {
-    padding: 20,
+    padding: 18,
+    marginBottom: 25,
+    
   },
   label: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#3A7D44",
+    color: "#2E2E2E",
     marginBottom: 5,
     marginTop: 15,
   },
@@ -306,7 +341,7 @@ const styles = StyleSheet.create({
     borderColor: "#E0E0E0",
     padding: 12,
     fontSize: 16,
-    color: "#333",
+    color: "#2E2E2E",
   },
   helperText: {
     fontSize: 12,
@@ -328,7 +363,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
-    color: "#333",
+    color: "#2E2E2E",
   },
   timeContainer: {
     flexDirection: "row",
@@ -344,18 +379,19 @@ const styles = StyleSheet.create({
     borderColor: "#E0E0E0",
     padding: 12,
     fontSize: 16,
-    color: "#333",
+    color: "#2E2E2E",
   },
   submitButton: {
-    backgroundColor: "#3A7D44",
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: "#1B6B63",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     alignItems: "center",
     marginTop: 30,
     marginBottom: 30,
   },
   disabledButton: {
-    backgroundColor: "#9DC08B",
+    backgroundColor: "#F4A941",
     opacity: 0.7,
   },
   submitButtonText: {

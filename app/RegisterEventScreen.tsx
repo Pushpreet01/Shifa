@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../types/navigation";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import { db, auth } from "../config/firebaseConfig";
 import {
   collection,
@@ -27,6 +27,7 @@ import {
 import { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import { useAuth } from "../context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "RegisterEvent">;
 
@@ -225,7 +226,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3A7D44" />
+        <ActivityIndicator size="large" color="#2E2E2E" />
         <Text style={styles.loadingText}>Loading event details...</Text>
       </SafeAreaView>
     );
@@ -247,16 +248,26 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButtonContainer}
-        >
-          <Text style={styles.backButtonIcon}>←</Text>
+      <View style={styles.heroBox}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {event.registered ? "Your Registration" : "Register for Event"}
+            {event && event.registered ? "Your Registration" : "Register for Event"}
           </Text>
-        </TouchableOpacity>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+              <Text style={styles.sosText}>SOS</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollContainer}>
@@ -362,38 +373,59 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F0",
+    backgroundColor: "#FFFFFF",
+  },
+  heroBox: {
+    backgroundColor: "#FDF6EC",
+    paddingTop: 40,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 3,
   },
   header: {
-    height: 80,
-    paddingHorizontal: 20,
-    justifyContent: "flex-end",
-    paddingBottom: 15,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingRight: 0,
   },
   backButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  backButtonIcon: {
-    fontSize: 24,
-    color: "#3A7D44",
-    marginRight: 10,
-  },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
+    marginLeft: 8,
+  },
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
+  sosWrapper: {
+    backgroundColor: "#C44536",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   scrollContainer: {
     flex: 1,
@@ -405,21 +437,18 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#2E2E2E",
     marginBottom: 15,
   },
   eventDetailsBox: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    padding: 15,
+    borderRadius: 14,
+    padding: 18,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   detailRow: {
     flexDirection: "row",
@@ -427,66 +456,65 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontWeight: "600",
-    color: "#3A7D44",
+    color: "#1B6B63",
     width: 80,
   },
   detailText: {
     flex: 1,
-    color: "#333",
+    color: "#2E2E2E",
   },
   descriptionContainer: {
     marginTop: 5,
   },
   descriptionText: {
-    color: "#333",
+    color: "#2E2E2E",
     marginTop: 5,
     lineHeight: 20,
   },
   formContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 14,
+    padding: 18,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 20,
   },
   formTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#3A7D44",
-    marginBottom: 15,
+    color: "#1B6B63",
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#3A7D44",
+    color: "#2E2E2E",
     marginBottom: 5,
     marginTop: 10,
   },
   input: {
-    backgroundColor: "#F8F8F8",
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#E0E0E0",
     padding: 12,
     fontSize: 16,
-    color: "#333",
+    color: "#2E2E2E",
     marginBottom: 10,
   },
   registerButton: {
-    backgroundColor: "#3A7D44",
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: "#1B6B63",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     alignItems: "center",
     marginTop: 20,
   },
   disabledButton: {
-    backgroundColor: "#9DC08B",
+    backgroundColor: "#F4A941",
     opacity: 0.7,
   },
   buttonText: {
@@ -496,57 +524,58 @@ const styles = StyleSheet.create({
   },
   registeredContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 14,
+    padding: 18,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 4,
+    borderLeftWidth: 5,
+    borderLeftColor: "#F4A941",
   },
   registeredText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#3A7D44",
+    color: "#1B6B63",
     marginBottom: 20,
   },
   cancelButton: {
-    backgroundColor: "#E74C3C",
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: "#F4A941",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     alignItems: "center",
     width: "100%",
+    marginTop: 10,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F0",
+    backgroundColor: "#FFFFFF",
   },
   loadingText: {
     marginTop: 10,
-    color: "#3A7D44",
+    color: "#2E2E2E",
     fontSize: 16,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F0",
+    backgroundColor: "#FFFFFF",
     padding: 20,
   },
   errorText: {
     fontSize: 18,
-    color: "#E74C3C",
+    color: "#F4A941",
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: "#3A7D44",
-    borderRadius: 8,
+    backgroundColor: "#1B6B63",
+    borderRadius: 20,
     padding: 12,
     paddingHorizontal: 20,
   },

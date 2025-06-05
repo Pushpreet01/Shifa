@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../types/navigation";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import CalendarService, { CalendarEvent } from "../services/calendarService";
 import firebaseEventService from "../services/firebaseEventService";
 import Calendar from "../components/Calendar";
@@ -176,10 +176,17 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             style={styles.backButtonContainer}
           >
-            <Ionicons name="chevron-back-outline" size={24} color="#2E2E2E" />
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-          <View style={{ width: 24 }} />
+          <View style={styles.headerIcons}>
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+              <Text style={styles.sosText}>SOS</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <View style={styles.dateSelectionContainer}>
@@ -249,7 +256,7 @@ const styles = StyleSheet.create({
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
-    paddingTop: 28,
+    paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -261,26 +268,43 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  header: {
+  header: { 
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingRight: 0,
   },
   backButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  backButton: {
-    fontSize: 24,
-    color: "#F4A941",
-    marginRight: 10,
-  },
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#1B6B63",
+    marginLeft: 8,
+  },
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
+  sosWrapper: {
+    backgroundColor: "#C44536",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   addEventButton: {
     width: 36,
@@ -296,7 +320,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dateSelectionContainer: {
-    // backgroundColor: "#FFFFFF",
     padding: 20,
   },
   selectedDateContainer: {
@@ -344,12 +367,12 @@ const styles = StyleSheet.create({
   localEvent: {
     // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
-    borderLeftColor: "#F4A941",
+    borderLeftColor: '#F4A941',
   },
   firebaseEvent: {
     // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
-    borderLeftColor: "#F4A941",
+    borderLeftColor: '#F4A941',
   },
 });
 

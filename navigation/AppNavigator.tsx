@@ -117,10 +117,14 @@ const SettingsStackScreen = () => (
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <SettingsStack.Screen
       name="Settings"
       component={() => <>Settings coming soon</>}
     />
+=======
+    <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+>>>>>>> Stashed changes
 =======
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
 >>>>>>> Stashed changes
@@ -149,6 +153,9 @@ const ResourcesStackScreen = () => (
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

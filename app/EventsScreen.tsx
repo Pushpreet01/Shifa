@@ -176,10 +176,9 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             style={styles.backButtonContainer}
           >
-            <Ionicons name="chevron-back-outline" size={24} color="#2E2E2E" />
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-          <View style={{ width: 24 }} />
         </View>
       </View>
       <View style={styles.dateSelectionContainer}>
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
-    paddingTop: 28,
+    paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -264,23 +263,21 @@ const styles = StyleSheet.create({
   header: { 
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingRight: 0,
   },
   backButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
-  backButton: {
-    fontSize: 24,
-    color: "#F4A941",
-    marginRight: 10,
-  },
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#1B6B63",
-    marginLeft: 10,
+    marginLeft: 8,
   },
   addEventButton: {
     width: 36,

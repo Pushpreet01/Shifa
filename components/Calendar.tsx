@@ -24,7 +24,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const [pressedIndex, setPressedIndex] = useState<number | null>(null);
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const generateCalendarDays = (): CalendarDay[] => {
+  const generateCalendarDays = (): CalendarDay[][] => {
     const days: CalendarDay[] = [];
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -53,8 +53,16 @@ const Calendar: React.FC<CalendarProps> = ({
                     date.getFullYear() === selectedDate?.getFullYear()
       });
     }
-    
-    return days;
+    // Fill the last week with empty days if needed
+    while (days.length % 7 !== 0) {
+      days.push({ date: null, empty: true });
+    }
+    // Split into weeks
+    const weeks: CalendarDay[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+    return weeks;
   };
 
   return (
@@ -83,31 +91,35 @@ const Calendar: React.FC<CalendarProps> = ({
       
       {/* Calendar Grid */}
       <View style={styles.calendarGrid}>
-        {generateCalendarDays().map((day, index) => (
-          <View key={index} style={styles.dayCell}>
-            <TouchableOpacity
-              style={[
-                styles.calendarDay,
-                day.isSelected && styles.selectedDay,
-                pressedIndex === index && styles.pressedDay,
-              ]}
-              onPress={() => day.date && onDateSelect(day.date)}
-              onPressIn={() => setPressedIndex(index)}
-              onPressOut={() => setPressedIndex(null)}
-              disabled={!day.date}
-            >
-              {day.date ? (
-                <>
-                  <Text style={[
-                    styles.calendarDayText,
-                    day.isSelected && styles.selectedDayText
-                  ]}>
-                    {day.date.getDate()}
-                  </Text>
-                  {day.hasEvents && <View style={styles.eventDot} />}
-                </>
-              ) : null}
-            </TouchableOpacity>
+        {generateCalendarDays().map((week, weekIdx) => (
+          <View key={weekIdx} style={{ flexDirection: 'row' }}>
+            {week.map((day, dayIdx) => (
+              <View key={dayIdx} style={styles.dayCell}>
+                <TouchableOpacity
+                  style={[
+                    styles.calendarDay,
+                    day.isSelected && styles.selectedDay,
+                    pressedIndex === weekIdx * 7 + dayIdx && styles.pressedDay,
+                  ]}
+                  onPress={() => day.date && onDateSelect(day.date)}
+                  onPressIn={() => setPressedIndex(weekIdx * 7 + dayIdx)}
+                  onPressOut={() => setPressedIndex(null)}
+                  disabled={!day.date}
+                >
+                  {day.date ? (
+                    <>
+                      <Text style={[
+                        styles.calendarDayText,
+                        day.isSelected && styles.selectedDayText
+                      ]}>
+                        {day.date.getDate()}
+                      </Text>
+                      {day.hasEvents && <View style={styles.eventDot} />}
+                    </>
+                  ) : null}
+                </TouchableOpacity>
+              </View>
+            ))}
           </View>
         ))}
       </View>
@@ -153,7 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dayOfWeekCell: {
-    width: 36,  // Must match dayCell width
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -164,16 +176,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     justifyContent: 'flex-start',
   },
   dayCell: {
-    width: 36,  // Fixed width
-    height: 36, // Fixed height
-    marginBottom: 4,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 36,
+    marginBottom: 4,
   },
   calendarDay: {
     width: 32,

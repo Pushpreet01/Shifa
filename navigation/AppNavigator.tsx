@@ -14,6 +14,8 @@ import HomeDashboardScreen from "../app/HomeDashboardScreen";
 import JournalScreen from "../app/JournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
 import AnnouncementsScreen from "../app/AnnouncementsScreen";
+import VolunteerScreen from "../app/VolunteerScreen";
+import OpportunitiesScreen from "../app/OpportunitiesScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
@@ -39,6 +41,8 @@ export type HomeStackParamList = {
   EventsForm: undefined;
   RegisterEvent: { eventId: string };
   Announcements: undefined;
+  VolunteerScreen: undefined;
+  Opportunities: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -76,6 +80,8 @@ const HomeStackScreen = () => (
     {/* New journal entry screen */}
     <HomeStack.Screen name="NewJournalEntryScreen" component={NewJournalEntryScreen} />
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <HomeStack.Screen name="VolunteerScreen" component={VolunteerScreen} />
+    <HomeStack.Screen name="Opportunities" component={OpportunitiesScreen} />
   </HomeStack.Navigator>
 );
 
@@ -104,7 +110,7 @@ const TabNavigator = () => (
   <Tab.Navigator
     tabBar={(props) => <CustomTabBar {...props} />}
     screenOptions={{ headerShown: false }}
-    initialRouteName="Home"
+    initialRouteName={TabRoutes.Home}
   >
     <Tab.Screen name={TabRoutes.Resources} component={ResourcesStackScreen} />
     <Tab.Screen name={TabRoutes.Home} component={HomeStackScreen} />

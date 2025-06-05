@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
+import { MaterialIcons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Emergency">;
 
@@ -37,7 +38,7 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.iconContainer}>
-          <Ionicons name="book" size={60} color="#1B6B63" />
+          <Ionicons name="list" size={60} color="#1B6B63" />
         </View>
         <Text style={styles.callListText}>Call List</Text>
 
@@ -49,17 +50,26 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
 
         <TouchableOpacity style={styles.emergencyButton}>
           <Text style={styles.emergencyButtonText}>Community Hotline</Text>
-          <Ionicons name="call-outline" size={24} color="#1B6B63" />
+          <Ionicons name="call" size={24} color="#F4A941" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.emergencyButton}>
           <Text style={styles.emergencyButtonText}>Emergency Contact 1</Text>
-          <Ionicons name="call-outline" size={24} color="#1B6B63" />
+          <Ionicons name="call" size={24} color="#F4A941" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.emergencyButton}>
           <Text style={styles.emergencyButtonText}>Emergency Contact 2</Text>
-          <Ionicons name="call-outline" size={24} color="#1B6B63" />
+          <Ionicons name="call" size={24} color="#F4A941" />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.addContactButton}>
+          <Text style={styles.addContactButtonText}>Add Emergency Contact</Text>
+          <MaterialIcons
+            name="add-call"
+            size={30}
+            color="#ffffff"
+          />
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -183,8 +193,30 @@ const styles = StyleSheet.create({
   emergencyButtonText: {
     fontSize: 18,
     color: "#2E2E2E",
-    fontWeight: "500",
+    fontWeight: "700",
+  },
+  addContactButton: {
+    marginTop: 20,
+    alignSelf: "center", // Center the button horizontally
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1B6B63", // Teal background
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+    borderWidth: 0, // Remove border
+  },
+  addContactButtonText: {
+    fontSize: 16,
+    color: "#fff", // White text
+    fontWeight: "700",
+    marginRight: 10,
   },
 });
 
-export default EmergencyScreen; 
+export default EmergencyScreen;

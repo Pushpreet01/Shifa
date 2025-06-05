@@ -111,7 +111,13 @@ const HomeDashboardScreen = () => {
         <Ionicons name="people-outline" size={24} color="#3A7D44" />
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />
+=======
+        <TouchableOpacity onPress={() => navigation.navigate("Resources")}>
+          <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />
+        </TouchableOpacity>
+>>>>>>> Stashed changes
 =======
         <TouchableOpacity onPress={() => navigation.navigate("Resources")}>
           <FontAwesome5 name="book-reader" size={28} color="#3A7D44" />

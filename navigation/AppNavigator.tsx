@@ -11,7 +11,7 @@ import EventsScreen from "../app/EventsScreen";
 import EventsFormScreen from "../app/EventsFormScreen";
 import RegisterEventScreen from "../app/RegisterEventScreen";
 import HomeDashboardScreen from "../app/HomeDashboardScreen";
-import JournalScreen from "../app/JournalScreen";
+import MyJournalScreen from "../app/MyJournalScreen";
 import NewJournalEntryScreen from "../app/NewJournalEntryScreen";
 import AnnouncementsScreen from "../app/AnnouncementsScreen";
 import VolunteerScreen from "../app/VolunteerScreen";
@@ -23,6 +23,10 @@ import FindTherapistScreen from "../app/FindTherapistScreen";
 import CounsellingScreen from "../app/CounsellingScreen";
 import AwarenessScreen from "../app/AwarenessScreen";
 import SettingsScreen from "../app/SettingsScreen";
+import OpportunityDetailsScreen from "../app/OpportunityDetailsScreen";
+import OpportunityApplicationFormScreen from "../app/OpportunityApplicationFormScreen";
+import VolunteerLearningsScreen from "../app/VolunteerLearningsScreen";
+import JournalScreen from "../app/JournalScreen";
 
 // Import your custom tab bar
 import CustomTabBar from "./CustomTabBar"; // 👈 Custom curved bottom tab bar component
@@ -50,7 +54,19 @@ export type HomeStackParamList = {
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
+  OpportunityDetails: {
+    title: string;
+    organization: string;
+    timing: string;
+    tasks?: string;
+  };
+  OpportunityApplicationForm: {
+    title: string;
+    description: string;
+  };
+  VolunteerLearnings: undefined;
   Emergency: undefined;
+  MyJournalsScreen: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -88,9 +104,9 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="Events" component={EventsScreen} />
     <HomeStack.Screen name="EventsForm" component={EventsFormScreen} />
     <HomeStack.Screen name="RegisterEvent" component={RegisterEventScreen} />
-    {/* Journal listing screen */}
+    {/* Journal screens */}
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
-    {/* New journal entry screen */}
+    <HomeStack.Screen name="MyJournalsScreen" component={MyJournalScreen} />
     <HomeStack.Screen
       name="NewJournalEntryScreen"
       component={NewJournalEntryScreen}
@@ -98,6 +114,9 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <HomeStack.Screen name="VolunteerScreen" component={VolunteerScreen} />
     <HomeStack.Screen name="Opportunities" component={OpportunitiesScreen} />
+    <HomeStack.Screen name="OpportunityDetails" component={OpportunityDetailsScreen} />
+    <HomeStack.Screen name="OpportunityApplicationForm" component={OpportunityApplicationFormScreen} />
+    <HomeStack.Screen name="VolunteerLearnings" component={VolunteerLearningsScreen} />
     <HomeStack.Screen name="Emergency" component={EmergencyScreen} />
   </HomeStack.Navigator>
 );

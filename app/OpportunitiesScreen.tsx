@@ -72,7 +72,15 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.opportunityCardTitle}>Meal Delivery Driver</Text>
           <Text style={styles.opportunityCardSubtitle}>Caring Communities</Text>
           <Text style={styles.opportunityCardDetails}>2-4 hours weekly</Text>
-          <TouchableOpacity style={styles.detailsButton}>
+          <TouchableOpacity 
+            style={styles.detailsButton}
+            onPress={() => navigation.navigate('OpportunityDetails', {
+              title: 'Meal Delivery Driver',
+              organization: 'Caring Communities',
+              timing: '2-4 hours weekly',
+              tasks: 'Deliver prepared meals to community members in need, following provided routes and schedules.'
+            })}
+          >
             <Text style={styles.detailsButtonText}>Details</Text>
           </TouchableOpacity>
         </View>
@@ -80,7 +88,15 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.opportunityCardTitle}>Crisis Hotline Support</Text>
           <Text style={styles.opportunityCardSubtitle}>Mental Health Alliance</Text>
           <Text style={styles.opportunityCardDetails}>4 hours weekly</Text>
-          <TouchableOpacity style={styles.detailsButton}>
+          <TouchableOpacity 
+            style={styles.detailsButton}
+            onPress={() => navigation.navigate('OpportunityDetails', {
+              title: 'Crisis Hotline Support',
+              organization: 'Mental Health Alliance',
+              timing: '4 hours weekly',
+              tasks: 'Provide emotional support and crisis intervention to callers in need. Training will be provided.'
+            })}
+          >
             <Text style={styles.detailsButtonText}>Details</Text>
           </TouchableOpacity>
         </View>

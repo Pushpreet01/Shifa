@@ -144,12 +144,12 @@ const HomeDashboardScreen = () => {
   const dashboardButtons = [
     {
       label: "Manage Volunteering",
-      color: "#008080", // teal
+      color: "#008080",
       route: "VolunteerScreen",
     },
     { label: "Journal", color: "#008080", route: "JournalScreen" },
     { label: "SOS Dial", color: "#008080", route: "SOSScreen" },
-    { label: "Manage Events", color: "#008080", route: "Events" },
+    { label: "Manage Events", color: "##008080", route: "Events" },
   ];
 
   return (
@@ -258,14 +258,13 @@ const HomeDashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFF5E5", // creamy background
+    backgroundColor: "#FFFFFF", 
   },
   container: {
     paddingBottom: 120,
-   
   },
   heroBox: {
-    backgroundColor: "#FFF5E5",
+    backgroundColor: "#FDF6EC",
     paddingTop: 50,
     paddingBottom: 30,
     paddingHorizontal: 20,

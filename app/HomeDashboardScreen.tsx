@@ -144,12 +144,12 @@ const HomeDashboardScreen = () => {
   const dashboardButtons = [
     {
       label: "Manage Volunteering",
-      color: "#9DC08B",
+      color: "#008080",
       route: "VolunteerScreen",
     },
-    { label: "Journal", color: "#527754", route: "JournalScreen" },
-    { label: "SOS Dial", color: "#527754", route: "SOSScreen" },
-    { label: "Manage Events", color: "#9DC08B", route: "Events" },
+    { label: "Journal", color: "#008080", route: "JournalScreen" },
+    { label: "SOS Dial", color: "#008080", route: "SOSScreen" },
+    { label: "Manage Events", color: "##008080", route: "Events" },
   ];
 
   return (
@@ -258,14 +258,13 @@ const HomeDashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FFFFFF", 
   },
   container: {
     paddingBottom: 120,
-   
   },
   heroBox: {
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FDF6EC",
     paddingTop: 50,
     paddingBottom: 30,
     paddingHorizontal: 20,
@@ -287,7 +286,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#008080", // teal text
     marginLeft: 10,
   },
   headerIcons: {
@@ -318,7 +317,7 @@ const styles = StyleSheet.create({
   avatarLabel: {
     marginTop: 6,
     fontWeight: "600",
-    color: "#3A7D44",
+    color: "#007872", // teal text
   },
   separatorWrapper: {
     flexDirection: "row",
@@ -332,12 +331,12 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F6A800", // amber
   },
   lineFixed: {
     flex: 1,
     height: 2,
-    backgroundColor: "#3A7D44",
+    backgroundColor: "#F6A800",
     marginHorizontal: 8,
   },
   descriptionSection: {
@@ -345,7 +344,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   descriptionText: {
-    color: "#2B5A32",
+    color: "#333",
     fontSize: 14,
     textAlign: "center",
   },
@@ -360,9 +359,10 @@ const styles = StyleSheet.create({
   gridButton: {
     width: "48%",
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 12,
     alignItems: "center",
+    backgroundColor: "#007872", // teal buttons
   },
   gridButtonText: {
     color: "#FFFFFF",
@@ -378,28 +378,29 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "black",
+    color: "#333",
   },
   eventCard: {
     flexDirection: "row",
-    backgroundColor: "#E7F1E6",
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
     marginBottom: 12,
     marginHorizontal: 20,
     overflow: "hidden",
+    borderLeftWidth: 6,
+    borderLeftColor: "#F6A800", // amber stripe
+    padding: 10,
   },
   eventStripe: {
-    width: 6,
-    backgroundColor: "#C44536",
+    width: 0, // hidden
   },
   eventText: {
-    padding: 10,
     flex: 1,
   },
   eventTitle: {
     fontWeight: "bold",
     fontSize: 15,
-    color: "#3A7D44",
+    color: "#1F6F55", // dark green
   },
   eventSubtitle: {
     fontSize: 13,
@@ -424,7 +425,7 @@ const styles = StyleSheet.create({
   supportTitle: {
     fontWeight: "bold",
     fontSize: 16,
-    color: "#B00020",
+    color: "#EA4335", // red
     marginBottom: 5,
   },
   supportText: {
@@ -437,7 +438,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 80,
-    backgroundColor: "#D6EFC7",
+    backgroundColor: "#FDEBD0",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     justifyContent: "space-around",
@@ -450,5 +451,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
 
 export default HomeDashboardScreen;

@@ -30,7 +30,7 @@ const FindTherapistScreen = ({ navigation }) => {
         <HeroBox
           title="Find a Therapist"
           showBackButton={true}
-          onBackPress={() => navigation.navigate("Resources")}
+          onBackPress={() => navigation.navigate("ResourcesMain")}
         />
 
         <View style={styles.cardSection}>
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   card: {
-    backgroundColor: "#FCE9C8",
+    backgroundColor: "#feb204",
     borderRadius: 20,
     padding: 15,
     marginBottom: 20,
@@ -72,12 +72,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: "bold",
-    color: "#1f4e2a",
+    color: "#FFFFFF",
     marginBottom: 5,
-    fontSize: 16,
+    fontSize: 20,
   },
   cardDescription: {
-    color: "#333",
+    color: "#FFFFFF",
     fontSize: 13,
   },
 });

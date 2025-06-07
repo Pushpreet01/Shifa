@@ -1,68 +1,102 @@
-// components/HeroBox.tsx
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 interface HeroBoxProps {
   title: string;
+  showBackButton?: boolean;
+  customBackRoute?: string;
 }
 
-const HeroBox: React.FC<HeroBoxProps> = ({ title }) => (
-  <View style={styles.heroBox}>
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>{title}</Text>
-      <View style={styles.headerIcons}>
-        <Ionicons name="notifications-outline" size={24} color="#C44536" />
-        <View style={styles.sosWrapper}>
-          <Text style={styles.sosText}>SOS</Text>
+const HeroBox: React.FC<HeroBoxProps> = ({ title, showBackButton = false, customBackRoute }) => {
+  const navigation = useNavigation<any>();
+
+  const handleBack = () => {
+    if (customBackRoute) {
+      navigation.navigate(customBackRoute);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  return (
+    <View style={styles.heroBox}>
+      <View style={styles.header}>
+        {showBackButton ? (
+          <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 24 }} />
+        )}
+
+        <Text style={styles.headerTitle}>{title}</Text>
+
+        <View style={styles.headerIcons}>
+          <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
+            <Ionicons name="notifications-outline" size={24} color="#C44536" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sosWrapper}
+            onPress={() => navigation.navigate("Emergency")}
+          >
+            <Text style={styles.sosText}>SOS</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   heroBox: {
-    backgroundColor: "#F8F5E9",
-    paddingTop: 50,
-    paddingBottom: 60,
+    backgroundColor: "#FDF6EC",
+    paddingTop: 40,
+    paddingBottom: 18,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 6,
-    width: "100%",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 3,
+   
   },
   header: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    
+  },
+  backButtonContainer: {
+    marginRight: 8,
   },
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#3A7D44",
-    marginLeft: 10,
+    color: "#1B6B63",
   },
   headerIcons: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: "auto",
   },
   sosWrapper: {
-    marginLeft: 10,
-    borderWidth: 1,
-    borderColor: "#C44536",
-    borderRadius: 50,
+    backgroundColor: "#C44536",
+    borderRadius: 15,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
   sosText: {
-    color: "#C44536",
+    color: "#FFFFFF",
     fontWeight: "bold",
+    fontSize: 12,
   },
 });
 

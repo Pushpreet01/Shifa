@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingBottom: 120,
+   
   },
   heroBox: {
     backgroundColor: "#F8F5E9",

@@ -7,12 +7,9 @@ import {
   Image,
   SafeAreaView,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import HeroBox from "../components/HeroBox";
 import { Ionicons } from "@expo/vector-icons";
-
-const { width } = Dimensions.get("window");
 
 const ResourcesScreen = ({ navigation }) => {
   const resources = [
@@ -21,31 +18,26 @@ const ResourcesScreen = ({ navigation }) => {
     { label: "Counselling", route: "Counselling" },
     { label: "Awareness", route: "Awareness" },
     { label: "Support System", route: "SupportSystem" },
+
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Resources" />
-        <Text style={styles.startDayText}>Start your day</Text>
+        <HeroBox title="Resources" showBackButton={true} customBackRoute="Home" />
 
-        <View style={styles.backgroundWrapper}>
-          <Image
-            source={require("../assets/flower.png")}
-            style={styles.backgroundImage}
-            resizeMode="contain"
-          />
-          <View style={styles.contentOverlay}>
-            {resources.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.resourceButton}
-                onPress={() => item.route && navigation.navigate(item.route)}
-              >
-                <Text style={styles.buttonText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <Text style={styles.startDayText}>Start your day !</Text>
+
+        <View style={styles.contentOverlay}>
+          {resources.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.resourceButton}
+              onPress={() => item.route && navigation.navigate(item.route)}
+            >
+              <Text style={styles.buttonText}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
 
@@ -64,33 +56,19 @@ const ResourcesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FFFFFF", // Changed to white
   },
   container: {
     paddingBottom: 120,
+    backgroundColor: "#FFFFFF",
   },
   startDayText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#2B5A32",
+    color: "#1B6B63",
     marginTop: 40,
     marginLeft: 34,
     marginBottom: 10,
-  },
-  backgroundWrapper: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    paddingVertical: 127,
-  },
-  backgroundImage: {
-    position: "absolute",
-    width: 480,
-    height: 480,
-    opacity: 0.7,
-    bottom: 37,
-    alignSelf: "center",
   },
   contentOverlay: {
     width: "100%",
@@ -100,28 +78,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resourceButton: {
-    backgroundColor: "#CEEBC2",
-    opacity: 0.8,
-    marginRight: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    backgroundColor: "#1B6B63", // Teal
+    marginVertical: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 10,
-    marginTop: 10,
+    borderBottomLeftRadius: 30,
+    borderTopRightRadius: 30,
+    borderBottomRightRadius: 10,
     width: "85%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 3,
+    elevation: 3,
+    marginRight:22,
   },
   buttonText: {
-    color: "#2B5A32",
+    color: "#FFFFFF",
     fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 15,
   },
   bottomNav: {
     position: "absolute",

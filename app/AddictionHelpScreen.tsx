@@ -30,8 +30,7 @@ const AddictionHelpScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Addiction Help" />
-
+        <HeroBox title="Addiction Help" showBackButton customBackRoute="ResourcesMain" />
         <View style={styles.cardSection}>
           {topics.map((topic, index) => (
             <View key={index} style={styles.card}>
@@ -48,7 +47,7 @@ const AddictionHelpScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FFFFFF", // changed to white
   },
   container: {
     flexGrow: 1,
@@ -59,24 +58,25 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   card: {
-    backgroundColor: "#CEEBC2", // lighter green
+    backgroundColor: "#006666", // light teal
     borderRadius: 20,
-    padding: 15,
+    padding: 18,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowRadius: 3,
     elevation: 4,
   },
   cardTitle: {
     fontWeight: "bold",
-    color: "#1f4e2a",
-    marginBottom: 5,
+    color: "#FFFFFF",
     fontSize: 16,
+    marginBottom: 6,
   },
   cardDescription: {
-    color: "#333",
+    color: "#FFFFFF",
+    fontWeight: "bold",
     fontSize: 13,
   },
 });

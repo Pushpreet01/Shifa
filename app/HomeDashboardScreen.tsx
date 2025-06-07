@@ -149,7 +149,7 @@ const HomeDashboardScreen = () => {
     },
     { label: "Journal", color: "#008080", route: "JournalScreen" },
     { label: "SOS Dial", color: "#008080", route: "SOSScreen" },
-    { label: "Manage Events", color: "##008080", route: "Events" },
+    { label: "Manage Events", color: "#008080", route: "Events" },
   ];
 
   return (

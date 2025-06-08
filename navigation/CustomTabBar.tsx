@@ -10,7 +10,6 @@ const curveHeight = 50;
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   const tabWidth = width / state.routes.length;
 
-  // Determines which icon to use based on route and focus state
   const getIconName = (route: string, isFocused: boolean) => {
     if (route === 'Home') return isFocused ? 'home' : 'home-outline';
     if (route === 'Settings') return isFocused ? 'settings' : 'settings-outline';
@@ -18,9 +17,23 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     return 'ellipse-outline';
   };
 
+  const getDynamicLabel = () => {
+    const activeRoute = state.routes[state.index].name;
+    switch (activeRoute) {
+      case 'Home':
+        return 'Home';
+      case 'Settings':
+        return 'Settings';
+      case 'Resources':
+        return 'Resources';
+      default:
+        return 'Shifa';
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Curved SVG background path */}
+      {/* Background Curve */}
       <View style={styles.svgContainer}>
         <Svg width={width} height={height + curveHeight} viewBox={`0 0 ${width} ${height + curveHeight}`}>
           <Path
@@ -36,7 +49,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         </Svg>
       </View>
 
-      {/* Decorative arc line below icons */}
+      {/* Decorative Arc */}
       <View style={styles.svgContainer}>
         <Svg width={width} height={curveHeight} style={{ position: 'absolute', bottom: height - 50 }}>
           <Path
@@ -49,12 +62,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         </Svg>
       </View>
 
-      {/* App name label centered under curve */}
+      {/* Dynamic Label */}
       <View style={styles.shifaLabelContainer}>
-        <Text style={styles.shifaLabel}>Shifa</Text>
+        <Text style={styles.shifaLabel}>{getDynamicLabel()}</Text>
       </View>
 
-      {/* Tab icons */}
+      {/* Icons */}
       <View style={styles.iconContainer}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
@@ -78,13 +91,13 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               onPress={onPress}
               style={[
                 styles.tabButton,
-                index === 1 && styles.middleTab, // Middle button is elevated
+                index === 1 && styles.middleTab,
               ]}
             >
               <Ionicons
                 name={getIconName(route.name, isFocused)}
                 size={28}
-                color={isFocused ? '#007AFF' : 'gray'}
+                color={isFocused ? 'black' : 'gray'}
               />
             </TouchableOpacity>
           );
@@ -94,7 +107,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   );
 };
 
-// Styles for layout and visuals
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -124,7 +136,7 @@ const styles = StyleSheet.create({
   },
   shifaLabelContainer: {
     position: 'absolute',
-    bottom: 5,
+    bottom: 20,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -137,3 +149,5 @@ const styles = StyleSheet.create({
 });
 
 export default CustomTabBar;
+// This code defines a custom tab bar component for a React Native application using React Navigation.
+// It includes a curved background, dynamic label, and icons for navigation.

@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   eventCard: {
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
     borderRadius: 10,
     marginBottom: 12,
     marginHorizontal: 20,

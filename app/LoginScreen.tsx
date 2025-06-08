@@ -57,7 +57,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Email"
-          placeholderTextColor="#3A7D44"
+          placeholderTextColor="#008080"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -69,7 +69,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#3A7D44"
+          placeholderTextColor="#008080"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -115,27 +115,27 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 2,
-    borderBottomColor: "#9DC08B",
+    borderBottomColor: "#F6A800", // amber
     padding: 10,
     fontSize: 14,
-    color: "#3A7D44",
+    color: "#008080", // teal
   },
   forgotPassword: {
-    color: "#3A7D44",
+    color: "#008080", // teal
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "right",
     marginTop: 5,
   },
   loginButton: {
-    backgroundColor: "#9DC08B",
+    backgroundColor: "#008080", // teal
     paddingVertical: 12,
     paddingHorizontal: 100,
     borderRadius: 25,
     marginTop: 30,
   },
   loginButtonText: {
-    color: "#F8F5E9",
+    color: "#FFFFFF", // white
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -143,16 +143,17 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   signUpButtonText: {
-    color: "#3A7D44",
+    color: "#008080", // teal
     fontSize: 14,
     fontWeight: "bold",
   },
   Text: {
     marginTop: 20,
-    color: "#3A7D44",
+    color: "#008080", // teal
     fontSize: 14,
     fontWeight: "bold",
   },
 });
+
 
 export default LoginScreen;

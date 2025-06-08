@@ -5,8 +5,8 @@ export type CalendarEvent = {
   id: string;
   title: string;
   date: Date;
-  startTime: string;
-  endTime: string;
+  startTime: any;
+  endTime: any;
   location: string;
   description?: string;
   registered: boolean;

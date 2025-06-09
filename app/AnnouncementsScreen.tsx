@@ -1,7 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from "react-native";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { HomeStackParamList } from "../navigation/AppNavigator";
 
 const announcements = [
   {
@@ -22,19 +24,22 @@ const announcements = [
 ];
 
 const AnnouncementsScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.heroBox}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
-            <Ionicons name="chevron-back-outline" size={24} color="#2E2E2E" />
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
+            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Anouncements</Text>
+          <Text style={styles.headerTitle}>Announcements</Text>
           <View style={styles.headerIcons}>
-            <Ionicons name="notifications-outline" size={24} color="#C44536" style={{ marginRight: 10 }} />
-            <TouchableOpacity style={styles.sosWrapper}>
+            <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -59,7 +64,7 @@ const styles = StyleSheet.create({
   heroBox: {
     backgroundColor: "#FDF6EC",
     paddingTop: 40,
-    paddingBottom: 16,
+    paddingBottom: 18,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
@@ -73,7 +78,6 @@ const styles = StyleSheet.create({
   header: {
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
   },
   backButtonContainer: {
@@ -84,23 +88,26 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "bold",
     color: "#1B6B63",
-    marginLeft: 10,
+    marginLeft: 8,
   },
   headerIcons: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: "auto",
   },
   sosWrapper: {
-    marginLeft: 10,
-    borderWidth: 1,
-    borderColor: "#C44536",
-    borderRadius: 50,
+    backgroundColor: "#C44536",
+    borderRadius: 15,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
   sosText: {
-    color: "#C44536",
+    color: "#FFFFFF",
     fontWeight: "bold",
+    fontSize: 12,
   },
   scrollContent: {
     padding: 20,

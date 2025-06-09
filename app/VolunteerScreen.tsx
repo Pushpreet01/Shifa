@@ -30,7 +30,7 @@ const VolunteerScreen: React.FC<NativeStackScreenProps<HomeStackParamList, any>>
         <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate("VolunteerLearnings")}>
           <Text style={styles.mainButtonText}>My Learnings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mainButton}>
+        <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate("VolunteerRewards")}>
           <Text style={styles.mainButtonText}>Volunteer Rewards</Text>
         </TouchableOpacity>
         <Text style={styles.sectionTitle}>Registered For</Text>

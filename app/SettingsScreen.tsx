@@ -18,7 +18,7 @@ const SettingsScreen = () => {
   const settingsOptions = [
     {
       title: "Account",
-      icon: "person" as const,
+      icon: "person-outline" as const,
       items: ["Profile", "Privacy", "Security"],
     },
     {
@@ -28,7 +28,7 @@ const SettingsScreen = () => {
     },
     {
       title: "Support",
-      icon: "help-circle" as const,
+      icon: "help-circle-outline" as const,
       items: ["Help Center", "Contact Us", "About"],
     },
   ];
@@ -41,13 +41,13 @@ const SettingsScreen = () => {
         {settingsOptions.map((section, index) => (
           <View key={index} style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name={section.icon} size={24} color="#3A7D44" />
+              <Ionicons name={section.icon} size={24} color="#1B6B63" />
               <Text style={styles.sectionTitle}>{section.title}</Text>
             </View>
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity key={itemIndex} style={styles.optionButton}>
                 <Text style={styles.optionText}>{item}</Text>
-                <Ionicons name="chevron-forward" size={20} color="#666" />
+                <Ionicons name="chevron-forward-outline" size={20} color="#1B6B63" />
               </TouchableOpacity>
             ))}
           </View>
@@ -64,7 +64,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F5E9",
+    backgroundColor: "#FFFFFF",
   },
   container: {
     paddingBottom: 120,
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3A7D44",
+    color: "#1B6B63",
     marginLeft: 10,
   },
   optionButton: {
@@ -90,25 +90,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 14,
     marginBottom: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
+    borderLeftWidth: 5,
+    borderLeftColor: "#F4A941",
   },
   optionText: {
     fontSize: 16,
-    color: "#333",
+    color: "#2E2E2E",
   },
   signOutButton: {
     marginTop: 40,
     marginHorizontal: 20,
     backgroundColor: "#C44536",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   signOutText: {
     color: "#FFFFFF",

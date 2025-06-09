@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,147 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Linking,
+  Alert,
+  TextInput,
+  Modal,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
-import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Emergency">;
 
+interface Contact {
+  name: string;
+  phone: string;
+}
+
 const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const loadContacts = useCallback(async () => {
+    try {
+      const storedContacts = await AsyncStorage.getItem("emergency_contacts");
+      if (storedContacts) {
+        setContacts(JSON.parse(storedContacts));
+      }
+    } catch (error) {
+      console.error("Failed to load contacts.", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadContacts();
+  }, [loadContacts]);
+
+  const formatPhoneNumber = (input: string) => {
+    const digits = input.replace(/\D/g, "");
+    let formatted = digits;
+    if (digits.length > 0) {
+      formatted = `(${digits.substring(0, 3)}`;
+    }
+    if (digits.length >= 4) {
+      formatted += `) ${digits.substring(3, 6)}`;
+    }
+    if (digits.length >= 7) {
+      formatted += `-${digits.substring(6, 10)}`;
+    }
+    return formatted;
+  };
+
+  const saveContacts = async (newContacts: Contact[]) => {
+    try {
+      await AsyncStorage.setItem(
+        "emergency_contacts",
+        JSON.stringify(newContacts)
+      );
+      setContacts(newContacts);
+    } catch (error) {
+      console.error("Failed to save contacts.", error);
+    }
+  };
+
+  const handleAddContact = () => {
+    const digits = phone.replace(/\D/g, "");
+    if (name.trim() && digits.length === 10) {
+      const newContacts = [...contacts, { name, phone: digits }];
+      saveContacts(newContacts);
+      setModalVisible(false);
+      setName("");
+      setPhone("");
+    } else {
+      Alert.alert(
+        "Invalid Input",
+        "Please enter a valid name and a 10-digit phone number."
+      );
+    }
+  };
+
+  const handleCall = (phoneNumber: string) => {
+    const url = `tel:${phoneNumber}`;
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(url);
+        } else {
+          Alert.alert("Error", "Unable to make phone calls from this device.");
+        }
+      })
+      .catch((err) => console.error("An error occurred", err));
+  };
+
+  const defaultContacts: Contact[] = [
+    { name: "Community Hotline", phone: "988" },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Add New Contact</Text>
+            <TextInput
+              placeholder="Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Phone Number"
+              value={phone}
+              onChangeText={(text) => setPhone(formatPhoneNumber(text))}
+              keyboardType="phone-pad"
+              style={styles.input}
+              maxLength={14}
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.textStyle}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonSave]}
+                onPress={handleAddContact}
+              >
+                <Text style={styles.textStyle}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.heroBox}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -27,10 +157,19 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Emergency</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -41,35 +180,40 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
           <Ionicons name="list" size={60} color="#1B6B63" />
         </View>
         <Text style={styles.callListText}>Call List</Text>
-
         <View style={styles.separatorContainer}>
           <View style={styles.separatorDot}></View>
           <View style={styles.separatorLine}></View>
           <View style={styles.separatorDot}></View>
         </View>
 
-        <TouchableOpacity style={styles.emergencyButton}>
-          <Text style={styles.emergencyButtonText}>Community Hotline</Text>
-          <Ionicons name="call" size={24} color="#F4A941" />
-        </TouchableOpacity>
+        {defaultContacts.map((contact, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.emergencyButton}
+            onPress={() => handleCall(contact.phone)}
+          >
+            <Text style={styles.emergencyButtonText}>{contact.name}</Text>
+            <Ionicons name="call" size={24} color="#F4A941" />
+          </TouchableOpacity>
+        ))}
 
-        <TouchableOpacity style={styles.emergencyButton}>
-          <Text style={styles.emergencyButtonText}>Emergency Contact 1</Text>
-          <Ionicons name="call" size={24} color="#F4A941" />
-        </TouchableOpacity>
+        {contacts.map((contact, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.emergencyButton}
+            onPress={() => handleCall(contact.phone)}
+          >
+            <Text style={styles.emergencyButtonText}>{contact.name}</Text>
+            <Ionicons name="call" size={24} color="#F4A941" />
+          </TouchableOpacity>
+        ))}
 
-        <TouchableOpacity style={styles.emergencyButton}>
-          <Text style={styles.emergencyButtonText}>Emergency Contact 2</Text>
-          <Ionicons name="call" size={24} color="#F4A941" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.addContactButton}>
+        <TouchableOpacity
+          style={styles.addContactButton}
+          onPress={() => setModalVisible(true)}
+        >
           <Text style={styles.addContactButtonText}>Add Emergency Contact</Text>
-          <MaterialIcons
-            name="add-call"
-            size={30}
-            color="#ffffff"
-          />
+          <MaterialIcons name="add-call" size={30} color="#ffffff" />
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -79,10 +223,10 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FDF6EC", // Matching the background color from the image
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
-    backgroundColor: "#FDF6EC", // Matching the heroBox background color
+    backgroundColor: "#FDF6EC",
     paddingTop: 40,
     paddingBottom: 18,
     paddingHorizontal: 20,
@@ -136,7 +280,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingBottom: 40,
-    alignItems: "center", // Center content vertically and horizontally
+    alignItems: "center",
   },
   iconContainer: {
     backgroundColor: "#FFFFFF",
@@ -197,10 +341,10 @@ const styles = StyleSheet.create({
   },
   addContactButton: {
     marginTop: 20,
-    alignSelf: "center", // Center the button horizontally
+    alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1B6B63", // Teal background
+    backgroundColor: "#1B6B63",
     borderRadius: 25,
     paddingVertical: 12,
     paddingHorizontal: 22,
@@ -209,13 +353,69 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
-    borderWidth: 0, // Remove border
   },
   addContactButtonText: {
     fontSize: 16,
-    color: "#fff", // White text
+    color: "#fff",
     fontWeight: "700",
     marginRight: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: "90%",
+  },
+  modalTitle: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  input: {
+    width: "100%",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    padding: 10,
+    marginBottom: 20,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    width: "48%",
+  },
+  buttonClose: {
+    backgroundColor: "#A9A9A9",
+  },
+  buttonSave: {
+    backgroundColor: "#1B6B63",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 

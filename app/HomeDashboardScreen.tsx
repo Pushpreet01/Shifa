@@ -118,9 +118,12 @@ const HomeDashboardScreen = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+      fetchRegisteredEvents();
+    }, [fetchRegisteredEvents])
+  );
 
   const fetchUserProfile = async () => {
     try {
@@ -150,13 +153,6 @@ const HomeDashboardScreen = () => {
     }
     return chunks;
   };
-
-  // Refresh events when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      fetchRegisteredEvents();
-    }, [fetchRegisteredEvents])
-  );
 
   // Initial load and periodic refresh
   useEffect(() => {

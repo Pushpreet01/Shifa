@@ -1,72 +1,150 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
+import FirebaseEventService from "../services/firebaseEventService";
+import { format } from "date-fns";
 
-const VolunteerScreen: React.FC<NativeStackScreenProps<HomeStackParamList, any>> = ({ navigation }) => {
+interface Event {
+  id: string;
+  title: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
+  createdBy: string;
+}
+
+const VolunteerScreen: React.FC<
+  NativeStackScreenProps<HomeStackParamList, any>
+> = ({ navigation }) => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        // Fetch events for the next 6 months
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 6);
+
+        const fetchedEvents = await FirebaseEventService.fetchEvents(
+          startDate,
+          endDate
+        );
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.heroBox}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButtonContainer}
+          >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Volunteer</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate("Opportunities")}>
-          <Text style={styles.mainButtonText}>Browse Upcoming Opportunities</Text>
+        <TouchableOpacity
+          style={styles.mainButton}
+          onPress={() => navigation.navigate("Opportunities")}
+        >
+          <Text style={styles.mainButtonText}>
+            Browse Upcoming Opportunities
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate("VolunteerLearnings")}>
+        <TouchableOpacity
+          style={styles.mainButton}
+          onPress={() => navigation.navigate("VolunteerLearnings")}
+        >
           <Text style={styles.mainButtonText}>My Learnings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.mainButton} onPress={() => navigation.navigate("VolunteerRewards")}>
+        <TouchableOpacity
+          style={styles.mainButton}
+          onPress={() => navigation.navigate("VolunteerRewards")}
+        >
           <Text style={styles.mainButtonText}>Volunteer Rewards</Text>
         </TouchableOpacity>
-        <Text style={styles.sectionTitle}>Registered For</Text>
-        {/* Hard coded job posting cards*/}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Meal Delivery Driver</Text>
-          <Text style={styles.cardSubtitle}>Caring Communities</Text>
-          <Text style={styles.cardDetails}>2-4 hours weekly</Text>
-          <TouchableOpacity 
-            style={styles.detailsButton}
-            onPress={() => navigation.navigate('OpportunityDetails', {
-              title: 'Meal Delivery Driver',
-              organization: 'Caring Communities',
-              timing: '2-4 hours weekly',
-              tasks: 'Deliver prepared meals to community members in need, following provided routes and schedules.'
-            })}
-          >
-            <Text style={styles.detailsButtonText}>Details</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Community Garden Day</Text>
-          <Text style={styles.cardSubtitle}>Mar 8, 2025 • 10:00 AM - 2:00 PM</Text>
-          <Text style={styles.cardDetails}>Central Park</Text>
-          <TouchableOpacity 
-            style={styles.detailsButton}
-            onPress={() => navigation.navigate('OpportunityDetails', {
-              title: 'Community Garden Day',
-              organization: 'Central Park',
-              timing: 'Mar 8, 2025 • 10:00 AM - 2:00 PM',
-              tasks: 'Help maintain and beautify our community garden. Activities include planting, weeding, and general garden maintenance.'
-            })}
-          >
-            <Text style={styles.detailsButtonText}>Details</Text>
-          </TouchableOpacity>
-        </View>
+
+        <Text style={styles.sectionTitle}>Available Events</Text>
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#1B6B63"
+            style={styles.loader}
+          />
+        ) : events.length === 0 ? (
+          <Text style={styles.noEventsText}>
+            No events available at the moment
+          </Text>
+        ) : (
+          events.map((event) => (
+            <View key={event.id} style={styles.card}>
+              <Text style={styles.cardTitle}>{event.title}</Text>
+              <Text style={styles.cardSubtitle}>
+                {format(event.date, "MMM d, yyyy")} • {event.startTime} -{" "}
+                {event.endTime}
+              </Text>
+              <Text style={styles.cardDetails}>{event.location}</Text>
+              <TouchableOpacity
+                style={styles.detailsButton}
+                onPress={() =>
+                  navigation.navigate("OpportunityDetails", {
+                    title: event.title,
+                    date: format(event.date, "MMM d, yyyy"),
+                    timing: `${event.startTime} - ${event.endTime}`,
+                    location: event.location,
+                    description: event.description,
+                    eventId: event.id,
+                  })
+                }
+              >
+                <Text style={styles.detailsButtonText}>Details</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -151,11 +229,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     textAlign: "center",
   },
-  progressText: {
-    color: "#2E2E2E",
-    fontWeight: "bold",
-    fontSize: 17,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -205,6 +278,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 15,
   },
+  loader: {
+    marginTop: 20,
+  },
+  noEventsText: {
+    textAlign: "center",
+    color: "#666",
+    marginTop: 20,
+    fontSize: 16,
+  },
 });
 
-export default VolunteerScreen; 
+export default VolunteerScreen;

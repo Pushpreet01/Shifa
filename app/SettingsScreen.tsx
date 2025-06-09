@@ -11,9 +11,28 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import HeroBox from "../components/HeroBox";
 import { useAuth } from "../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { SettingsStackParamList } from "../navigation/AppNavigator";
+
+type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList>;
 
 const SettingsScreen = () => {
   const { signOut } = useAuth();
+  const navigation = useNavigation<SettingsScreenNavigationProp>();
+
+  const handleOptionPress = (option: string) => {
+    switch (option) {
+      case "Profile":
+        navigation.navigate("Profile");
+        break;
+      case "Feedback":
+        navigation.navigate("Feedback");
+        break;
+      default:
+        console.log(`${option} pressed`);
+    }
+  };
 
   const settingsOptions = [
     {
@@ -29,9 +48,17 @@ const SettingsScreen = () => {
     {
       title: "Support",
       icon: "help-circle-outline" as const,
-      items: ["Help Center", "Contact Us", "About"],
+      items: ["Feedback", "Help Center", "About"],
     },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -45,15 +72,23 @@ const SettingsScreen = () => {
               <Text style={styles.sectionTitle}>{section.title}</Text>
             </View>
             {section.items.map((item, itemIndex) => (
-              <TouchableOpacity key={itemIndex} style={styles.optionButton}>
+              <TouchableOpacity
+                key={itemIndex}
+                style={styles.optionButton}
+                onPress={() => handleOptionPress(item)}
+              >
                 <Text style={styles.optionText}>{item}</Text>
-                <Ionicons name="chevron-forward-outline" size={20} color="#1B6B63" />
+                <Ionicons
+                  name="chevron-forward-outline"
+                  size={20}
+                  color="#1B6B63"
+                />
               </TouchableOpacity>
             ))}
           </View>
         ))}
 
-        <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>

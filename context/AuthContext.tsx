@@ -4,8 +4,14 @@ import { auth } from "../config/firebaseConfig";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
+import { signOut as firebaseSignOut } from "../services/firebaseUserService";
 
-export type Role = "Admin" | "Support Seeker" | "Event Organizer" | "Volunteer" | null;
+export type Role =
+  | "Admin"
+  | "Support Seeker"
+  | "Event Organizer"
+  | "Volunteer"
+  | null;
 
 export interface AuthUser {
   uid: string;
@@ -46,6 +52,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isAuthenticated = !!user;
+
+  const signOut = async () => {
+    try {
+      await firebaseSignOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Error signing out in AuthContext:", error);
+      // Optionally set an error message for the UI
+      setErrorMsg("Failed to sign out. Please try again.");
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -103,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isAuthenticated,
         signIn: async () => {},
         signUp: async () => {},
-        signOut: async () => {},
+        signOut,
         errorMsg,
         setErrorMsg,
       }}
@@ -114,7 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export const useAuth = () => useContext(AuthContext);
-
 
 // import React, { createContext, useContext, useEffect, useState } from "react";
 // import { auth } from "../config/firebaseConfig";

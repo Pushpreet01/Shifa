@@ -21,9 +21,8 @@ import { Ionicons } from "@expo/vector-icons";
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
-  // Initialize with today's date instead of new Date()
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to beginning of the day for clear comparison
+  today.setHours(0, 0, 0, 0);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(today);
@@ -36,14 +35,24 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       year: "numeric",
     })
   );
-  const [startTime, setStartTime] = useState("9:00 AM");
-  const [endTime, setEndTime] = useState("10:00 AM");
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch user's name when component mounts
+  // Format time for display
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
@@ -66,9 +75,8 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      // Check if the selected date is not before today
       const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+      currentDate.setHours(0, 0, 0, 0);
 
       if (selectedDate < currentDate) {
         Alert.alert(
@@ -90,6 +98,30 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handleStartTimeChange = (event: any, selectedTime?: Date) => {
+    setShowStartTimePicker(false);
+    if (selectedTime) {
+      setStartTime(selectedTime);
+      // If end time is before start time, update end time
+      if (selectedTime > endTime) {
+        const newEndTime = new Date(selectedTime);
+        newEndTime.setHours(selectedTime.getHours() + 1);
+        setEndTime(newEndTime);
+      }
+    }
+  };
+
+  const handleEndTimeChange = (event: any, selectedTime?: Date) => {
+    setShowEndTimePicker(false);
+    if (selectedTime) {
+      if (selectedTime <= startTime) {
+        Alert.alert("Invalid Time", "End time must be after start time");
+        return;
+      }
+      setEndTime(selectedTime);
+    }
+  };
+
   const validateForm = () => {
     if (!title.trim()) {
       Alert.alert("Error", "Event title is required");
@@ -100,12 +132,16 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       return false;
     }
 
-    // Validate that the date is not in the past
     const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+    currentDate.setHours(0, 0, 0, 0);
 
     if (date < currentDate) {
       Alert.alert("Error", "Event date cannot be in the past");
+      return false;
+    }
+
+    if (endTime <= startTime) {
+      Alert.alert("Error", "End time must be after start time");
       return false;
     }
 
@@ -120,8 +156,8 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       const eventData = {
         title,
         date,
-        startTime,
-        endTime,
+        startTime: formatTime(startTime),
+        endTime: formatTime(endTime),
         location,
         description,
       };
@@ -156,12 +192,21 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add New Event</Text>
+          <Text style={styles.headerTitle}>Create Event</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -199,7 +244,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             mode="date"
             display="default"
             onChange={handleDateChange}
-            minimumDate={today} // Set minimum date to today
+            minimumDate={today}
           />
         )}
         <Text style={styles.helperText}>
@@ -209,24 +254,40 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.timeContainer}>
           <View style={styles.timeField}>
             <Text style={styles.label}>Start Time</Text>
-            <TextInput
-              style={styles.timeInput}
-              value={startTime}
-              onChangeText={setStartTime}
-              placeholder="e.g., 9:00 AM"
-              placeholderTextColor="#999"
-            />
+            <TouchableOpacity
+              style={styles.timeSelector}
+              onPress={() => setShowStartTimePicker(true)}
+            >
+              <Text style={styles.timeText}>{formatTime(startTime)}</Text>
+            </TouchableOpacity>
+            {showStartTimePicker && (
+              <DateTimePicker
+                value={startTime}
+                mode="time"
+                is24Hour={false}
+                display="default"
+                onChange={handleStartTimeChange}
+              />
+            )}
           </View>
 
           <View style={styles.timeField}>
             <Text style={styles.label}>End Time</Text>
-            <TextInput
-              style={styles.timeInput}
-              value={endTime}
-              onChangeText={setEndTime}
-              placeholder="e.g., 5:00 PM"
-              placeholderTextColor="#999"
-            />
+            <TouchableOpacity
+              style={styles.timeSelector}
+              onPress={() => setShowEndTimePicker(true)}
+            >
+              <Text style={styles.timeText}>{formatTime(endTime)}</Text>
+            </TouchableOpacity>
+            {showEndTimePicker && (
+              <DateTimePicker
+                value={endTime}
+                mode="time"
+                is24Hour={false}
+                display="default"
+                onChange={handleEndTimeChange}
+              />
+            )}
           </View>
         </View>
 
@@ -287,12 +348,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingRight: 0,
   },
-
   backButtonContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -325,7 +381,6 @@ const styles = StyleSheet.create({
   formContainer: {
     padding: 18,
     marginBottom: 25,
-    
   },
   label: {
     fontSize: 16,
@@ -368,16 +423,19 @@ const styles = StyleSheet.create({
   timeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 10,
   },
   timeField: {
     width: "48%",
   },
-  timeInput: {
+  timeSelector: {
     backgroundColor: "#FFFFFF",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#E0E0E0",
     padding: 12,
+  },
+  timeText: {
     fontSize: 16,
     color: "#2E2E2E",
   },

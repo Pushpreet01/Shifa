@@ -26,6 +26,9 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
+import { auth } from "../config/firebaseConfig";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { HomeStackParamList } from "../navigation/HomeStack";
 
 interface EventData {
   id: string;
@@ -44,10 +47,12 @@ interface ProcessedEventData {
 }
 
 const HomeDashboardScreen = () => {
-  const navigation: any = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
   const { user } = useAuth();
   const [events, setEvents] = useState<ProcessedEventData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const fetchRegisteredEvents = useCallback(async () => {
     if (!user) return;
@@ -113,6 +118,30 @@ const HomeDashboardScreen = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserName(userData.fullName || "User");
+        setProfileImage(userData.profileImage || null);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
+  const handleProfilePress = () => {
+    navigation.navigate("Settings", { screen: "Profile" });
+  };
+
   // Helper function to chunk array
   const chunkArray = (array: any[], size: number) => {
     const chunks = [];
@@ -159,21 +188,37 @@ const HomeDashboardScreen = () => {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
-              <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-                <Ionicons name="notifications-outline" size={24} color="#C44536" />
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Announcements")}
+              >
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color="#C44536"
+                />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+              <TouchableOpacity
+                style={styles.sosWrapper}
+                onPress={() => navigation.navigate("Emergency")}
+              >
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={handleProfilePress}
+          >
             <Image
-              source={require("../assets/image.png")}
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : require("../assets/image.png")
+              }
               style={styles.avatarImage}
             />
-            <Text style={styles.avatarLabel}>User</Text>
-          </View>
+            <Text style={styles.avatarLabel}>{userName}</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.separatorWrapper}>
@@ -228,8 +273,9 @@ const HomeDashboardScreen = () => {
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
-            Need help? Dial 911 for immediate mental health assistance or browse our Resource
-            Library for self-help guides and professional contacts. You are not alone 💚
+            Need help? Dial 911 for immediate mental health assistance or browse
+            our Resource Library for self-help guides and professional contacts.
+            You are not alone 💚
           </Text>
         </View>
       </ScrollView>
@@ -258,7 +304,7 @@ const HomeDashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
   },
   container: {
     paddingBottom: 120,
@@ -282,6 +328,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 10,
+    marginTop: 10,
   },
   headerTitle: {
     fontSize: 26,
@@ -291,7 +339,6 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: "auto",
   },
   sosWrapper: {
     backgroundColor: "#C44536",
@@ -299,8 +346,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginLeft: 10,
-    justifyContent: "center",
-    alignItems: "center",
   },
   sosText: {
     color: "#FFFFFF",
@@ -309,17 +354,28 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
+    marginBottom: 10,
   },
   avatarImage: {
-    width: 60,
-    height: 60,
-    resizeMode: "contain",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#E0E0E0",
+  },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   avatarLabel: {
-    marginTop: 6,
+    marginTop: 8,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#007872", // teal text
+    color: "#333",
   },
   separatorWrapper: {
     flexDirection: "row",
@@ -453,6 +509,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
 
 export default HomeDashboardScreen;

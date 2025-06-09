@@ -175,9 +175,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
           return { ...prevEvent, registered: true };
         });
 
-        const eventRef = doc(db, "events", event.id);
-        await updateDoc(eventRef, { registered: true });
-
         Alert.alert("Success", `You have registered for ${event.title}!`, [
           { text: "OK", onPress: () => navigation.navigate("Events") },
         ]);
@@ -195,9 +192,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
     setIsRegistering(true);
     try {
-      // Cancel registration in Firestore
-      await firebaseEventService.cancelRegistration(event.id);
-
       // Toggle the registered field in the event state back to false
       setEvent((prevEvent) => {
         if (prevEvent) {
@@ -205,10 +199,6 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
         }
         return prevEvent;
       });
-
-      // Optionally update Firestore event document (if it exists)
-      const eventRef = doc(db, "events", event.id);
-      await updateDoc(eventRef, { registered: false });
 
       Alert.alert(
         "Registration Cancelled",
@@ -257,13 +247,24 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {event && event.registered ? "Your Registration" : "Register for Event"}
+            {event && event.registered
+              ? "Your Registration"
+              : "Register for Event"}
           </Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>

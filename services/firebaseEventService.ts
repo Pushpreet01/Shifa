@@ -9,6 +9,7 @@ import {
   doc,
   updateDoc,
   increment,
+  writeBatch,
 } from "firebase/firestore";
 import { CalendarEvent } from "./calendarService";
 
@@ -60,6 +61,15 @@ class FirebaseEventService {
         createdBy: currentUser.uid,
         createdAt: new Date(),
       });
+
+      // Create a global announcement for the new event
+      const announcement = {
+        type: "new_event",
+        message: `A new event has been posted: ${eventData.title}`,
+        timestamp: new Date(),
+        eventId: eventRef.id,
+      };
+      await addDoc(collection(db, "announcements"), announcement);
 
       return eventRef.id;
     } catch (error) {

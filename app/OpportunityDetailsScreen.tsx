@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,22 +6,92 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/AppNavigator";
+import FirebaseEventService from "../services/firebaseEventService";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "OpportunityDetails">;
 
 export type OpportunityDetailsParams = {
   title: string;
-  organization: string;
+  date: string;
   timing: string;
-  tasks?: string;
+  location: string;
+  description: string;
+  eventId: string;
 };
 
 const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { title, organization, timing, tasks } = route.params as OpportunityDetailsParams;
+  const { title, date, timing, location, description, eventId } =
+    route.params as OpportunityDetailsParams;
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
+
+  useEffect(() => {
+    checkRegistrationStatus();
+  }, []);
+
+  const checkRegistrationStatus = async () => {
+    try {
+      const status = await FirebaseEventService.checkRegistration(eventId);
+      setIsRegistered(status);
+    } catch (error) {
+      console.error("Error checking registration:", error);
+    } finally {
+      setCheckingRegistration(false);
+    }
+  };
+
+  const handleRegistration = async () => {
+    setLoading(true);
+    try {
+      const success = await FirebaseEventService.registerForEvent(eventId);
+      if (success) {
+        setIsRegistered(true);
+        Alert.alert(
+          "Success",
+          "You have successfully registered for this event!",
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert("Error", "You are already registered for this event.", [
+          { text: "OK" },
+        ]);
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Failed to register for the event. Please try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    setLoading(true);
+    try {
+      const success = await FirebaseEventService.cancelRegistration(eventId);
+      if (success) {
+        setIsRegistered(false);
+        Alert.alert("Success", "Your registration has been cancelled.", [
+          { text: "OK" },
+        ]);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to cancel registration. Please try again.", [
+        { text: "OK" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,12 +103,21 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Details</Text>
+          <Text style={styles.headerTitle}>Event Details</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -48,39 +127,63 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       <ScrollView style={styles.content}>
         <View style={styles.detailsContainer}>
           <Text style={styles.title}>{title}</Text>
-          
+
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Timing</Text>
+            <Text style={styles.sectionTitle}>Date</Text>
+            <View style={styles.sectionContent}>
+              <Text style={styles.sectionText}>{date}</Text>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Time</Text>
             <View style={styles.sectionContent}>
               <Text style={styles.sectionText}>{timing}</Text>
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Organiser</Text>
+            <Text style={styles.sectionTitle}>Location</Text>
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionText}>{organization}</Text>
+              <Text style={styles.sectionText}>{location}</Text>
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tasks</Text>
+            <Text style={styles.sectionTitle}>Description</Text>
             <View style={styles.sectionContent}>
               <Text style={styles.sectionText}>
-                {tasks || "No specific tasks listed for this opportunity."}
+                {description || "No description available for this event."}
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity 
-            style={styles.applyButton}
-            onPress={() => navigation.navigate('OpportunityApplicationForm', {
-              title,
-              description: `Join us for a week to get experience in ${title.toLowerCase()} and gain valuable skills.`
-            })}
-          >
-            <Text style={styles.applyButtonText}>Apply</Text>
-          </TouchableOpacity>
+          {checkingRegistration ? (
+            <ActivityIndicator
+              size="large"
+              color="#1B6B63"
+              style={styles.loader}
+            />
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                isRegistered ? styles.cancelButton : styles.registerButton,
+              ]}
+              onPress={
+                isRegistered ? handleCancelRegistration : handleRegistration
+              }
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.actionButtonText}>
+                  {isRegistered ? "Cancel Registration" : "Register for Event"}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -145,18 +248,18 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#2E2E2E",
     marginBottom: 20,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   section: {
     marginBottom: 20,
-    width: '100%',
+    width: "100%",
   },
   sectionTitle: {
     fontSize: 18,
@@ -174,20 +277,29 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
     lineHeight: 24,
   },
-  applyButton: {
-    backgroundColor: "#1B6B63",
+  actionButton: {
     borderRadius: 30,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 35,
     marginTop: 15,
     marginBottom: 40,
     alignItems: "center",
+    width: "80%",
   },
-  applyButtonText: {
+  registerButton: {
+    backgroundColor: "#1B6B63",
+  },
+  cancelButton: {
+    backgroundColor: "#C44536",
+  },
+  actionButtonText: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
   },
+  loader: {
+    marginVertical: 20,
+  },
 });
 
-export default OpportunityDetailsScreen; 
+export default OpportunityDetailsScreen;

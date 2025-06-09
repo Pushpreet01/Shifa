@@ -25,6 +25,8 @@ import OpportunitiesScreen from "../app/OpportunitiesScreen";
 import EmergencyScreen from "../app/EmergencyScreen";
 import SupportSystemScreen from "../app/SupportSystemScreen";
 import VolunteerRewardsScreen from "../app/VolunteerRewardsScreen";
+import ProfileScreen from "../app/ProfileScreen";
+import FeedbackScreen from "../app/FeedbackScreen";
 
 // Custom Tab Bar
 import CustomTabBar from "./CustomTabBar";
@@ -36,14 +38,15 @@ enum TabRoutes {
   Resources = "Resources",
 }
 
-// Type Definitions
+// Stack Param Lists
 export type HomeStackParamList = {
   HomeDashboard: undefined;
-  JournalScreen: undefined;
-  NewJournalEntryScreen: undefined;
   Events: undefined;
   EventsForm: undefined;
   RegisterEvent: { eventId: string };
+  JournalScreen: undefined;
+  MyJournalsScreen: undefined;
+  NewJournalEntryScreen: undefined;
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
@@ -51,24 +54,22 @@ export type HomeStackParamList = {
     title: string;
     organization: string;
     timing: string;
-    tasks?: string;
+    tasks: string[];
   };
-  OpportunityApplicationForm: {
-    title: string;
-    description: string;
-  };
+  OpportunityApplicationForm: undefined;
   VolunteerLearnings: undefined;
   Emergency: undefined;
-  MyJournalsScreen: undefined;
   VolunteerRewards: undefined;
 };
 
 export type SettingsStackParamList = {
   Settings: undefined;
+  Profile: undefined;
+  Feedback: undefined;
 };
 
 export type ResourcesStackParamList = {
-  ResourcesMain: undefined;
+  Resources: undefined;
   AddictionHelp: undefined;
   FindTherapist: undefined;
   Counselling: undefined;
@@ -96,32 +97,58 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="RegisterEvent" component={RegisterEventScreen} />
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
     <HomeStack.Screen name="MyJournalsScreen" component={MyJournalScreen} />
-    <HomeStack.Screen name="NewJournalEntryScreen" component={NewJournalEntryScreen} />
+    <HomeStack.Screen
+      name="NewJournalEntryScreen"
+      component={NewJournalEntryScreen}
+    />
     <HomeStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <HomeStack.Screen name="VolunteerScreen" component={VolunteerScreen} />
     <HomeStack.Screen name="Opportunities" component={OpportunitiesScreen} />
-    <HomeStack.Screen name="OpportunityDetails" component={OpportunityDetailsScreen} />
-    <HomeStack.Screen name="OpportunityApplicationForm" component={OpportunityApplicationFormScreen} />
-    <HomeStack.Screen name="VolunteerLearnings" component={VolunteerLearningsScreen} />
+    <HomeStack.Screen
+      name="OpportunityDetails"
+      component={OpportunityDetailsScreen}
+    />
+    <HomeStack.Screen
+      name="OpportunityApplicationForm"
+      component={OpportunityApplicationFormScreen}
+    />
+    <HomeStack.Screen
+      name="VolunteerLearnings"
+      component={VolunteerLearningsScreen}
+    />
     <HomeStack.Screen name="Emergency" component={EmergencyScreen} />
-    <HomeStack.Screen name="VolunteerRewards" component={VolunteerRewardsScreen} />
+    <HomeStack.Screen
+      name="VolunteerRewards"
+      component={VolunteerRewardsScreen}
+    />
   </HomeStack.Navigator>
 );
 
 const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
+    <SettingsStack.Screen name="Profile" component={ProfileScreen} />
+    <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
   </SettingsStack.Navigator>
 );
 
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
-    <ResourcesStack.Screen name="ResourcesMain" component={ResourceScreen} />
-    <ResourcesStack.Screen name="AddictionHelp" component={AddictionHelpScreen} />
-    <ResourcesStack.Screen name="FindTherapist" component={FindTherapistScreen} />
+    <ResourcesStack.Screen name="Resources" component={ResourceScreen} />
+    <ResourcesStack.Screen
+      name="AddictionHelp"
+      component={AddictionHelpScreen}
+    />
+    <ResourcesStack.Screen
+      name="FindTherapist"
+      component={FindTherapistScreen}
+    />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
-    <ResourcesStack.Screen name="SupportSystem" component={SupportSystemScreen} />
+    <ResourcesStack.Screen
+      name="SupportSystem"
+      component={SupportSystemScreen}
+    />
   </ResourcesStack.Navigator>
 );
 
@@ -138,9 +165,4 @@ const TabNavigator = () => (
   </Tab.Navigator>
 );
 
-// Final App Navigator (for general users)
-const AppNavigator = () => {
-  return <TabNavigator />;
-};
-
-export default AppNavigator;
+export default TabNavigator;

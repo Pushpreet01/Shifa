@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -20,13 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { user, setUser } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      navigation.replace("HomeDashboard"); // <- You might want to change this to "HomeDashboard"
-    }
-  }, [user, navigation]);
+  const { setUser } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -35,7 +28,11 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       setUser(userCredential.user);
     } catch (error: any) {
       let errorMessage = "Login failed. Please try again.";
@@ -155,239 +152,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default LoginScreen;
-
-
-// import React, { useState } from "react";
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   Image,
-//   StyleSheet,
-//   ActivityIndicator,
-// } from "react-native";
-// import { auth, db } from "../config/firebaseConfig";
-// import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-// import { doc, getDoc } from "firebase/firestore";
-// import { useAuth } from "../context/AuthContext";
-
-
-// const LoginScreen: React.FC<Props> = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [emailError, setEmailError] = useState("");
-//   const [passwordError, setPasswordError] = useState("");
-//   const [authError, setAuthError] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   const { setUser, setErrorMsg } = useAuth();
-
-//   const handleLogin = async () => {
-//     setEmailError("");
-//     setPasswordError("");
-//     setAuthError("");
-//     setErrorMsg(""); // clear previous global errors
-
-//     let hasError = false;
-//     if (!email) {
-//       setEmailError("Email is required.");
-//       hasError = true;
-//     }
-//     if (!password) {
-//       setPasswordError("Password is required.");
-//       hasError = true;
-//     }
-//     if (hasError) return;
-
-//     setLoading(true);
-//     try {
-//       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-//       const loggedInUser = userCredential.user;
-
-//       const userDocRef = doc(db, "users", loggedInUser.uid);
-//       const userSnap = await getDoc(userDocRef);
-
-//       if (!userSnap.exists()) {
-//         setAuthError("User data not found.");
-//         await signOut(auth);
-//         return;
-//       }
-
-//       const userData = userSnap.data();
-
-//       // Check approval status
-//       if (userData.approved === false) {
-//         await signOut(auth);
-//         setErrorMsg("Your account is pending admin approval.");
-//         return;
-//       }
-
-//       // Set user with role and approved flag
-//       setUser({
-//         ...loggedInUser,
-//         role: userData.role,
-//         approved: userData.approved,
-//         displayName: userData.displayName || "",
-//       });
-
-//     } catch (error: any) {
-//       let errorMessage = "Login failed. Please try again.";
-//       if (error.code === "auth/invalid-email") {
-//         errorMessage = "Invalid email format.";
-//       } else if (error.code === "auth/user-not-found") {
-//         errorMessage = "No user found with this email.";
-//       } else if (error.code === "auth/wrong-password") {
-//         errorMessage = "Incorrect password.";
-//       }
-//       setAuthError(errorMessage);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Image source={require("../assets/logo.png")} style={styles.logo} />
-
-//       <View style={styles.inputContainer}>
-//         <TextInput
-//           placeholder="Email"
-//           placeholderTextColor="#008080"
-//           value={email}
-//           onChangeText={setEmail}
-//           keyboardType="email-address"
-//           autoCapitalize="none"
-//           style={styles.input}
-//         />
-//         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-//       </View>
-
-//       <View style={styles.inputContainer}>
-//         <TextInput
-//           placeholder="Password"
-//           placeholderTextColor="#008080"
-//           value={password}
-//           onChangeText={setPassword}
-//           secureTextEntry
-//           style={styles.input}
-//         />
-//         {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-//         <TouchableOpacity>
-//           <Text style={styles.forgotPassword}>Forgot Password?</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       {authError ? <Text style={styles.authError}>{authError}</Text> : null}
-
-//       <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-//         <Text style={styles.loginButtonText}>Log In</Text>
-//       </TouchableOpacity>
-
-//       <Text style={styles.Text}>Don't have an account?</Text>
-
-//       <TouchableOpacity
-//         style={styles.signUpButton}
-//         onPress={() => {
-//           setAuthError("");
-//           setErrorMsg("");
-//           setEmail("");
-//           setPassword("");
-//           navigation.navigate("SignUp");
-//         }}
-//       >
-//         <Text style={styles.signUpButtonText}>Sign Up</Text>
-//       </TouchableOpacity>
-
-//       {loading && (
-//         <View style={styles.loadingOverlay}>
-//           <ActivityIndicator size="large" color="#008080" />
-//         </View>
-//       )}
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#F8F5E9",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     padding: 20,
-//   },
-//   logo: {
-//     width: 200,
-//     height: 200,
-//     marginBottom: 80,
-//   },
-//   inputContainer: {
-//     width: "75%",
-//     marginBottom: 20,
-//   },
-//   input: {
-//     borderBottomWidth: 2,
-//     borderBottomColor: "#F6A800",
-//     padding: 10,
-//     fontSize: 14,
-//     color: "#008080",
-//   },
-//   errorText: {
-//     color: "#FF3B30",
-//     fontSize: 12,
-//     marginTop: 4,
-//   },
-//   forgotPassword: {
-//     color: "#008080",
-//     fontSize: 14,
-//     fontWeight: "bold",
-//     textAlign: "right",
-//     marginTop: 5,
-//   },
-//   authError: {
-//     color: "#FF3B30",
-//     fontSize: 14,
-//     textAlign: "center",
-//     marginBottom: 10,
-//   },
-//   loginButton: {
-//     backgroundColor: "#008080",
-//     paddingVertical: 12,
-//     paddingHorizontal: 100,
-//     borderRadius: 25,
-//     marginTop: 30,
-//   },
-//   loginButtonText: {
-//     color: "#FFFFFF",
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   signUpButton: {
-//     marginTop: 0,
-//   },
-//   signUpButtonText: {
-//     color: "#008080",
-//     fontSize: 14,
-//     fontWeight: "bold",
-//   },
-//   Text: {
-//     marginTop: 20,
-//     color: "#008080",
-//     fontSize: 14,
-//     fontWeight: "bold",
-//   },
-//   loadingOverlay: {
-//     position: "absolute",
-//     top: 0,
-//     bottom: 0,
-//     left: 0,
-//     right: 0,
-//     backgroundColor: "rgba(0,0,0,0.2)",
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-// });
-
-// export default LoginScreen;

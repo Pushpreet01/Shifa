@@ -17,15 +17,15 @@ const SupportSystemScreen = () => {
   const supportResources = [
     {
       label: "Women's Helplines",
-      image: require("../assets/support-women.jpg"),
+      image: require("../../assets/support-women.jpg"),
     },
     {
       label: "Family and Youth Services",
-      image: require("../assets/support-family.jpg"),
+      image: require("../../assets/support-family.jpg"),
     },
     {
       label: "Transitional Homes",
-      image: require("../assets/support-transitional.jpg"),
+      image: require("../../assets/support-transitional.jpg"),
     },
   ];
 

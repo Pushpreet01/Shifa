@@ -10,14 +10,14 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
-import CalendarService, { CalendarEvent } from "../services/calendarService";
-import firebaseEventService from "../services/firebaseEventService";
-import Calendar from "../components/Calendar";
-import EventCard from "../components/EventCard";
+import { HomeStackParamList } from "../../navigation/AppNavigator";
+import CalendarService, { CalendarEvent } from "../../services/calendarService";
+import firebaseEventService from "../../services/firebaseEventService";
+import Calendar from "../../components/Calendar";
+import EventCard from "../../components/EventCard";
 import { useFocusEffect } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext";
-import { isDateValidForEvent } from "../utils/dateUtils";
+import { useAuth } from "../../context/AuthContext";
+import { isDateValidForEvent } from "../../utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
 
 const USE_FIREBASE_SERVICE = true;

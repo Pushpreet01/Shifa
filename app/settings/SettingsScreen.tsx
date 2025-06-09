@@ -9,11 +9,11 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import HeroBox from "../components/HeroBox";
-import { useAuth } from "../context/AuthContext";
+import HeroBox from "../../components/HeroBox";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { SettingsStackParamList } from "../navigation/AppNavigator";
+import { SettingsStackParamList } from "../../navigation/AppNavigator";
 
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList>;
 

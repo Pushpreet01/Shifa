@@ -10,11 +10,11 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { SettingsStackParamList } from "../navigation/AppNavigator";
+import { SettingsStackParamList } from "../../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, addDoc, collection } from "firebase/firestore";
-import { db, auth } from "../config/firebaseConfig";
-import StarRating from "../components/StarRating";
+import { db, auth } from "../../config/firebaseConfig";
+import StarRating from "../../components/StarRating";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Feedback">;
 

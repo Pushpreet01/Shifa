@@ -1,8 +1,8 @@
 // navigation/AuthNavigator.tsx
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import LoginScreen from "../app/LoginScreen";
-import SignUpScreen from "../app/SignUpScreen";
+import LoginScreen from "../app/auth/LoginScreen";
+import SignUpScreen from "../app/auth/SignUpScreen";
 import { useAuth } from "../context/AuthContext";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -29,7 +29,7 @@ const AuthNavigator = () => {
   return (
     <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStack.Screen name="Signup" component={SignUpScreen} />
     </AuthStack.Navigator>
   );
 };

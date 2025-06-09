@@ -8,51 +8,44 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import HeroBox from "../components/HeroBox";
+import HeroBox from "../../components/HeroBox";
 import { Ionicons } from "@expo/vector-icons";
 
-const AwarenessScreen = ({ navigation }) => {
+const CounsellingScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <HeroBox
-          title="Awareness"
+          title="Counselling"
           showBackButton={true}
           customBackRoute="ResourcesMain"
         />
 
-        {/* Image placeholder */}
+        {/* Image Section */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../assets/awareness-placeholder.jpg")}
+            source={require("../../assets/counselling-placeholder.jpg")}
             style={styles.image}
             resizeMode="contain"
           />
         </View>
 
-        {/* Intro Text Box */}
+        {/* Info Box */}
         <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>View our Educational Resources</Text>
+          <Text style={styles.infoTitle}>Need Counselling?</Text>
+          <Text style={styles.infoText}>We are happy to help you !</Text>
         </View>
 
-        {/* Resource Buttons */}
-        <TouchableOpacity style={styles.resourceButton}>
-          <Text style={styles.buttonText}>Suicide Awareness</Text>
+        {/* Counsellor Buttons */}
+        <TouchableOpacity style={styles.contactButton}>
+          <Ionicons name="person-outline" size={20} color="#1B6B63" />
+          <Text style={styles.buttonText}>Counsellor 1</Text>
           <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.resourceButton}>
-          <Text style={styles.buttonText}>Toolkits & Guides</Text>
-          <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.resourceButton}>
-          <Text style={styles.buttonText}>Parenting and Youth Support</Text>
-          <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.resourceButton}>
-          <Text style={styles.buttonText}>About Mental Health</Text>
+        <TouchableOpacity style={styles.contactButton}>
+          <Ionicons name="person-outline" size={20} color="#1B6B63" />
+          <Text style={styles.buttonText}>Counsellor 2</Text>
           <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
         </TouchableOpacity>
       </ScrollView>
@@ -83,24 +76,27 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 140,
+    height: 150,
   },
   infoBox: {
-    backgroundColor: "#E0F2F1",
-    borderRadius: 20,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    backgroundColor: "#FCE9C8",
+    borderRadius: 30,
+    padding: 20,
     marginTop: 30,
     width: "85%",
     alignItems: "center",
   },
   infoTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#1B6B63",
-    textAlign: "center",
+    marginBottom: 4,
   },
-  resourceButton: {
+  infoText: {
+    fontSize: 14,
+    color: "#1B6B63",
+  },
+  contactButton: {
     backgroundColor: "#FCE9C8",
     marginTop: 20,
     width: "85%",
@@ -123,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AwarenessScreen;
+export default CounsellingScreen;

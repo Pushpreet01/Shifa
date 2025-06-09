@@ -21,8 +21,17 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { auth, db } from "../config/firebaseConfig";
-import { useAuth } from "../context/AuthContext";
+import { auth, db } from "../../config/firebaseConfig"; 
+import { useAuth } from "../../context/AuthContext"; 
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+
+type AuthStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "SignUp">;
 
 const roles = [
   { label: "Support Seeker", value: "Support Seeker" },
@@ -30,7 +39,8 @@ const roles = [
   { label: "Event Organizer", value: "Event Organizer" },
 ];
 
-const SignUpScreen: React.FC<any> = ({ navigation }) => {
+const SignUpScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -122,9 +132,6 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             "Your account requires admin approval before access is granted.",
         });
       }
-      // else {
-      //   navigation.replace("HomeDashboard");
-      // }
     } catch (error: any) {
       console.error(error);
       let errorMessage = "Sign-up failed. Please try again.";
@@ -151,7 +158,7 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <Image source={require("../assets/logo.png")} style={styles.logo} />
+        <Image source={require("../../assets/logo.png")} style={styles.logo} />
 
         {!!errors.general && (
           <Text style={[styles.errorText, { marginBottom: 10 }]}>
@@ -170,9 +177,9 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             }}
             style={styles.input}
           />
-          {errors.fullName ? (
+          {errors.fullName && (
             <Text style={styles.errorText}>{errors.fullName}</Text>
-          ) : null}
+          )}
         </View>
 
         <View style={styles.inputContainer}>
@@ -188,9 +195,9 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             autoCapitalize="none"
             style={styles.input}
           />
-          {errors.email ? (
+          {errors.email && (
             <Text style={styles.errorText}>{errors.email}</Text>
-          ) : null}
+          )}
         </View>
 
         <View style={styles.inputContainer}>
@@ -203,9 +210,9 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             style={styles.input}
             maxLength={14}
           />
-          {errors.phoneNumber ? (
+          {errors.phoneNumber && (
             <Text style={styles.errorText}>{errors.phoneNumber}</Text>
-          ) : null}
+          )}
         </View>
 
         <View style={styles.inputContainer}>
@@ -220,9 +227,9 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             secureTextEntry
             style={styles.input}
           />
-          {errors.password ? (
+          {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>
-          ) : null}
+          )}
         </View>
 
         <Text style={styles.label}>Select Role:</Text>
@@ -245,9 +252,7 @@ const SignUpScreen: React.FC<any> = ({ navigation }) => {
             ))}
           </Picker>
         </View>
-        {errors.role ? (
-          <Text style={styles.errorText}>{errors.role}</Text>
-        ) : null}
+        {errors.role && <Text style={styles.errorText}>{errors.role}</Text>}
 
         <TouchableOpacity
           style={[styles.signUpButton, loading && { opacity: 0.7 }]}

@@ -13,11 +13,11 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../config/firebaseConfig";
+import { db, auth } from "../../config/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { HomeStackParamList } from "../navigation/AppNavigator";
-import { saveJournalEntry } from "../services/firebaseJournalService";
+import type { HomeStackParamList } from "../../navigation/AppNavigator";
+import { saveJournalEntry } from "../../services/firebaseJournalService";
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");

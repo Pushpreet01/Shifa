@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import type { HomeStackParamList } from "../navigation/AppNavigator";
+import type { HomeStackParamList } from "../../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 
 const JournalScreen = () => {
@@ -40,7 +40,7 @@ const JournalScreen = () => {
 
       <View style={styles.content}>
         <Image
-          source={require("../assets/journalcover.png")}
+          source={require("../../assets/journalcover.png")}
           style={styles.journalImage}
           resizeMode="contain"
         />

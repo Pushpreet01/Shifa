@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 import notificationService, {
   NotificationItem,
   AnnouncementItem,
-} from "../services/notificationService";
+} from "../../services/notificationService";
 
 type CombinedItem = NotificationItem | AnnouncementItem;
 

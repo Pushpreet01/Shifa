@@ -11,8 +11,8 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
-import { db, auth } from "../config/firebaseConfig";
+import { HomeStackParamList } from "../../navigation/AppNavigator";
+import { db, auth } from "../../config/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -24,9 +24,9 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
-import { CalendarEvent } from "../services/calendarService";
-import firebaseEventService from "../services/firebaseEventService";
-import { useAuth } from "../context/AuthContext";
+import { CalendarEvent } from "../../services/calendarService";
+import firebaseEventService from "../../services/firebaseEventService";
+import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "RegisterEvent">;

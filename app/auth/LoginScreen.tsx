@@ -8,15 +8,21 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { auth } from "../config/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "../context/AuthContext";
+import { auth } from "../../config/firebaseConfig"; // update path if needed
+import { useAuth } from "../../context/AuthContext"; // update path if needed
 
-type Props = NativeStackScreenProps<RootStackParamList, "Login">;
+type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+};
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
+
+const LoginScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { setUser } = useAuth();
@@ -49,7 +55,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../assets/logo.png")} style={styles.logo} />
+      <Image source={require("../../assets/logo.png")} style={styles.logo} />
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -85,7 +91,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.signUpButton}
-        onPress={() => navigation.navigate("SignUp")}
+        onPress={() => navigation.navigate("Signup")}
       >
         <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
@@ -112,27 +118,27 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 2,
-    borderBottomColor: "#F6A800", // amber
+    borderBottomColor: "#F6A800",
     padding: 10,
     fontSize: 14,
-    color: "#008080", // teal
+    color: "#008080",
   },
   forgotPassword: {
-    color: "#008080", // teal
+    color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "right",
     marginTop: 5,
   },
   loginButton: {
-    backgroundColor: "#008080", // teal
+    backgroundColor: "#008080",
     paddingVertical: 12,
     paddingHorizontal: 100,
     borderRadius: 25,
     marginTop: 30,
   },
   loginButtonText: {
-    color: "#FFFFFF", // white
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -140,13 +146,13 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   signUpButtonText: {
-    color: "#008080", // teal
+    color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
   },
   Text: {
     marginTop: 20,
-    color: "#008080", // teal
+    color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
   },

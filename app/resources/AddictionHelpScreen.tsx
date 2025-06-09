@@ -6,7 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
 } from "react-native";
-import HeroBox from "../components/HeroBox";
+import HeroBox from "../../components/HeroBox";
 
 const AddictionHelpScreen = () => {
   const topics = [

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../../navigation/AppNavigator";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "VolunteerRewards">;
 

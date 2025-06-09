@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
-import HeroBox from "../components/HeroBox";
+import HeroBox from "../../components/HeroBox";
 import { Ionicons } from "@expo/vector-icons";
 
 const ResourcesScreen = ({ navigation }) => {
@@ -44,7 +44,7 @@ const ResourcesScreen = ({ navigation }) => {
       <View style={styles.bottomNav}>
         <Ionicons name="people-outline" size={24} color="#3A7D44" />
         <Image
-          source={require("../assets/logo.png")}
+          source={require("../../assets/logo.png")}
           style={styles.centerLogo}
         />
         <Ionicons name="settings-outline" size={24} color="#3A7D44" />

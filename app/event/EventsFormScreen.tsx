@@ -11,10 +11,10 @@ import {
   Platform,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { HomeStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../../navigation/AppNavigator";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import firebaseEventService from "../services/firebaseEventService";
-import { auth, db } from "../config/firebaseConfig";
+import firebaseEventService from "../../services/firebaseEventService";
+import { auth, db } from "../../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 

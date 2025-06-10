@@ -40,15 +40,6 @@ const ResourcesScreen = ({ navigation }) => {
           ))}
         </View>
       </ScrollView>
-
-      <View style={styles.bottomNav}>
-        <Ionicons name="people-outline" size={24} color="#3A7D44" />
-        <Image
-          source={require("../../assets/logo.png")}
-          style={styles.centerLogo}
-        />
-        <Ionicons name="settings-outline" size={24} color="#3A7D44" />
-      </View>
     </SafeAreaView>
   );
 };

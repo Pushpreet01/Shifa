@@ -87,7 +87,7 @@ const LoginScreen = () => {
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
-      <Text style={styles.}>Don't have an account?</Text>
+      <Text style={styles.Text}>Don't have an account?</Text>
 
       <TouchableOpacity
         style={styles.signUpButton}

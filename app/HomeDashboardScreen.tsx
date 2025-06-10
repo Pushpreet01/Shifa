@@ -172,7 +172,7 @@ const HomeDashboardScreen = () => {
       color: "#008080",
       route: "VolunteerScreen",
     },
-    { label: "Journal", color: "#008080", route: "JournalScreen" },
+    { label: "Journal", color: "#008080",  route: "JournalScreen" },
     { label: "SOS Dial", color: "#008080", route: "SOSScreen" },
     { label: "Manage Events", color: "#008080", route: "Events" },
   ];
@@ -300,7 +300,7 @@ const HomeDashboardScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   container: {
     paddingBottom: 120,
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
   },
   eventCard: {
     flexDirection: "row",
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
     marginBottom: 12,
     marginHorizontal: 20,

@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -27,23 +33,21 @@ const HeroBox: React.FC<HeroBoxProps> = ({
   return (
     <View style={styles.heroBox}>
       <View style={styles.header}>
+        {/* Left: Back Button */}
         {showBackButton ? (
-          <TouchableOpacity
-            onPress={handleBack}
-            style={styles.backButtonContainer}
-          >
+          <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
         ) : (
-          <View style={{ width: 24 }} />
+          <View style={styles.backButtonContainer} />
         )}
 
+        {/* Center: Title */}
         <Text style={styles.headerTitle}>{title}</Text>
 
+        {/* Right: Icons */}
         <View style={styles.headerIcons}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Announcements")}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
             <Ionicons name="notifications-outline" size={24} color="#C44536" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -61,7 +65,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({
 const styles = StyleSheet.create({
   heroBox: {
     backgroundColor: "#FDF6EC",
-    paddingTop: 40,
+    paddingTop: Platform.OS === "android" ? 50 : 40,
     paddingBottom: 18,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -75,24 +79,24 @@ const styles = StyleSheet.create({
   },
   header: {
     width: "100%",
-    marginRight:20,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
   },
   backButtonContainer: {
-    marginRight: 8,
+    width: 40,
+    alignItems: "flex-start",
   },
   headerTitle: {
+    flex: 1,
     fontSize: 26,
     fontWeight: "bold",
     color: "#1B6B63",
-    position: "absolute",
-    left: "50%",
-    transform: [{ translateX: -50 }],
+    textAlign: "center",
   },
   headerIcons: {
+    width: 70,
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
   },
   sosWrapper: {

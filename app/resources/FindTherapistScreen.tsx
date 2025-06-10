@@ -30,7 +30,7 @@ const FindTherapistScreen = ({ navigation }) => {
         <HeroBox
           title="Find a Therapist"
           showBackButton={true}
-          onBackPress={() => navigation.navigate("ResourcesMain")}
+          onBackPress={() => navigation.navigate("Resources")}
         />
 
         <View style={styles.cardSection}>

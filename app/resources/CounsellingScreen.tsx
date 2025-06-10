@@ -18,7 +18,7 @@ const CounsellingScreen = ({ navigation }) => {
         <HeroBox
           title="Counselling"
           showBackButton={true}
-          customBackRoute="ResourcesMain"
+          customBackRoute="Resources"
         />
 
         {/* Image Section */}

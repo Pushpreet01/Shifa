@@ -18,7 +18,7 @@ const AwarenessScreen = ({ navigation }) => {
         <HeroBox
           title="Awareness"
           showBackButton={true}
-          customBackRoute="ResourcesMain"
+          customBackRoute="Resources"
         />
 
         {/* Image placeholder */}

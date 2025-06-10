@@ -30,7 +30,7 @@ const AddictionHelpScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Addiction Help" showBackButton customBackRoute="ResourcesMain" />
+        <HeroBox title="Addiction Help" showBackButton customBackRoute="Resources" />
         <View style={styles.cardSection}>
           {topics.map((topic, index) => (
             <View key={index} style={styles.card}>

@@ -30,7 +30,7 @@ const SupportSystemScreen = () => {
   ];
 
   const handleBack = () => {
-    navigation.navigate("ResourcesMain");
+    navigation.navigate("Resources");
   };
 
   return (

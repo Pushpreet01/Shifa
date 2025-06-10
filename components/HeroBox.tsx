@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   },
   header: {
     width: "100%",
+    marginRight:20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

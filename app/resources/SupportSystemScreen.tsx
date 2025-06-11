@@ -35,16 +35,20 @@ const SupportSystemScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Custom Header */}
+      {/* Custom Header Styled Like HeroBox */}
       <View style={styles.heroBox}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
+          <View style={styles.leftContainer}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
+              <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+            </TouchableOpacity>
+          </View>
 
-          <Text style={styles.headerTitle}>Support System</Text>
+          <View style={styles.centerContainer}>
+            <Text style={styles.headerTitle}>Support System</Text>
+          </View>
 
-          <View style={styles.headerIcons}>
+          <View style={styles.rightContainer}>
             <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
               <Ionicons name="notifications-outline" size={24} color="#C44536" />
             </TouchableOpacity>
@@ -98,7 +102,21 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    marginLeft:30,
+    justifyContent: "space-between",
+  },
+  leftContainer: {
+    width: "20%",
+    justifyContent: "flex-start",
+  },
+  centerContainer: {
+    width: "60%",
+    alignItems: "center",
+  },
+  rightContainer: {
+    width: "20%",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
   },
   backButtonContainer: {
     marginRight: 8,
@@ -107,11 +125,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "bold",
     color: "#1B6B63",
-  },
-  headerIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: "auto",
   },
   sosWrapper: {
     backgroundColor: "#C44536",

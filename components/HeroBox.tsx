@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -33,20 +27,16 @@ const HeroBox: React.FC<HeroBoxProps> = ({
   return (
     <View style={styles.heroBox}>
       <View style={styles.header}>
-        {/* Left: Back Button */}
-        {showBackButton ? (
-          <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.backButtonContainer} />
-        )}
+        <View style={styles.leftSection}>
+          {showBackButton && (
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.headerTitle}>{title}</Text>
+        </View>
 
-        {/* Center: Title */}
-        <Text style={styles.headerTitle}>{title}</Text>
-
-        {/* Right: Icons */}
-        <View style={styles.headerIcons}>
+        <View style={styles.rightSection}>
           <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
             <Ionicons name="notifications-outline" size={24} color="#C44536" />
           </TouchableOpacity>
@@ -65,12 +55,11 @@ const HeroBox: React.FC<HeroBoxProps> = ({
 const styles = StyleSheet.create({
   heroBox: {
     backgroundColor: "#FDF6EC",
-    paddingTop: Platform.OS === "android" ? 50 : 40,
+    paddingTop: 40,
     paddingBottom: 18,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -81,22 +70,22 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
   },
-  backButtonContainer: {
-    width: 40,
-    alignItems: "flex-start",
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButton: {
+    marginRight: 4,
   },
   headerTitle: {
-    flex: 1,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#1B6B63",
-    textAlign: "center",
   },
-  headerIcons: {
-    width: 70,
+  rightSection: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
   },
   sosWrapper: {

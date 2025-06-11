@@ -27,23 +27,17 @@ const HeroBox: React.FC<HeroBoxProps> = ({
   return (
     <View style={styles.heroBox}>
       <View style={styles.header}>
-        {showBackButton ? (
-          <TouchableOpacity
-            onPress={handleBack}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 24 }} />
-        )}
+        <View style={styles.leftSection}>
+          {showBackButton && (
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.headerTitle}>{title}</Text>
+        </View>
 
-        <Text style={styles.headerTitle}>{title}</Text>
-
-        <View style={styles.headerIcons}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Announcements")}
-          >
+        <View style={styles.rightSection}>
+          <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
             <Ionicons name="notifications-outline" size={24} color="#C44536" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -66,7 +60,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -75,23 +68,23 @@ const styles = StyleSheet.create({
   },
   header: {
     width: "100%",
-    marginRight:20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  backButtonContainer: {
-    marginRight: 8,
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButton: {
+    marginRight: 4,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#1B6B63",
-    position: "absolute",
-    left: "50%",
-    transform: [{ translateX: -50 }],
   },
-  headerIcons: {
+  rightSection: {
     flexDirection: "row",
     alignItems: "center",
   },

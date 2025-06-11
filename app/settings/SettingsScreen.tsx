@@ -63,7 +63,8 @@ const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Settings" />
+        
+        <HeroBox title="Settings" showBackButton customBackRoute="Home" />
 
         {settingsOptions.map((section, index) => (
           <View key={index} style={styles.section}>

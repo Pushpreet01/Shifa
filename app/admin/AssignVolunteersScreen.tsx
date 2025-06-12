@@ -33,12 +33,12 @@ const AssignVolunteersScreen = () => {
 
   const [volunteerMap, setVolunteerMap] = useState<Record<string, Volunteer[]>>({
     '1': [
-      { id: '1', name: 'Riya Kapoor', assigned: false },
-      { id: '2', name: 'Ahmed Khan', assigned: false },
+      { id: '1', name: 'Riya Kapoor', assigned: true },
+      { id: '2', name: 'Ahmed Khan', assigned: true },
     ],
     '2': [
       { id: '3', name: 'Jessica Wong', assigned: true },
-      { id: '4', name: 'Miguel Hernandez', assigned: false },
+      { id: '4', name: 'Miguel Hernandez', assigned: true },
     ],
   });
 

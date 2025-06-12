@@ -76,17 +76,29 @@ const EventsScreen = () => {
     ]);
   };
 
-  const renderRightActions = (eventId: string) => (
+  const renderRightActions = (event: Event) => (
     <View style={styles.swipeButtons}>
       <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#1B6B63' }]}
-        onPress={() => console.log('Approved', eventId)}
+        style={[styles.swipeButton, { backgroundColor: '#3f8390' }]}
+        onPress={() => navigation.navigate('AttendanceReport')}
       >
-        <Ionicons name="checkmark" size={24} color="#fff" />
+        <Ionicons name="clipboard-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.swipeButton, { backgroundColor: '#F4A941' }]}
+        onPress={() => navigation.navigate('AssignVolunteers')}
+      >
+        <Ionicons name="people-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.swipeButton, { backgroundColor: '#1B6B63' }]}
+        onPress={() => openModal(event)}
+      >
+        <Ionicons name="create-outline" size={24} color="#fff" />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.swipeButton, { backgroundColor: '#C44536' }]}
-        onPress={() => handleDelete(eventId)}
+        onPress={() => handleDelete(event.id)}
       >
         <Ionicons name="close" size={24} color="#fff" />
       </TouchableOpacity>
@@ -105,23 +117,15 @@ const EventsScreen = () => {
           </TouchableOpacity>
 
           {events.map((event) => (
-            <Swipeable key={event.id} renderRightActions={() => renderRightActions(event.id)}>
+            <Swipeable
+              key={event.id}
+              renderRightActions={() => renderRightActions(event)}
+            >
               <View style={styles.card}>
                 <View style={styles.cardContent}>
                   <Text style={styles.eventTitle}>{event.title}</Text>
                   <Text style={styles.eventDetail}>📅 {event.date}</Text>
                   <Text style={styles.eventDetail}>📍 {event.location}</Text>
-                </View>
-                <View style={styles.cardActions}>
-                  <TouchableOpacity onPress={() => openModal(event)}>
-                    <Ionicons name="create-outline" size={20} color="#1B6B63" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => navigation.navigate('AssignVolunteers')}>
-                    <Ionicons name="people-outline" size={20} color="#F4A941" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => navigation.navigate('AttendanceReport')}>
-                    <Ionicons name="clipboard-outline" size={20} color="#3f8390" />
-                  </TouchableOpacity>
                 </View>
               </View>
             </Swipeable>
@@ -198,11 +202,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardContent: { flex: 1 },
-  cardActions: {
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    marginLeft: 16,
-  },
   eventTitle: {
     fontSize: 16,
     fontWeight: 'bold',

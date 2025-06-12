@@ -32,37 +32,24 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
     type: 'AddictionHelp' as Resource['type'],
   });
 
-  // Placeholder data
   const resources: Resource[] = [
     {
       id: '1',
-      title: 'Crisis Helpline Information',
-      description: 'Emergency contact numbers and resources for immediate assistance',
+      title: 'Crisis Helpline',
+      description: 'Immediate assistance contact numbers.',
       type: 'AddictionHelp',
     },
     {
       id: '2',
-      title: 'Licensed Therapists Directory',
-      description: 'Find certified mental health professionals in your area',
+      title: 'Therapist Directory',
+      description: 'List of certified therapists near you.',
       type: 'FindTherapist',
     },
     {
       id: '3',
-      title: 'Online Counseling Services',
-      description: 'Access to virtual counseling sessions and support groups',
+      title: 'Virtual Counseling',
+      description: 'Access online therapy and support groups.',
       type: 'Counselling',
-    },
-    {
-      id: '4',
-      title: 'Mental Health Education',
-      description: 'Educational resources about mental health and well-being',
-      type: 'Awareness',
-    },
-    {
-      id: '5',
-      title: 'Community Support Groups',
-      description: 'Local support groups and community resources',
-      type: 'SupportSystem',
     },
   ];
 
@@ -97,19 +84,17 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Resources" showBackButton customBackRoute="AdminDashboard" />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.addButtonContainer}>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              resetForm();
-              setModalVisible(true);
-            }}
-          >
-            <Ionicons name="add-circle-outline" size={24} color="#1B6B63" />
-            <Text style={styles.addButtonText}>Add Resource</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            resetForm();
+            setModalVisible(true);
+          }}
+        >
+          <Ionicons name="add-circle-outline" size={24} color="#1B6B63" />
+          <Text style={styles.addButtonText}>Add Resource</Text>
+        </TouchableOpacity>
 
         {resources.map((resource) => (
           <View key={resource.id} style={styles.resourceCard}>
@@ -118,7 +103,13 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.resourceType}>{resource.type}</Text>
               <Text style={styles.resourceDescription}>{resource.description}</Text>
             </View>
-            <View style={styles.actionButtons}>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.verifyButton]}
+                onPress={() => console.log('Verified:', resource.id)}
+              >
+                <Ionicons name="checkmark-circle-outline" size={22} color="#2E7D32" />
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.editButton]}
                 onPress={() => openEditModal(resource)}
@@ -136,7 +127,6 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
         ))}
       </ScrollView>
 
-      {/* Add/Edit Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -158,17 +148,14 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
             />
-
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Description"
               value={formData.description}
               onChangeText={(text) => setFormData({ ...formData, description: text })}
               multiline
-              numberOfLines={4}
             />
-
-            <ScrollView horizontal style={styles.typeSelector}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeSelector}>
               {resourceTypes.map((type) => (
                 <TouchableOpacity
                   key={type}
@@ -203,7 +190,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
                 onPress={() => {
-                  console.log('Save:', formData);
+                  console.log('Saved:', formData);
                   setModalVisible(false);
                   resetForm();
                 }}
@@ -221,42 +208,8 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  heroBox: {
-    backgroundColor: '#FDF6EC',
-    paddingTop: 40,
-    paddingBottom: 18,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  header: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1B6B63',
-  },
-  content: {
-    flex: 1,
-  },
-  addButtonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { padding: 20 },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -264,74 +217,48 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
     justifyContent: 'center',
+    marginBottom: 20,
   },
-  addButtonText: {
-    color: '#1B6B63',
-    marginLeft: 8,
-    fontWeight: '600',
-    fontSize: 16,
-  },
+  addButtonText: { color: '#1B6B63', marginLeft: 8, fontWeight: '600', fontSize: 16 },
   resourceCard: {
     backgroundColor: '#FDF6EC',
     borderRadius: 15,
     padding: 16,
-    marginHorizontal: 16,
     marginBottom: 16,
-    flexDirection: 'row',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
     elevation: 2,
   },
-  resourceInfo: {
-    flex: 1,
-  },
-  resourceTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1B6B63',
-    marginBottom: 4,
-  },
-  resourceType: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  resourceDescription: {
-    fontSize: 14,
-    color: '#444',
-  },
-  actionButtons: {
+  resourceInfo: { marginBottom: 12 },
+  resourceTitle: { fontSize: 18, fontWeight: 'bold', color: '#1B6B63' },
+  resourceType: { fontSize: 14, color: '#888', marginBottom: 6 },
+  resourceDescription: { fontSize: 14, color: '#444' },
+  actionsRow: {
+    flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingLeft: 16,
+    marginTop: 10,
   },
   actionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 4,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#F0F0F0',
   },
-  editButton: {
-    backgroundColor: '#E0F2F1',
-  },
-  deleteButton: {
-    backgroundColor: '#FFE5E5',
-  },
+  editButton: { backgroundColor: '#DFF7F4' },
+  deleteButton: { backgroundColor: '#FCE8E8' },
+  verifyButton: { backgroundColor: '#E2F4EA' },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
     width: '90%',
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   modalTitle: {
     fontSize: 20,
@@ -348,7 +275,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    height: 100,
+    height: 80,
     textAlignVertical: 'top',
   },
   typeSelector: {
@@ -356,21 +283,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   typeButton: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 16,
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: 10,
   },
   selectedTypeButton: {
     backgroundColor: '#1B6B63',
   },
   typeButtonText: {
     color: '#666',
-    fontSize: 14,
   },
   selectedTypeButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -380,7 +306,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
-    marginHorizontal: 8,
+    marginHorizontal: 5,
   },
   cancelButton: {
     backgroundColor: '#F5F5F5',
@@ -389,15 +315,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B6B63',
   },
   cancelButtonText: {
-    color: '#666',
+    color: '#444',
     textAlign: 'center',
     fontWeight: 'bold',
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
   },
 });
 
-export default ResourceManagementScreen; 
+export default ResourceManagementScreen;

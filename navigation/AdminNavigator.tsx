@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import CustomTabBar from "./CustomTabBar";
-
+import { Swipeable } from 'react-native-gesture-handler';
 import AdminDashboardScreen from "../app/admin/AdminDashboardScreen";
 import ApprovalManagementScreen from "../app/admin/ApprovalManagementScreen";
 import ResourceManagementScreen from "../app/admin/ResourceManagementScreen";

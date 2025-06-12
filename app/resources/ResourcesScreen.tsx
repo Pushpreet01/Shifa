@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   SafeAreaView,
   ScrollView,
 } from "react-native";
 import HeroBox from "../../components/HeroBox";
-import { Ionicons } from "@expo/vector-icons";
 
 const ResourcesScreen = ({ navigation }) => {
   const resources = [
@@ -18,7 +16,6 @@ const ResourcesScreen = ({ navigation }) => {
     { label: "Counselling", route: "Counselling" },
     { label: "Awareness", route: "Awareness" },
     { label: "Support System", route: "SupportSystem" },
-
   ];
 
   return (
@@ -47,67 +44,43 @@ const ResourcesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF", // Changed to white
+    backgroundColor: "#FDF6EC", // Unified background color
   },
   container: {
     paddingBottom: 120,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC", // Make scroll area match
   },
   startDayText: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#1B6B63",
-    marginTop: 40,
+    marginTop: 30,
     marginLeft: 34,
     marginBottom: 10,
   },
   contentOverlay: {
     width: "100%",
     paddingHorizontal: 20,
-    marginTop: 20,
-    zIndex: 1,
+    marginTop: 30, // Moved slightly lower
     alignItems: "center",
   },
   resourceButton: {
-    backgroundColor: "#1B6B63", // Teal
+    backgroundColor: "#1B6B63",
     marginVertical: 10,
     paddingVertical: 14,
     paddingHorizontal: 24,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
+    borderRadius: 10,
     width: "85%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    marginRight:22,
-    flexDirection: "row",
   },
   buttonText: {
     color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 15,
-  },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 90,
-    backgroundColor: "#D6EFC7",
-    borderTopLeftRadius: 60,
-    borderTopRightRadius: 60,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  centerLogo: {
-    width: 40,
-    height: 40,
-    resizeMode: "contain",
   },
 });
 

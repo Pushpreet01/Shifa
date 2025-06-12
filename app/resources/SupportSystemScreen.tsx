@@ -35,20 +35,17 @@ const SupportSystemScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Custom Header Styled Like HeroBox */}
+      {/* Unified Header styled like HeroBox */}
       <View style={styles.heroBox}>
         <View style={styles.header}>
-          <View style={styles.leftContainer}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButtonContainer}>
+          <View style={styles.leftSection}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
               <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.centerContainer}>
             <Text style={styles.headerTitle}>Support System</Text>
           </View>
 
-          <View style={styles.rightContainer}>
+          <View style={styles.rightSection}>
             <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
               <Ionicons name="notifications-outline" size={24} color="#C44536" />
             </TouchableOpacity>
@@ -91,7 +88,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -104,27 +100,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  leftContainer: {
-    width: "20%",
-    justifyContent: "flex-start",
-  },
-  centerContainer: {
-    width: "60%",
-    alignItems: "center",
-  },
-  rightContainer: {
-    width: "20%",
+  leftSection: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
   },
-  backButtonContainer: {
-    marginRight: 8,
+  backButton: {
+    marginRight: 6,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#1B6B63",
+  },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sosWrapper: {
     backgroundColor: "#C44536",

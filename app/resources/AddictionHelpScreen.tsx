@@ -47,7 +47,7 @@ const AddictionHelpScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF", // changed to white
+    backgroundColor: "#FDF6EC", // changed to white
   },
   container: {
     flexGrow: 1,

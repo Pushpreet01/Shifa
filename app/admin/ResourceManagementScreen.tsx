@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/AdminNavigator';
+import AdminHeroBox from '../../components/AdminHeroBox';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'ResourceManagement'>;
 
@@ -94,11 +95,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Resources</Text>
-        </View>
-      </View>
+      <AdminHeroBox title="Resources" showBackButton customBackRoute="AdminDashboard" />
 
       <ScrollView style={styles.content}>
         <View style={styles.addButtonContainer}>

@@ -8,6 +8,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AdminHeroBox from '../../components/AdminHeroBox';
+
 
 type ApprovalItem = {
   id: string;
@@ -80,11 +82,9 @@ const ApprovalManagementScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Approvals</Text>
-        </View>
-      </View>
+     <AdminHeroBox title="Approvals" showBackButton customBackRoute="AdminDashboard" />
+
+
 
       <View style={styles.tabContainer}>
         <TouchableOpacity

@@ -192,19 +192,34 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
     setIsRegistering(true);
     try {
-      // Toggle the registered field in the event state back to false
-      setEvent((prevEvent) => {
-        if (prevEvent) {
-          return { ...prevEvent, registered: false };
-        }
-        return prevEvent;
-      });
+      const success = await firebaseEventService.cancelRegistration(event.id);
 
-      Alert.alert(
-        "Registration Cancelled",
-        `Your registration for ${event.title} has been cancelled.`,
-        [{ text: "OK", onPress: () => navigation.navigate("Events") }]
-      );
+      if (success) {
+        // Toggle the registered field in the event state back to false
+        setEvent((prevEvent) => {
+          if (prevEvent) {
+            return { ...prevEvent, registered: false };
+          }
+          return prevEvent;
+        });
+
+        Alert.alert(
+          "Registration Cancelled",
+          `Your registration for ${event.title} has been cancelled.`,
+          [
+            {
+              text: "OK",
+              onPress: () =>
+                navigation.navigate("Events", { refresh: Date.now() }),
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          "Error",
+          "Failed to cancel registration. Please try again."
+        );
+      }
     } catch (error) {
       console.error("Error cancelling registration:", error);
       Alert.alert("Error", "Failed to cancel registration. Please try again.");

@@ -172,8 +172,8 @@ const HomeDashboardScreen = () => {
       color: "#008080",
       route: "VolunteerScreen",
     },
-    { label: "Journal", color: "#008080",  route: "JournalScreen" },
-    { label: "SOS Dial", color: "#008080", route: "SOSScreen" },
+    { label: "Journal", color: "#008080", route: "JournalScreen" },
+    { label: "SOS Dial", color: "#008080", route: "Emergency" },
     { label: "Manage Events", color: "#008080", route: "Events" },
   ];
 
@@ -250,21 +250,46 @@ const HomeDashboardScreen = () => {
           <Text style={styles.sectionTitle}> Upcoming Events</Text>
         </TouchableOpacity>
 
-        {events.map((event) => (
-          <TouchableOpacity
-            key={event.id}
-            style={styles.eventCard}
-            onPress={() => navigation.navigate("Events")}
-          >
-            <View style={styles.eventStripe} />
-            <View style={styles.eventText}>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
-              <Text style={styles.eventTime}>{event.time}</Text>
-              <Text style={styles.eventDate}>{event.date}</Text>
+        {events.length === 0 ? (
+          <View style={styles.noEventsContainer}>
+            <View style={styles.noEventsIconContainer}>
+              <Ionicons name="calendar" size={40} color="#1B6B63" />
             </View>
-          </TouchableOpacity>
-        ))}
+            <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
+            <Text style={styles.noEventsSubtext}>
+              Join our supportive community events and connect with others on
+              their journey to wellness.
+            </Text>
+            <TouchableOpacity
+              style={styles.joinEventButton}
+              onPress={() => navigation.navigate("Events")}
+            >
+              <Text style={styles.joinEventButtonText}>Explore Events</Text>
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color="#FFFFFF"
+                style={styles.buttonIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          events.map((event) => (
+            <TouchableOpacity
+              key={event.id}
+              style={styles.eventCard}
+              onPress={() => navigation.navigate("Events")}
+            >
+              <View style={styles.eventStripe} />
+              <View style={styles.eventText}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                <Text style={styles.eventTime}>{event.time}</Text>
+                <Text style={styles.eventDate}>{event.date}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
 
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
@@ -301,6 +326,66 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#FDF6EC",
+  },
+  noEventsContainer: {
+    backgroundColor: "#FDF6EC",
+    borderRadius: 30,
+    padding: 24,
+    marginHorizontal: 20,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  noEventsIconContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 50,
+    width: 80,
+    height: 80,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  noEventsTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#1B6B63",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  noEventsSubtext: {
+    fontSize: 14,
+    color: "#333333",
+    marginBottom: 20,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 10,
+  },
+  joinEventButton: {
+    backgroundColor: "#008080",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  joinEventButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 15,
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginLeft: 4,
   },
   container: {
     paddingBottom: 120,

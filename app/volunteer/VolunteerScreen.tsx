@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,52 +7,103 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
-import FirebaseEventService from "../../services/firebaseEventService";
 import { format } from "date-fns";
-
-interface Event {
-  id: string;
-  title: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-  location: string;
-  description: string;
-  createdBy: string;
-}
+import FirebaseOpportunityService from "../../services/FirebaseOpportunityService";
+import FirebaseVolunteerApplicationService from "../../services/FirebaseVolunteerApplicationService";
+import { auth } from "../../config/firebaseConfig";
+import { VolunteerOpportunity, VolunteerApplication } from "../../types/volunteer";
 
 const VolunteerScreen: React.FC<
-  NativeStackScreenProps<HomeStackParamList, any>
+  NativeStackScreenProps<HomeStackParamList, "VolunteerScreen">
 > = ({ navigation }) => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]);
+  const [userApplications, setUserApplications] = useState<VolunteerApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const currentUser = auth.currentUser;
+
+  // Fetch approved opportunities
+  const fetchApprovedOpportunities = useCallback(async () => {
+    try {
+      setLoading(true);
+      const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
+      const approved = allOpportunities.filter(
+        (opp) => opp.approvalStatus === "approved"
+      );
+      setOpportunities(approved);
+    } catch (err) {
+      setError("Failed to load volunteer opportunities.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch current user's applications
+  const fetchUserApplications = useCallback(async () => {
+    if (!currentUser) {
+      setUserApplications([]);
+      return;
+    }
+    try {
+      const apps = await FirebaseVolunteerApplicationService.getApplicationsByUser(currentUser.uid);
+      setUserApplications(apps);
+    } catch (err) {
+      console.error("Failed to load your applications", err);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        // Fetch events for the next 6 months
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + 6);
+    if (currentUser) {
+      fetchApprovedOpportunities();
+      fetchUserApplications();
+    } else {
+      setLoading(false);
+      setError("Please log in to view opportunities.");
+    }
+  }, [fetchApprovedOpportunities, fetchUserApplications, currentUser]);
 
-        const fetchedEvents = await FirebaseEventService.fetchEvents(
-          startDate,
-          endDate
-        );
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Check if user already applied
+  const hasApplied = (opportunityId: string) => {
+    return userApplications.some((app) => app.opportunityId === opportunityId);
+  };
 
-    fetchEvents();
-  }, []);
+  // Get application status
+  const getApplicationStatus = (opportunityId: string): string | null => {
+    const app = userApplications.find((a) => a.opportunityId === opportunityId);
+    return app ? app.status : null;
+  };
+
+  // Apply for opportunity
+  const handleApply = async (opportunity: VolunteerOpportunity) => {
+    if (!currentUser) {
+      Alert.alert("Not logged in", "Please log in to apply.");
+      return;
+    }
+
+    if (hasApplied(opportunity.opportunityId)) {
+      Alert.alert("Already applied", "You have already applied for this opportunity.");
+      return;
+    }
+
+    try {
+      await FirebaseVolunteerApplicationService.applyForOpportunity({
+        userId: currentUser.uid,
+        opportunityId: opportunity.opportunityId,
+        message: "",
+      });
+      Alert.alert("Success", "Your application has been submitted.");
+      fetchUserApplications();
+    } catch (err) {
+      Alert.alert("Error", "Failed to submit application.");
+      console.error(err);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -84,6 +135,7 @@ const VolunteerScreen: React.FC<
           </View>
         </View>
       </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <TouchableOpacity
           style={styles.mainButton}
@@ -114,36 +166,66 @@ const VolunteerScreen: React.FC<
             color="#1B6B63"
             style={styles.loader}
           />
-        ) : events.length === 0 ? (
+        ) : error ? (
+          <Text style={styles.noEventsText}>{error}</Text>
+        ) : opportunities.length === 0 ? (
           <Text style={styles.noEventsText}>
-            No events available at the moment
+            No opportunities available at the moment
           </Text>
         ) : (
-          events.map((event) => (
-            <View key={event.id} style={styles.card}>
-              <Text style={styles.cardTitle}>{event.title}</Text>
-              <Text style={styles.cardSubtitle}>
-                {format(event.date, "MMM d, yyyy")} • {event.startTime} -{" "}
-                {event.endTime}
-              </Text>
-              <Text style={styles.cardDetails}>{event.location}</Text>
-              <TouchableOpacity
-                style={styles.detailsButton}
-                onPress={() =>
-                  navigation.navigate("OpportunityDetails", {
-                    title: event.title,
-                    date: format(event.date, "MMM d, yyyy"),
-                    timing: `${event.startTime} - ${event.endTime}`,
-                    location: event.location,
-                    description: event.description,
-                    eventId: event.id,
-                  })
-                }
-              >
-                <Text style={styles.detailsButtonText}>Details</Text>
-              </TouchableOpacity>
-            </View>
-          ))
+          opportunities.map((opportunity) => {
+            const applied = hasApplied(opportunity.opportunityId);
+            const status = getApplicationStatus(opportunity.opportunityId);
+            const createdAtDate =
+              opportunity.createdAt instanceof Date
+                ? opportunity.createdAt
+                : typeof opportunity.createdAt?.toDate === "function"
+                ? opportunity.createdAt.toDate()
+                : new Date();
+
+            return (
+              <View key={opportunity.opportunityId} style={styles.card}>
+                <Text style={styles.cardTitle}>{opportunity.title}</Text>
+                <Text style={styles.cardSubtitle}>{opportunity.timings}</Text>
+                <Text style={styles.cardDetails}>{opportunity.description}</Text>
+                <Text style={styles.cardDetails}>
+                  Needed Volunteers: {opportunity.noVolunteersNeeded}
+                </Text>
+                {opportunity.location && (
+                  <Text style={styles.cardDetails}>Location: {opportunity.location}</Text>
+                )}
+                {applied ? (
+                  <Text style={styles.appliedText}>
+                    Application Status: {status?.toUpperCase()}
+                  </Text>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.applyButton}
+                    onPress={() => handleApply(opportunity)}
+                    disabled={loading}
+                  >
+                    <Text style={styles.applyButtonText}>Apply</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.detailsButton}
+                  onPress={() =>
+                    navigation.navigate("OpportunityDetails", {
+                      title: opportunity.title,
+                      timing: opportunity.timings,
+                      eventId: opportunity.eventId,
+                      opportunityId: opportunity.opportunityId,
+                      description: opportunity.description,
+                      date: format(createdAtDate, "MMM d, yyyy"),
+                      location: opportunity.location,
+                    })
+                  }
+                >
+                  <Text style={styles.detailsButtonText}>Details</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>
@@ -173,10 +255,6 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingRight: 0,
   },
   backButtonContainer: {
     flexDirection: "row",
@@ -278,8 +356,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 15,
   },
+  applyButton: {
+    alignSelf: "flex-end",
+    backgroundColor: "#1B6B63",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 18,
+    marginBottom: 10,
+  },
+  applyButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+  appliedText: {
+    alignSelf: "flex-end",
+    fontWeight: "bold",
+    color: "#2E2E2E",
+    fontSize: 15,
+    marginBottom: 10,
+  },
   loader: {
-    marginTop: 20,
+    marginVertical: 20,
   },
   noEventsText: {
     textAlign: "center",

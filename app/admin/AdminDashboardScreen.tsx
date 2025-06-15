@@ -8,10 +8,11 @@ const AdminDashboardScreen = () => {
   const navigation = useNavigation<any>();
 
   const dashboardItems = [
-    { title: "Users", count: 120, icon: "person-outline", route: "" }, // You'll add screen later
+    { title: "Users", count: 120, icon: "person-outline", route: "UserManagement" }, // You'll add screen later
     { title: "Volunteers", count: 45, icon: "people-outline", route: "Approvals" }, // Add when ready
     { title: "Events", count: 8, icon: "calendar-outline", route: "Events" }, // Add when ready
     { title: "Resources", count: 30, icon: "book-outline", route: "ResourceManagement" },
+
   ];
 
   return (

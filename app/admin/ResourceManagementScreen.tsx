@@ -1,3 +1,4 @@
+// ResourceManagementScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -32,7 +33,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
     type: 'AddictionHelp' as Resource['type'],
   });
 
-  const resources: Resource[] = [
+  const [resources, setResources] = useState<Resource[]>([
     {
       id: '1',
       title: 'Crisis Helpline',
@@ -51,7 +52,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Access online therapy and support groups.',
       type: 'Counselling',
     },
-  ];
+  ]);
 
   const resourceTypes: Resource['type'][] = [
     'AddictionHelp',
@@ -62,11 +63,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
   ];
 
   const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      type: 'AddictionHelp',
-    });
+    setFormData({ title: '', description: '', type: 'AddictionHelp' });
     setEditingResource(null);
   };
 
@@ -92,52 +89,44 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
             setModalVisible(true);
           }}
         >
-          <Ionicons name="add-circle-outline" size={24} color="#1B6B63" />
-          <Text style={styles.addButtonText}>Add Resource</Text>
+          <Ionicons name="add-circle-outline" size={26} color="#fff" />
+          <Text style={styles.addButtonText}>Add New Resource</Text>
         </TouchableOpacity>
 
         {resources.map((resource) => (
           <View key={resource.id} style={styles.resourceCard}>
-            <View style={styles.resourceInfo}>
+            <View style={styles.resourceHeader}>
               <Text style={styles.resourceTitle}>{resource.title}</Text>
               <Text style={styles.resourceType}>{resource.type}</Text>
-              <Text style={styles.resourceDescription}>{resource.description}</Text>
             </View>
+            <Text style={styles.resourceDescription}>{resource.description}</Text>
             <View style={styles.actionsRow}>
               <TouchableOpacity
                 style={[styles.actionButton, styles.verifyButton]}
                 onPress={() => console.log('Verified:', resource.id)}
               >
-                <Ionicons name="checkmark-circle-outline" size={22} color="#2E7D32" />
+                <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.editButton]}
                 onPress={() => openEditModal(resource)}
               >
-                <Ionicons name="create-outline" size={20} color="#1B6B63" />
+                <Ionicons name="create-outline" size={20} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.deleteButton]}
                 onPress={() => console.log('Delete:', resource.id)}
               >
-                <Ionicons name="trash-outline" size={20} color="#C44536" />
+                <Ionicons name="trash-outline" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
         ))}
       </ScrollView>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-          resetForm();
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modal}>
             <Text style={styles.modalTitle}>
               {editingResource ? 'Edit Resource' : 'Add New Resource'}
             </Text>
@@ -159,10 +148,7 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
               {resourceTypes.map((type) => (
                 <TouchableOpacity
                   key={type}
-                  style={[
-                    styles.typeButton,
-                    formData.type === type && styles.selectedTypeButton,
-                  ]}
+                  style={[styles.typeButton, formData.type === type && styles.selectedTypeButton]}
                   onPress={() => setFormData({ ...formData, type })}
                 >
                   <Text
@@ -190,7 +176,18 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
                 onPress={() => {
-                  console.log('Saved:', formData);
+                  if (editingResource) {
+                    setResources((prev) =>
+                      prev.map((r) =>
+                        r.id === editingResource.id ? { ...editingResource, ...formData } : r
+                      )
+                    );
+                  } else {
+                    setResources((prev) => [
+                      ...prev,
+                      { id: Date.now().toString(), ...formData },
+                    ]);
+                  }
                   setModalVisible(false);
                   resetForm();
                 }}
@@ -208,57 +205,61 @@ const ResourceManagementScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 20 },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E0F2F1',
-    padding: 12,
-    borderRadius: 20,
+    backgroundColor: '#1B6B63',
+    padding: 14,
+    borderRadius: 25,
     justifyContent: 'center',
     marginBottom: 20,
   },
-  addButtonText: { color: '#1B6B63', marginLeft: 8, fontWeight: '600', fontSize: 16 },
+  addButtonText: { color: '#fff', marginLeft: 10, fontWeight: '600', fontSize: 16 },
   resourceCard: {
-    backgroundColor: '#FDF6EC',
-    borderRadius: 15,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1B6B63',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    elevation: 2,
+    shadowOpacity: 0.05,
+    elevation: 1,
   },
-  resourceInfo: { marginBottom: 12 },
+  resourceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   resourceTitle: { fontSize: 18, fontWeight: 'bold', color: '#1B6B63' },
-  resourceType: { fontSize: 14, color: '#888', marginBottom: 6 },
-  resourceDescription: { fontSize: 14, color: '#444' },
+  resourceType: { fontSize: 14, color: '#999', fontStyle: 'italic' },
+  resourceDescription: { fontSize: 15, color: '#444', marginTop: 4 },
   actionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'flex-end',
     marginTop: 10,
+    gap: 12,
   },
   actionButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#F0F0F0',
   },
-  editButton: { backgroundColor: '#DFF7F4' },
-  deleteButton: { backgroundColor: '#FCE8E8' },
-  verifyButton: { backgroundColor: '#E2F4EA' },
-
-  modalContainer: {
+  verifyButton: { backgroundColor: '#4CAF50' },
+  editButton: { backgroundColor: '#1E88E5' },
+  deleteButton: { backgroundColor: '#D32F2F' },
+  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
   },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
+  modal: {
+    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,
     width: '90%',
-    maxHeight: '85%',
   },
   modalTitle: {
     fontSize: 20,
@@ -268,62 +269,40 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F0F0F0',
     borderRadius: 10,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
   },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  typeSelector: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
+  textArea: { height: 80, textAlignVertical: 'top' },
+  typeSelector: { flexDirection: 'row', marginBottom: 20 },
   typeButton: {
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 14,
+    backgroundColor: '#ddd',
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 10,
   },
-  selectedTypeButton: {
-    backgroundColor: '#1B6B63',
-  },
-  typeButtonText: {
-    color: '#666',
-  },
-  selectedTypeButtonText: {
-    color: '#fff',
-  },
+  selectedTypeButton: { backgroundColor: '#1B6B63' },
+  typeButtonText: { color: '#333' },
+  selectedTypeButtonText: { color: '#fff' },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 10,
   },
   modalButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
-    marginHorizontal: 5,
+    marginHorizontal: 6,
+    alignItems: 'center',
   },
-  cancelButton: {
-    backgroundColor: '#F5F5F5',
-  },
-  saveButton: {
-    backgroundColor: '#1B6B63',
-  },
-  cancelButtonText: {
-    color: '#444',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  saveButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
+  cancelButton: { backgroundColor: '#e0e0e0' },
+  saveButton: { backgroundColor: '#1B6B63' },
+  cancelButtonText: { color: '#444', fontWeight: 'bold' },
+  saveButtonText: { color: '#fff', fontWeight: 'bold' },
 });
 
 export default ResourceManagementScreen;

@@ -29,6 +29,7 @@ import { useNavigation } from "@react-navigation/native";
 type AuthStackParamList = {
   Login: undefined;
   SignUp: undefined;
+  RoleSelection: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "SignUp">;
@@ -107,31 +108,8 @@ const SignUpScreen: React.FC = () => {
         return;
       }
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-      const approved = role === "Support Seeker";
-
-      await setDoc(doc(db, "users", user.uid), {
-        fullName,
-        email,
-        phoneNumber: digits,
-        role,
-        approved,
-        createdAt: new Date().toISOString(),
-      });
-
-      setUser(user);
-
-      if (!approved) {
-        setErrors({
-          general:
-            "Your account requires admin approval before access is granted.",
-        });
-      }
+      // Navigate to role selection instead of creating account
+      navigation.navigate("RoleSelection");
     } catch (error: any) {
       console.error(error);
       let errorMessage = "Sign-up failed. Please try again.";

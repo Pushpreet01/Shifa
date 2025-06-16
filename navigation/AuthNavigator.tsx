@@ -3,6 +3,8 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "../app/auth/LoginScreen";
 import SignUpScreen from "../app/auth/SignUpScreen";
+import RoleSelectionScreen from "../app/auth/RoleSelectionScreen";
+import UserSettingsScreen from "../app/auth/UserSettingsScreen";
 import { useAuth } from "../context/AuthContext";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -30,6 +32,9 @@ const AuthNavigator = () => {
     <AuthStack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignUpScreen} />
+      {/* Test screens - will be removed when integrating into main flow */}
+      <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
+      <AuthStack.Screen name="UserSettings" component={UserSettingsScreen} />
     </AuthStack.Navigator>
   );
 };

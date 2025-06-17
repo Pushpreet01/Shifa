@@ -8,16 +8,17 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
-  Platform,
+  Switch,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import firebaseEventService from "../../services/firebaseEventService";
+import firebaseOpportunityService from "../../services/FirebaseOpportunityService";
 import { auth, db } from "../../config/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
-
+import Slider from "@react-native-community/slider";
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
@@ -43,8 +44,13 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [needsVolunteers, setNeedsVolunteers] = useState(false);
+  const [volunteersNeeded, setVolunteersNeeded] = useState(1);
+  const [volunteerDescription, setVolunteerDescription] = useState("");
+  const [timings, setTimings] = useState("");
+  const [rewards, setRewards] = useState("");
+  const [refreshments, setRefreshments] = useState("");
 
-  // Format time for display
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -102,7 +108,6 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
     setShowStartTimePicker(false);
     if (selectedTime) {
       setStartTime(selectedTime);
-      // If end time is before start time, update end time
       if (selectedTime > endTime) {
         const newEndTime = new Date(selectedTime);
         newEndTime.setHours(selectedTime.getHours() + 1);
@@ -145,6 +150,21 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       return false;
     }
 
+    if (needsVolunteers) {
+      if (volunteersNeeded < 1 || volunteersNeeded > 50) {
+        Alert.alert("Error", "Volunteers needed must be between 1 and 50");
+        return false;
+      }
+      if (!volunteerDescription.trim()) {
+        Alert.alert("Error", "Volunteer task description is required");
+        return false;
+      }
+      if (!timings.trim()) {
+        Alert.alert("Error", "Volunteer timings are required");
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -160,9 +180,27 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         endTime: formatTime(endTime),
         location,
         description,
+        needsVolunteers,
       };
 
       const eventId = await firebaseEventService.addEvent(eventData);
+
+      if (needsVolunteers && eventId) {
+        const opportunityId = doc(collection(db, "opportunities")).id;
+        const opportunityData = {
+          opportunityId,
+          eventId,
+          title,
+          noVolunteersNeeded: volunteersNeeded,
+          description: volunteerDescription.trim(),
+          timings: timings.trim(),
+          location,
+          rewards: rewards.trim() || undefined,
+          refreshments: refreshments.trim() || undefined,
+        };
+
+        await firebaseOpportunityService.createOpportunity(opportunityData);
+      }
 
       if (eventId) {
         Alert.alert("Success", "Event has been added successfully", [
@@ -213,7 +251,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.formContainer}>
+      <ScrollView style={styles.formContainer} keyboardShouldPersistTaps="handled">
         <Text style={styles.label}>Your Name</Text>
         <TextInput
           style={[styles.input, { backgroundColor: "#f0f0f0" }]}
@@ -248,7 +286,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           />
         )}
         <Text style={styles.helperText}>
-          Events can only be scheduled for today or future dates
+          Events can only be scheduled for today or a future date
         </Text>
 
         <View style={styles.timeContainer}>
@@ -310,6 +348,72 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           multiline
           numberOfLines={4}
         />
+
+        <Text style={[styles.label, { marginTop: 25 }]}>Volunteers Needed</Text>
+        <View style={styles.checkboxContainer}>
+          <Switch
+            value={needsVolunteers}
+            onValueChange={setNeedsVolunteers}
+            thumbColor={needsVolunteers ? "#F4A941" : "#f4f3f4"}
+            trackColor={{ false: "#767577", true: "#F4A941" }}
+          />
+          <Text style={styles.checkboxLabel}>This event needs volunteers</Text>
+        </View>
+        {needsVolunteers && (
+          <>
+            <Text style={styles.helperText}>
+              Specify the number of volunteers and their tasks.
+            </Text>
+            <Slider
+              style={{ width: "100%", height: 40 }}
+              minimumValue={1}
+              maximumValue={50}
+              step={1}
+              value={volunteersNeeded}
+              onValueChange={setVolunteersNeeded}
+              minimumTrackTintColor="#F4A941"
+              maximumTrackTintColor="#d3d3d3"
+              thumbTintColor="#F4A941"
+            />
+            <Text style={styles.sliderValueText}>
+              {volunteersNeeded} volunteer{volunteersNeeded === 1 ? "" : "s"}
+            </Text>
+            <Text style={styles.label}>Volunteer Task Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={volunteerDescription}
+              onChangeText={setVolunteerDescription}
+              placeholder="Enter description of tasks volunteers will perform"
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={3}
+            />
+            <Text style={styles.label}>Volunteer Timings</Text>
+            <TextInput
+              style={styles.input}
+              value={timings}
+              onChangeText={setTimings}
+              placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
+              placeholderTextColor="#999"
+            />
+            <Text style={styles.label}>Rewards (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={rewards}
+              onChangeText={setRewards}
+              placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
+              placeholderTextColor="#999"
+            />
+            <Text style={styles.label}>Refreshments (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={refreshments}
+              onChangeText={setRefreshments}
+              placeholder="Enter refreshments provided (e.g., snacks, water)"
+              placeholderTextColor="#999"
+            />
+          </>
+        )}
 
         <TouchableOpacity
           style={[styles.submitButton, isSubmitting && styles.disabledButton]}
@@ -380,7 +484,8 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     padding: 18,
-    marginBottom: 25,
+    paddingBottom: 100,
+    marginBottom: 100,
   },
   label: {
     fontSize: 16,
@@ -405,7 +510,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   textArea: {
-    height: 100,
+    height: 80,
     textAlignVertical: "top",
   },
   dateSelector: {
@@ -436,6 +541,22 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   timeText: {
+    fontSize: 16,
+    color: "#2E2E2E",
+  },
+  sliderValueText: {
+    fontSize: 16,
+    color: "#2E2E2E",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
     fontSize: 16,
     color: "#2E2E2E",
   },

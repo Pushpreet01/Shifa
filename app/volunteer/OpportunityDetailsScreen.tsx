@@ -12,86 +12,144 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
-import FirebaseEventService from "../../services/firebaseEventService";
+import { format } from "date-fns";
+import FirebaseOpportunityService from "../../services/FirebaseOpportunityService";
+import FirebaseVolunteerApplicationService from "../../services/FirebaseVolunteerApplicationService";
+import { auth } from "../../config/firebaseConfig";
+import { VolunteerOpportunity, VolunteerApplication } from "../../types/volunteer";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "OpportunityDetails">;
 
-export type OpportunityDetailsParams = {
-  title: string;
-  date: string;
-  timing: string;
-  location: string;
-  description: string;
-  eventId: string;
-};
-
 const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { title, date, timing, location, description, eventId } =
-    route.params as OpportunityDetailsParams;
-  const [isRegistered, setIsRegistered] = useState(false);
+  const { title, timing, eventId, opportunityId, description, date, location } = route.params;
+  const currentUser = auth.currentUser;
+
+  // State for opportunity details
+  const [opportunityDetails, setOpportunityDetails] = useState<VolunteerOpportunity | null>(null);
+  const [isApplied, setIsApplied] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [checkingRegistration, setCheckingRegistration] = useState(true);
+  const [checkingApplication, setCheckingApplication] = useState(true);
+  const [loadingOpportunity, setLoadingOpportunity] = useState(true);
 
   useEffect(() => {
-    checkRegistrationStatus();
+    fetchOpportunityDetails();
+    checkApplicationStatus();
   }, []);
 
-  const checkRegistrationStatus = async () => {
+  const fetchOpportunityDetails = async () => {
     try {
-      const status = await FirebaseEventService.checkRegistration(eventId);
-      setIsRegistered(status);
-    } catch (error) {
-      console.error("Error checking registration:", error);
-    } finally {
-      setCheckingRegistration(false);
-    }
-  };
-
-  const handleRegistration = async () => {
-    setLoading(true);
-    try {
-      const success = await FirebaseEventService.registerForEvent(eventId);
-      if (success) {
-        setIsRegistered(true);
-        Alert.alert(
-          "Success",
-          "You have successfully registered for this event!",
-          [{ text: "OK" }]
-        );
+      setLoadingOpportunity(true);
+      const opportunity = await FirebaseOpportunityService.getOpportunity(opportunityId, eventId);
+      if (opportunity) {
+        setOpportunityDetails(opportunity);
       } else {
-        Alert.alert("Error", "You are already registered for this event.", [
-          { text: "OK" },
-        ]);
+        // Fallback to route.params if opportunity not found or not approved
+        setOpportunityDetails({
+          opportunityId,
+          eventId,
+          title,
+          noVolunteersNeeded: 0,
+          description,
+          approvalStatus: "approved",
+          timings: timing,
+          location: location || undefined,
+          createdAt: date ? new Date(date) : new Date(),
+          createdBy: "",
+        });
+        console.log("[fetchOpportunityDetails] Using route.params fallback");
+        Alert.alert("Warning", "Unable to load full opportunity details. Showing available information.");
       }
     } catch (error) {
-      Alert.alert(
-        "Error",
-        "Failed to register for the event. Please try again.",
-        [{ text: "OK" }]
-      );
+      console.error("Failed to fetch opportunity details", error);
+      setOpportunityDetails({
+        opportunityId,
+        eventId,
+        title,
+        noVolunteersNeeded: 0,
+        description,
+        approvalStatus: "approved",
+        timings: timing,
+        location: location || undefined,
+        createdAt: date ? new Date(date) : new Date(),
+        createdBy: "",
+      });
+      Alert.alert("Warning", "Unable to load full opportunity details. Showing available information.");
+    } finally {
+      setLoadingOpportunity(false);
+    }
+  };
+
+  const checkApplicationStatus = async () => {
+    if (!currentUser) {
+      setIsApplied(false);
+      setCheckingApplication(false);
+      return;
+    }
+    try {
+      const apps = await FirebaseVolunteerApplicationService.getApplicationsByUser(currentUser.uid);
+      const app = apps.find((a) => a.opportunityId === opportunityId);
+      setIsApplied(!!app);
+      setApplicationStatus(app ? app.status.toUpperCase() : null);
+    } catch (error) {
+      console.error("Error checking application status:", error);
+    } finally {
+      setCheckingApplication(false);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!currentUser) {
+      Alert.alert("Not logged in", "Please log in to apply.");
+      return;
+    }
+
+    if (isApplied) {
+      Alert.alert("Already applied", "You have already applied for this opportunity.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await FirebaseVolunteerApplicationService.applyForOpportunity({
+        userId: currentUser.uid,
+        opportunityId,
+        message: "",
+      });
+      setIsApplied(true);
+      setApplicationStatus("PENDING");
+      Alert.alert("Success", "Your application has been submitted.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to submit application. Please try again.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancelRegistration = async () => {
-    setLoading(true);
-    try {
-      const success = await FirebaseEventService.cancelRegistration(eventId);
-      if (success) {
-        setIsRegistered(false);
-        Alert.alert("Success", "Your registration has been cancelled.", [
-          { text: "OK" },
-        ]);
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to cancel registration. Please try again.", [
-        { text: "OK" },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  // Type guard for createdAt
+  const getFormattedDate = (createdAt: Date | { toDate: () => Date }): string => {
+    const dateObj = createdAt instanceof Date ? createdAt : createdAt.toDate();
+    return format(dateObj, "MMM d, yyyy");
   };
+
+  if (loadingOpportunity) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1B6B63" />
+      </View>
+    );
+  }
+
+  if (!opportunityDetails) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.fontSize16Red}>
+          Opportunity details not available.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,7 +161,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Event Details</Text>
+          <Text style={styles.headerTitle}>Opportunity Details</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity
               onPress={() => navigation.navigate("Announcements")}
@@ -126,26 +184,39 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <ScrollView style={styles.content}>
         <View style={styles.detailsContainer}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{opportunityDetails.title}</Text>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Date</Text>
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionText}>{date}</Text>
+              <Text style={styles.sectionText}>
+                {getFormattedDate(opportunityDetails.createdAt)}
+              </Text>
             </View>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Time</Text>
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionText}>{timing}</Text>
+              <Text style={styles.sectionText}>{opportunityDetails.timings}</Text>
             </View>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Location</Text>
             <View style={styles.sectionContent}>
-              <Text style={styles.sectionText}>{location}</Text>
+              <Text style={styles.sectionText}>
+                {opportunityDetails.location || "No location specified"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Volunteers Needed</Text>
+            <View style={styles.sectionContent}>
+              <Text style={styles.sectionText}>
+                {opportunityDetails.noVolunteersNeeded}
+              </Text>
             </View>
           </View>
 
@@ -153,34 +224,49 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.sectionTitle}>Description</Text>
             <View style={styles.sectionContent}>
               <Text style={styles.sectionText}>
-                {description || "No description available for this event."}
+                {opportunityDetails.description || "No description available"}
               </Text>
             </View>
           </View>
 
-          {checkingRegistration ? (
+          {opportunityDetails.rewards && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Rewards</Text>
+              <View style={styles.sectionContent}>
+                <Text style={styles.sectionText}>{opportunityDetails.rewards}</Text>
+              </View>
+            </View>
+          )}
+
+          {opportunityDetails.refreshments && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Refreshments</Text>
+              <View style={styles.sectionContent}>
+                <Text style={styles.sectionText}>{opportunityDetails.refreshments}</Text>
+              </View>
+            </View>
+          )}
+
+          {checkingApplication ? (
             <ActivityIndicator
               size="large"
               color="#1B6B63"
               style={styles.loader}
             />
+          ) : isApplied ? (
+            <Text style={styles.applicationStatus}>
+              Application Status: {applicationStatus}
+            </Text>
           ) : (
             <TouchableOpacity
-              style={[
-                styles.actionButton,
-                isRegistered ? styles.cancelButton : styles.registerButton,
-              ]}
-              onPress={
-                isRegistered ? handleCancelRegistration : handleRegistration
-              }
+              style={[styles.actionButton, styles.applyButton]}
+              onPress={handleApply}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.actionButtonText}>
-                  {isRegistered ? "Cancel Registration" : "Register for Event"}
-                </Text>
+                <Text style={styles.actionButtonText}>Apply for Opportunity</Text>
               )}
             </TouchableOpacity>
           )}
@@ -245,6 +331,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginBottom: 100,
   },
   detailsContainer: {
     padding: 20,
@@ -286,20 +373,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "80%",
   },
-  registerButton: {
+  applyButton: {
     backgroundColor: "#1B6B63",
-  },
-  cancelButton: {
-    backgroundColor: "#C44536",
   },
   actionButtonText: {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
   },
+  applicationStatus: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2E2E2E",
+    marginTop: 15,
+    marginBottom: 40,
+    textAlign: "center",
+  },
   loader: {
     marginVertical: 20,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fontSize16Red: {
+    fontSize: 16,
+    color: "#C44536",
+  }
 });
 
 export default OpportunityDetailsScreen;

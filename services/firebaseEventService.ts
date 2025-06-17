@@ -9,7 +9,7 @@ import {
   doc,
   updateDoc,
   increment,
-  writeBatch,
+  getDoc,
 } from "firebase/firestore";
 import { CalendarEvent } from "./calendarService";
 
@@ -44,6 +44,21 @@ class FirebaseEventService {
     } catch (error) {
       console.error("Error fetching events:", error);
       return [];
+    }
+  }
+
+  async getEventById(eventId: string): Promise<any | null> {
+    try {
+      const docRef = doc(db, "events", eventId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching event by ID:", error);
+      return null;
     }
   }
 
@@ -83,7 +98,7 @@ class FirebaseEventService {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Not logged in");
 
-      // First check if already registered
+      // Check if already registered
       const q = query(
         collection(db, "registrations"),
         where("eventId", "==", eventId),
@@ -92,7 +107,6 @@ class FirebaseEventService {
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        // Add registration
         await addDoc(collection(db, "registrations"), {
           eventId,
           userId: currentUser.uid,
@@ -102,7 +116,6 @@ class FirebaseEventService {
           timestamp: new Date(),
         });
 
-        // Update event document to increment registration count
         const eventRef = doc(db, "events", eventId);
         await updateDoc(eventRef, {
           registrationCount: increment(1),
@@ -130,10 +143,8 @@ class FirebaseEventService {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
-        // Delete registration
         await deleteDoc(doc(db, "registrations", snapshot.docs[0].id));
 
-        // Update event document to decrement registration count
         const eventRef = doc(db, "events", eventId);
         await updateDoc(eventRef, {
           registrationCount: increment(-1),

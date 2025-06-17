@@ -98,9 +98,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  editButton: { backgroundColor: '#1E88E5' },
-  banButton: { backgroundColor: '#D32F2F' },
-  roleButton: { backgroundColor: '#6A1B9A' },
+  editButton: { backgroundColor: '#008080' },
+  banButton: { backgroundColor: '#008080' },
+  roleButton: { backgroundColor: '#008080' },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });
 

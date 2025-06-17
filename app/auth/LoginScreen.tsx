@@ -11,14 +11,17 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../config/firebaseConfig"; // update path if needed
-import { useAuth } from "../../context/AuthContext"; // update path if needed
+import { auth } from "../../config/firebaseConfig";
+import { useAuth } from "../../context/AuthContext";
+
+import { AntDesign } from "@expo/vector-icons";
+import { useGoogleAuth } from "./googleAuth"; 
 
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
-  RoleSelection?: undefined;  // Optional for testing
-  UserSettings?: { role: string };  // Optional for testing
+  RoleSelection?: undefined;
+  UserSettings?: { role: string };
 };
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
@@ -36,11 +39,7 @@ const LoginScreen = () => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
     } catch (error: any) {
       let errorMessage = "Login failed. Please try again.";
@@ -54,6 +53,13 @@ const LoginScreen = () => {
       Alert.alert("Error", errorMessage);
     }
   };
+
+  const { promptAsync } = useGoogleAuth(() => {
+    const user = auth.currentUser;
+    if (user) {
+      setUser(user);
+    }
+  });
 
   return (
     <View style={styles.container}>
@@ -89,20 +95,46 @@ const LoginScreen = () => {
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
+      <Text style={styles.Text}>Or</Text>
+
+      {/*  Google Sign-In Button */}
+      <TouchableOpacity
+        onPress={() => promptAsync()}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#DB4437",
+          paddingVertical: 12,
+          paddingHorizontal: 30,
+          borderRadius: 25,
+          marginTop: 20,
+        }}
+      >
+        <AntDesign name="google" size={24} color="white" />
+        <Text
+          style={{
+            color: "white",
+            marginLeft: 10,
+            fontWeight: "bold",
+            fontSize: 16,
+          }}
+        >
+          Continue with Google
+        </Text>
+      </TouchableOpacity>
+
       <Text style={styles.Text}>Don't have an account?</Text>
 
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={() => navigation.navigate("Signup")}
-      >
+      <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate("Signup")}>
         <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      {/* Temporary test button for new signup flow */}
+      {/* Optional test button */}
       <TouchableOpacity
-        style={[styles.signUpButton, { marginTop: 20, backgroundColor: '#F4A941' }]}
+        style={[styles.signUpButton, { marginTop: 20, backgroundColor: "#F4A941" }]}
         onPress={() => {
-          // @ts-ignore - Ignoring type error for testing purposes
+          // @ts-ignore
           navigation.navigate("RoleSelection");
         }}
       >
@@ -168,6 +200,7 @@ const styles = StyleSheet.create({
     color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
+    textAlign: "center",
   },
 });
 

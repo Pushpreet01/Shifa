@@ -145,7 +145,7 @@ export const useAuth = () => useContext(AuthContext);
 //   email: string | null;
 //   displayName: string | null;
 //   role?: Role;
-//   approved?: boolean; // ✅ Added here
+//   approved?: boolean; //  Added here
 // }
 
 // export interface AuthContextType {

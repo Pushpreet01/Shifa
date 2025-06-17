@@ -32,6 +32,13 @@ const AdminHeroBox: React.FC<AdminHeroBoxProps> = ({
   } else {
     navigation.goBack();
   }
+  if (customBackRoute === 'Profile') {
+    navigation.navigate('AdminTabs', { screen: 'Events' });
+  } else if (customBackRoute) {
+    navigation.navigate(customBackRoute);
+  } else {
+    navigation.goBack();
+  }
 };
 
     

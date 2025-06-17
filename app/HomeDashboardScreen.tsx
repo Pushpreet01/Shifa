@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 2,
     backgroundColor: "#F6A800",
-    marginHorizontal: 8,
+    marginHorizontal: 4,
   },
   descriptionSection: {
     padding: 20,

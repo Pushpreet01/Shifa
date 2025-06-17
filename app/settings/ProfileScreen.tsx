@@ -17,7 +17,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../config/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
@@ -82,50 +81,143 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    try {
+      // Request permission to access the photo library
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "Please grant permission to access your photos"
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
-
-    if (!result.canceled) {
-      setUploading(true);
-      try {
-        const response = await fetch(result.assets[0].uri);
-        const blob = await response.blob();
-
-        const storage = getStorage();
-        const currentUser = auth.currentUser;
-        if (!currentUser) throw new Error("No user logged in");
-
-        const imageRef = ref(storage, `profile_images/${currentUser.uid}`);
-        await uploadBytes(imageRef, blob);
-        const downloadURL = await getDownloadURL(imageRef);
-
-        setProfileImage(downloadURL);
-
-        // Update user profile in Firestore
-        await updateDoc(doc(db, "users", currentUser.uid), {
-          profileImage: downloadURL,
-        });
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        Alert.alert("Error", "Failed to upload profile picture");
-      } finally {
-        setUploading(false);
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please grant permission to access your photos in your device settings to select a profile picture."
+        );
+        return;
       }
+
+      // Launch the image picker with base64 enabled
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.3, // Lower quality to keep base64 size manageable
+        allowsMultipleSelection: false,
+        base64: true, // Enable base64 encoding
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setUploading(true);
+
+        try {
+          const base64Data = result.assets[0].base64;
+
+          if (!base64Data) {
+            throw new Error("Failed to get image data");
+          }
+
+          const currentUser = auth.currentUser;
+          if (!currentUser) {
+            throw new Error("No user logged in");
+          }
+
+          // Create base64 image URL
+          const base64ImageUrl = `data:image/jpeg;base64,${base64Data}`;
+
+          console.log(
+            "Image size (base64):",
+            Math.round(base64Data.length * 0.75),
+            "bytes"
+          );
+
+          // Check if image is too large (Firestore has 1MB document limit)
+          if (base64Data.length > 1000000) {
+            // ~750KB limit for safety
+            Alert.alert(
+              "Image Too Large",
+              "Please select a smaller image. The current image is too large to store."
+            );
+            return;
+          }
+
+          // Update the local state
+          setProfileImage(base64ImageUrl);
+
+          // Update the user profile in Firestore with base64 data
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            profileImage: base64ImageUrl,
+            profileImageType: "base64",
+            profileImageUpdated: new Date().toISOString(),
+          });
+
+          Alert.alert("Success", "Profile picture updated successfully!");
+        } catch (error) {
+          console.error("Error saving image:", error);
+
+          let errorMessage =
+            "Failed to save profile picture. Please try again.";
+
+          if (error.message?.includes("permission")) {
+            errorMessage =
+              "Permission denied. Please check your Firestore rules.";
+          } else if (error.message?.includes("quota")) {
+            errorMessage =
+              "Storage quota exceeded. Please try a smaller image.";
+          }
+
+          Alert.alert("Save Failed", errorMessage);
+        } finally {
+          setUploading(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert(
+        "Error",
+        "Failed to access photo library. Please check your permissions and try again."
+      );
+      setUploading(false);
     }
+  };
+
+  const removeProfileImage = async () => {
+    Alert.alert(
+      "Remove Profile Picture",
+      "Are you sure you want to remove your profile picture?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const currentUser = auth.currentUser;
+              if (!currentUser) return;
+
+              setUploading(true);
+
+              // Update the user profile in Firestore to remove the profile image
+              await updateDoc(doc(db, "users", currentUser.uid), {
+                profileImage: null,
+                profileImageType: null,
+                profileImageUpdated: new Date().toISOString(),
+              });
+
+              // Update local state
+              setProfileImage(null);
+
+              Alert.alert("Success", "Profile picture removed successfully!");
+            } catch (error) {
+              console.error("Error removing profile image:", error);
+              Alert.alert("Error", "Failed to remove profile picture");
+            } finally {
+              setUploading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleSave = async () => {
@@ -214,6 +306,15 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             )}
           </TouchableOpacity>
+
+          {profileImage && !uploading && (
+            <TouchableOpacity
+              style={styles.removeImageButton}
+              onPress={removeProfileImage}
+            >
+              <Ionicons name="close-circle" size={24} color="#C44536" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.formContainer}>
@@ -390,6 +491,19 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: -10,
+    right: -10,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
 

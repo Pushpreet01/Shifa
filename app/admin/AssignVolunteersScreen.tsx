@@ -65,7 +65,7 @@ const AssignVolunteersScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeroBox title="Assign Volunteers" showBackButton customBackRoute="Events" />
+      <AdminHeroBox title="Assign Volunteers" showBackButton customBackRoute="AdminTabs" />
 
       <View style={styles.pickerWrapper}>
         <Text style={styles.label}>Select Event:</Text>

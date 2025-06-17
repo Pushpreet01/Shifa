@@ -17,6 +17,8 @@ import { useAuth } from "../../context/AuthContext"; // update path if needed
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
+  RoleSelection?: undefined;  // Optional for testing
+  UserSettings?: { role: string };  // Optional for testing
 };
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
@@ -94,6 +96,17 @@ const LoginScreen = () => {
         onPress={() => navigation.navigate("Signup")}
       >
         <Text style={styles.signUpButtonText}>Sign Up</Text>
+      </TouchableOpacity>
+
+      {/* Temporary test button for new signup flow */}
+      <TouchableOpacity
+        style={[styles.signUpButton, { marginTop: 20, backgroundColor: '#F4A941' }]}
+        onPress={() => {
+          // @ts-ignore - Ignoring type error for testing purposes
+          navigation.navigate("RoleSelection");
+        }}
+      >
+        <Text style={styles.signUpButtonText}>Test New Signup Flow</Text>
       </TouchableOpacity>
     </View>
   );

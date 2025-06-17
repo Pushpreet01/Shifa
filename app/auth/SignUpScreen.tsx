@@ -21,18 +21,19 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { auth, db } from "../../config/firebaseConfig"; 
-import { useAuth } from "../../context/AuthContext"; 
+import { auth, db } from "../../config/firebaseConfig";
+import { useAuth } from "../../context/AuthContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
+import { AntDesign } from "@expo/vector-icons";
+import { useGoogleAuth } from "./googleAuth"; // ✅ Reused
 
 type AuthStackParamList = {
   Login: undefined;
-  SignUp: undefined;
-  RoleSelection: undefined;
+  Signup: undefined;
 };
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "SignUp">;
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
 
 const roles = [
   { label: "Support Seeker", value: "Support Seeker" },
@@ -47,7 +48,6 @@ const SignUpScreen: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Support Seeker");
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuth();
@@ -93,7 +93,6 @@ const SignUpScreen: React.FC = () => {
       setLoading(true);
       const digits = phoneNumber.replace(/\D/g, "");
 
-      // Check if phone number already exists
       const q = query(
         collection(db, "users"),
         where("phoneNumber", "==", digits)
@@ -108,8 +107,31 @@ const SignUpScreen: React.FC = () => {
         return;
       }
 
-      // Navigate to role selection instead of creating account
-      navigation.navigate("RoleSelection");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const approved = role === "Support Seeker";
+
+      await setDoc(doc(db, "users", user.uid), {
+        fullName,
+        email,
+        phoneNumber: digits,
+        role,
+        approved,
+        createdAt: new Date().toISOString(),
+      });
+
+      setUser(user);
+
+      if (!approved) {
+        setErrors({
+          general:
+            "Your account requires admin approval before access is granted.",
+        });
+      }
     } catch (error: any) {
       console.error(error);
       let errorMessage = "Sign-up failed. Please try again.";
@@ -126,6 +148,30 @@ const SignUpScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const { promptAsync } = useGoogleAuth(async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userQuery = query(
+        collection(db, "users"),
+        where("email", "==", user.email)
+      );
+      const existing = await getDocs(userQuery);
+
+      if (existing.empty) {
+        await setDoc(doc(db, "users", user.uid), {
+          fullName: user.displayName || "",
+          email: user.email,
+          phoneNumber: "",
+          role: "Support Seeker",
+          approved: true,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      setUser(user);
+    }
+  });
 
   return (
     <KeyboardAvoidingView
@@ -240,6 +286,42 @@ const SignUpScreen: React.FC = () => {
           <Text style={styles.signUpButtonText}>Sign Up</Text>
         </TouchableOpacity>
 
+        <Text style={styles.Text}>Or</Text>
+
+        {/* ✅ Google Sign-In Button */}
+        <View style={{ marginVertical: 15 }}>
+          <TouchableOpacity
+            onPress={() => promptAsync()}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#DB4437",
+              paddingVertical: 12,
+              paddingHorizontal: 30,
+              borderRadius: 25,
+              marginTop: 5,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 3,
+              elevation: 5,
+            }}
+          >
+            <AntDesign name="google" size={24} color="white" />
+            <Text
+              style={{
+                color: "white",
+                marginLeft: 10,
+                fontWeight: "bold",
+                fontSize: 16,
+              }}
+            >
+              Continue with Google
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <Text style={styles.Text}>Already have an account?</Text>
 
         <TouchableOpacity
@@ -326,6 +408,7 @@ const styles = StyleSheet.create({
     color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
+    textAlign: "center",
   },
   errorText: {
     color: "#FF4D4D",

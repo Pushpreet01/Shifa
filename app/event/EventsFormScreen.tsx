@@ -19,6 +19,8 @@ import { auth, db } from "../../config/firebaseConfig";
 import { doc, getDoc, collection } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
+
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
 const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
@@ -251,180 +253,189 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.formContainer} keyboardShouldPersistTaps="handled">
-        <Text style={styles.label}>Your Name</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: "#f0f0f0" }]}
-          value={name}
-          editable={false}
-          placeholderTextColor="#999"
-        />
-
-        <Text style={styles.label}>Event Title</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Enter event title"
-          placeholderTextColor="#999"
-        />
-
-        <Text style={styles.label}>Event Date</Text>
-        <TouchableOpacity
-          style={styles.dateSelector}
-          onPress={() => setShowDatePicker(true)}
+      <KeyboardAwareWrapper>
+        <ScrollView
+          style={styles.formContainer}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.dateText}>{dateString}</Text>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-            minimumDate={today}
+          <Text style={styles.label}>Your Name</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+            value={name}
+            editable={false}
+            placeholderTextColor="#999"
           />
-        )}
-        <Text style={styles.helperText}>
-          Events can only be scheduled for today or a future date
-        </Text>
 
-        <View style={styles.timeContainer}>
-          <View style={styles.timeField}>
-            <Text style={styles.label}>Start Time</Text>
-            <TouchableOpacity
-              style={styles.timeSelector}
-              onPress={() => setShowStartTimePicker(true)}
-            >
-              <Text style={styles.timeText}>{formatTime(startTime)}</Text>
-            </TouchableOpacity>
-            {showStartTimePicker && (
-              <DateTimePicker
-                value={startTime}
-                mode="time"
-                is24Hour={false}
-                display="default"
-                onChange={handleStartTimeChange}
-              />
-            )}
-          </View>
-
-          <View style={styles.timeField}>
-            <Text style={styles.label}>End Time</Text>
-            <TouchableOpacity
-              style={styles.timeSelector}
-              onPress={() => setShowEndTimePicker(true)}
-            >
-              <Text style={styles.timeText}>{formatTime(endTime)}</Text>
-            </TouchableOpacity>
-            {showEndTimePicker && (
-              <DateTimePicker
-                value={endTime}
-                mode="time"
-                is24Hour={false}
-                display="default"
-                onChange={handleEndTimeChange}
-              />
-            )}
-          </View>
-        </View>
-
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          style={styles.input}
-          value={location}
-          onChangeText={setLocation}
-          placeholder="Enter event location"
-          placeholderTextColor="#999"
-        />
-
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Enter event description"
-          placeholderTextColor="#999"
-          multiline
-          numberOfLines={4}
-        />
-
-        <Text style={[styles.label, { marginTop: 25 }]}>Volunteers Needed</Text>
-        <View style={styles.checkboxContainer}>
-          <Switch
-            value={needsVolunteers}
-            onValueChange={setNeedsVolunteers}
-            thumbColor={needsVolunteers ? "#F4A941" : "#f4f3f4"}
-            trackColor={{ false: "#767577", true: "#F4A941" }}
+          <Text style={styles.label}>Event Title</Text>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Enter event title"
+            placeholderTextColor="#999"
           />
-          <Text style={styles.checkboxLabel}>This event needs volunteers</Text>
-        </View>
-        {needsVolunteers && (
-          <>
-            <Text style={styles.helperText}>
-              Specify the number of volunteers and their tasks.
-            </Text>
-            <Slider
-              style={{ width: "100%", height: 40 }}
-              minimumValue={1}
-              maximumValue={50}
-              step={1}
-              value={volunteersNeeded}
-              onValueChange={setVolunteersNeeded}
-              minimumTrackTintColor="#F4A941"
-              maximumTrackTintColor="#d3d3d3"
-              thumbTintColor="#F4A941"
-            />
-            <Text style={styles.sliderValueText}>
-              {volunteersNeeded} volunteer{volunteersNeeded === 1 ? "" : "s"}
-            </Text>
-            <Text style={styles.label}>Volunteer Task Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={volunteerDescription}
-              onChangeText={setVolunteerDescription}
-              placeholder="Enter description of tasks volunteers will perform"
-              placeholderTextColor="#999"
-              multiline
-              numberOfLines={3}
-            />
-            <Text style={styles.label}>Volunteer Timings</Text>
-            <TextInput
-              style={styles.input}
-              value={timings}
-              onChangeText={setTimings}
-              placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
-              placeholderTextColor="#999"
-            />
-            <Text style={styles.label}>Rewards (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              value={rewards}
-              onChangeText={setRewards}
-              placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
-              placeholderTextColor="#999"
-            />
-            <Text style={styles.label}>Refreshments (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              value={refreshments}
-              onChangeText={setRefreshments}
-              placeholder="Enter refreshments provided (e.g., snacks, water)"
-              placeholderTextColor="#999"
-            />
-          </>
-        )}
 
-        <TouchableOpacity
-          style={[styles.submitButton, isSubmitting && styles.disabledButton]}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          <Text style={styles.submitButtonText}>
-            {isSubmitting ? "Adding Event..." : "Add Event"}
+          <Text style={styles.label}>Event Date</Text>
+          <TouchableOpacity
+            style={styles.dateSelector}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.dateText}>{dateString}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+              minimumDate={today}
+            />
+          )}
+          <Text style={styles.helperText}>
+            Events can only be scheduled for today or a future date
           </Text>
-        </TouchableOpacity>
-      </ScrollView>
+
+          <View style={styles.timeContainer}>
+            <View style={styles.timeField}>
+              <Text style={styles.label}>Start Time</Text>
+              <TouchableOpacity
+                style={styles.timeSelector}
+                onPress={() => setShowStartTimePicker(true)}
+              >
+                <Text style={styles.timeText}>{formatTime(startTime)}</Text>
+              </TouchableOpacity>
+              {showStartTimePicker && (
+                <DateTimePicker
+                  value={startTime}
+                  mode="time"
+                  is24Hour={false}
+                  display="default"
+                  onChange={handleStartTimeChange}
+                />
+              )}
+            </View>
+
+            <View style={styles.timeField}>
+              <Text style={styles.label}>End Time</Text>
+              <TouchableOpacity
+                style={styles.timeSelector}
+                onPress={() => setShowEndTimePicker(true)}
+              >
+                <Text style={styles.timeText}>{formatTime(endTime)}</Text>
+              </TouchableOpacity>
+              {showEndTimePicker && (
+                <DateTimePicker
+                  value={endTime}
+                  mode="time"
+                  is24Hour={false}
+                  display="default"
+                  onChange={handleEndTimeChange}
+                />
+              )}
+            </View>
+          </View>
+
+          <Text style={styles.label}>Location</Text>
+          <TextInput
+            style={styles.input}
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Enter event location"
+            placeholderTextColor="#999"
+          />
+
+          <Text style={styles.label}>Description</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Enter event description"
+            placeholderTextColor="#999"
+            multiline
+            numberOfLines={4}
+          />
+
+          <Text style={[styles.label, { marginTop: 25 }]}>
+            Volunteers Needed
+          </Text>
+          <View style={styles.checkboxContainer}>
+            <Switch
+              value={needsVolunteers}
+              onValueChange={setNeedsVolunteers}
+              thumbColor={needsVolunteers ? "#F4A941" : "#f4f3f4"}
+              trackColor={{ false: "#767577", true: "#F4A941" }}
+            />
+            <Text style={styles.checkboxLabel}>
+              This event needs volunteers
+            </Text>
+          </View>
+          {needsVolunteers && (
+            <>
+              <Text style={styles.helperText}>
+                Specify the number of volunteers and their tasks.
+              </Text>
+              <Slider
+                style={{ width: "100%", height: 40 }}
+                minimumValue={1}
+                maximumValue={50}
+                step={1}
+                value={volunteersNeeded}
+                onValueChange={setVolunteersNeeded}
+                minimumTrackTintColor="#F4A941"
+                maximumTrackTintColor="#d3d3d3"
+                thumbTintColor="#F4A941"
+              />
+              <Text style={styles.sliderValueText}>
+                {volunteersNeeded} volunteer{volunteersNeeded === 1 ? "" : "s"}
+              </Text>
+              <Text style={styles.label}>Volunteer Task Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={volunteerDescription}
+                onChangeText={setVolunteerDescription}
+                placeholder="Enter description of tasks volunteers will perform"
+                placeholderTextColor="#999"
+                multiline
+                numberOfLines={3}
+              />
+              <Text style={styles.label}>Volunteer Timings</Text>
+              <TextInput
+                style={styles.input}
+                value={timings}
+                onChangeText={setTimings}
+                placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
+                placeholderTextColor="#999"
+              />
+              <Text style={styles.label}>Rewards (Optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={rewards}
+                onChangeText={setRewards}
+                placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
+                placeholderTextColor="#999"
+              />
+              <Text style={styles.label}>Refreshments (Optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={refreshments}
+                onChangeText={setRefreshments}
+                placeholder="Enter refreshments provided (e.g., snacks, water)"
+                placeholderTextColor="#999"
+              />
+            </>
+          )}
+
+          <TouchableOpacity
+            style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? "Adding Event..." : "Add Event"}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAwareWrapper>
     </SafeAreaView>
   );
 };

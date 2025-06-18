@@ -11,10 +11,17 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
-type Props = NativeStackScreenProps<HomeStackParamList, "OpportunityApplicationForm">;
+type Props = NativeStackScreenProps<
+  HomeStackParamList,
+  "OpportunityApplicationForm"
+>;
 
-const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }) => {
+const OpportunityApplicationFormScreen: React.FC<Props> = ({
+  navigation,
+  route,
+}) => {
   const { title, description } = route.params;
   const [formData, setFormData] = useState({
     fullName: "",
@@ -40,10 +47,19 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Application</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -58,7 +74,9 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
               style={styles.input}
               placeholder="Enter name"
               value={formData.fullName}
-              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, fullName: text })
+              }
             />
           </View>
 
@@ -83,7 +101,9 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
               numberOfLines={6}
               textAlignVertical="top"
               value={formData.aboutYourself}
-              onChangeText={(text) => setFormData({ ...formData, aboutYourself: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, aboutYourself: text })
+              }
             />
           </View>
 
@@ -216,4 +236,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OpportunityApplicationFormScreen; 
+export default OpportunityApplicationFormScreen;

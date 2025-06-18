@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../config/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
@@ -282,80 +283,77 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.profileImageContainer}>
-          <TouchableOpacity onPress={pickImage} disabled={uploading}>
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <Ionicons name="person-outline" size={40} color="#666" />
-              </View>
-            )}
-            {uploading ? (
-              <ActivityIndicator
-                style={styles.uploadIndicator}
-                color="#1B6B63"
-              />
-            ) : (
-              <View style={styles.editIconContainer}>
-                <Ionicons name="camera" size={20} color="#FFF" />
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {profileImage && !uploading && (
+      <KeyboardAwareWrapper>
+        <View style={styles.content}>
+          <View style={styles.profileImageContainer}>
             <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={removeProfileImage}
+              onPress={pickImage}
+              onLongPress={profileImage ? removeProfileImage : undefined}
+              disabled={uploading}
             >
-              <Ionicons name="close-circle" size={24} color="#C44536" />
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <View style={styles.profileImagePlaceholder}>
+                  <Ionicons name="person-outline" size={40} color="#666" />
+                </View>
+              )}
+              {uploading ? (
+                <ActivityIndicator
+                  style={styles.uploadIndicator}
+                  color="#1B6B63"
+                />
+              ) : (
+                <View style={styles.editIconContainer}>
+                  <Ionicons name="camera" size={20} color="#FFF" />
+                </View>
+              )}
             </TouchableOpacity>
-          )}
+          </View>
+
+          <View style={styles.formContainer}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter your full name"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+              value={email}
+              editable={false}
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={phone}
+              onChangeText={handlePhoneChange}
+              placeholder="Enter your phone number"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+            />
+
+            <TouchableOpacity
+              style={[styles.saveButton, loading && styles.disabledButton]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              <Text style={styles.saveButtonText}>
+                {loading ? "Saving..." : "Save Changes"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter your full name"
-            placeholderTextColor="#999"
-          />
-
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: "#f0f0f0" }]}
-            value={email}
-            editable={false}
-            placeholderTextColor="#999"
-          />
-
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={handlePhoneChange}
-            placeholder="Enter your phone number"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-          />
-
-          <TouchableOpacity
-            style={[styles.saveButton, loading && styles.disabledButton]}
-            onPress={handleSave}
-            disabled={loading}
-          >
-            <Text style={styles.saveButtonText}>
-              {loading ? "Saving..." : "Save Changes"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      </KeyboardAwareWrapper>
     </SafeAreaView>
   );
 };
@@ -491,19 +489,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  removeImageButton: {
-    position: "absolute",
-    top: -10,
-    right: -10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 15,
-    padding: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
 });
 

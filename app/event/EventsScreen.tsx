@@ -173,17 +173,26 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
       <View style={styles.heroBox}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate("HomeDashboard")}
             style={styles.backButtonContainer}
           >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -268,7 +277,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  header: { 
+  header: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
@@ -367,12 +376,12 @@ const styles = StyleSheet.create({
   localEvent: {
     // backgroundColor: '#FFFFFF',
     borderLeftWidth: 4,
-    borderLeftColor: '#F4A941',
+    borderLeftColor: "#F4A941",
   },
   firebaseEvent: {
     // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
-    borderLeftColor: '#F4A941',
+    borderLeftColor: "#F4A941",
   },
 });
 

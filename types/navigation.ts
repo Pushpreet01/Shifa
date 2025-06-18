@@ -2,6 +2,8 @@
 export type AuthStackParamList = {
   Login: undefined;
   SignUp: undefined;
+  ForgotPassword: undefined;
+  CheckInbox: undefined;
 };
 
 export type HomeStackParamList = {

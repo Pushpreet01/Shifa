@@ -16,13 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 
 import { AntDesign } from "@expo/vector-icons";
 import { useGoogleAuth } from "./googleAuth"; 
-
-type AuthStackParamList = {
-  Login: undefined;
-  Signup: undefined;
-  RoleSelection?: undefined;
-  UserSettings?: { role: string };
-};
+import { AuthStackParamList } from "../../types/navigation";
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
 
@@ -86,7 +80,7 @@ const LoginScreen = () => {
           secureTextEntry
           style={styles.input}
         />
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate({ name: "ForgotPassword", params: undefined })}>
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
@@ -126,7 +120,7 @@ const LoginScreen = () => {
 
       <Text style={styles.Text}>Don't have an account?</Text>
 
-      <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate("Signup")}>
+      <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate({ name: "SignUp", params: undefined })}>
         <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
 
@@ -135,7 +129,7 @@ const LoginScreen = () => {
         style={[styles.signUpButton, { marginTop: 20, backgroundColor: "#F4A941" }]}
         onPress={() => {
           // @ts-ignore
-          navigation.navigate("RoleSelection");
+          navigation.navigate({ name: "RoleSelection", params: undefined });
         }}
       >
         <Text style={styles.signUpButtonText}>Test New Signup Flow</Text>

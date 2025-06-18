@@ -5,6 +5,8 @@ import LoginScreen from "../app/auth/LoginScreen";
 import SignUpScreen from "../app/auth/SignUpScreen";
 import RoleSelectionScreen from "../app/auth/RoleSelectionScreen";
 import UserSettingsScreen from "../app/auth/UserSettingsScreen";
+import ForgotPasswordScreen from "../app/auth/ForgotPasswordScreen";
+import CheckInboxScreen from "../app/auth/CheckInboxScreen";
 import { useAuth } from "../context/AuthContext";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -35,6 +37,8 @@ const AuthNavigator = () => {
       {/* Test screens - will be removed when integrating into main flow */}
       <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
       <AuthStack.Screen name="UserSettings" component={UserSettingsScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <AuthStack.Screen name="CheckInbox" component={CheckInboxScreen} />
     </AuthStack.Navigator>
   );
 };

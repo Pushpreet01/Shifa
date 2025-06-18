@@ -296,7 +296,7 @@ const SignUpScreen: React.FC = () => {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#DB4437",
+              backgroundColor: "#FFFFFF",
               paddingVertical: 12,
               paddingHorizontal: 30,
               borderRadius: 25,
@@ -308,10 +308,10 @@ const SignUpScreen: React.FC = () => {
               elevation: 5,
             }}
           >
-            <AntDesign name="google" size={24} color="white" />
+          <Image source={require("../../assets/google-logo.png")} style={{ width: 24, height: 24 }} />
             <Text
               style={{
-                color: "white",
+                color: "#000000",
                 marginLeft: 10,
                 fontWeight: "bold",
                 fontSize: 16,
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   },
   Text: {
     marginTop: 20,
-    color: "#008080",
+    color: "#000000",
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",

@@ -40,40 +40,12 @@ export interface AnnouncementItem {
 
 class NotificationService {
   async requestPermissions() {
-    let token;
-    if (Constants.isDevice) {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== "granted") {
-        console.log("Failed to get push token for push notification!");
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-
-      // Store the token in the user's document
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        await updateDoc(doc(db, "users", currentUser.uid), {
-          expoPushToken: token,
-        });
-      }
-    }
-
-    if (Platform.OS === "android") {
-      Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-
-    return token;
+    // This functionality is disabled to prevent a crash in Expo Go on Android
+    // due to changes in SDK 51+.
+    console.log(
+      "Push notification permissions request skipped for Expo Go compatibility."
+    );
+    return;
   }
 
   async getAnnouncements(): Promise<AnnouncementItem[]> {
@@ -176,13 +148,12 @@ class NotificationService {
 
   // Configure notification behavior
   configureNotifications() {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-      }),
-    });
+    // This functionality is disabled to prevent a crash in Expo Go on Android
+    // due to changes in SDK 51+.
+    console.log(
+      "Notification handler configuration skipped for Expo Go compatibility."
+    );
+    return;
   }
 }
 

@@ -18,30 +18,16 @@ const AdminHeroBox: React.FC<AdminHeroBoxProps> = ({
 
   const handleBack = () => {
     if (customBackRoute === 'AdminDashboard') {
-      navigation.navigate('AdminTabs', { screen: 'AdminDashboard' }); 
+      navigation.navigate('Home', { screen: 'AdminDashboard' });
+    } else if (customBackRoute === 'Events') {
+      navigation.navigate('Home', { screen: 'Events' });
+    } else if (customBackRoute === 'Profile') {
+      navigation.navigate('Settings', { screen: 'Profile' });
     } else if (customBackRoute) {
       navigation.navigate(customBackRoute);
     } else {
       navigation.goBack();
     }
-    const handleBack = () => {
-  if (customBackRoute === 'AdminTabs') {
-    navigation.navigate('AdminTabs', { screen: 'Events' });
-  } else if (customBackRoute) {
-    navigation.navigate(customBackRoute);
-  } else {
-    navigation.goBack();
-  }
-  if (customBackRoute === 'Profile') {
-    navigation.navigate('AdminTabs', { screen: 'Events' });
-  } else if (customBackRoute) {
-    navigation.navigate(customBackRoute);
-  } else {
-    navigation.goBack();
-  }
-};
-
-    
   };
 
   return (

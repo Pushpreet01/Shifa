@@ -52,7 +52,7 @@ const UserManagementScreen = () => {
             <Text style={styles.roleTitle}>{role}</Text>
             {groupedUsers[role].map(user => (
               <View key={user.id} style={styles.userCard}>
-                <View style={styles.userInfo}>
+                <View style={styles.cardHeader}>
                   <Text style={styles.userName}>{user.name}</Text>
                   <Text style={styles.userEmail}>{user.email}</Text>
                 </View>
@@ -84,36 +84,50 @@ const UserManagementScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 20, paddingBottom: 60 },
+  content: { paddingVertical: 20, paddingBottom: 60 },
   totalText: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 16,
     color: '#1B6B63',
+    paddingHorizontal: 20,
+    marginBottom: 12,
   },
-  roleSection: { marginBottom: 24 },
+  roleSection: {
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
   roleTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1B6B63',
     marginBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5A54E',
+    paddingBottom: 4,
   },
   userCard: {
     backgroundColor: '#FDF6EC',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-    borderLeftWidth: 5,
-    borderLeftColor: '#E5A54E',
+    elevation: 2,
   },
-  userInfo: { marginBottom: 10 },
-  userName: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  userEmail: { fontSize: 14, color: '#777' },
+  cardHeader: {
+    marginBottom: 10,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 2,
+  },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

@@ -43,7 +43,7 @@ export type HomeStackParamList = {
   HomeDashboard: undefined;
   Events: undefined;
   EventsForm: undefined;
-  RegisterEvent: { eventId: string };
+  RegisterEvent: undefined;
   JournalScreen: undefined;
   MyJournalsScreen: undefined;
   NewJournalEntryScreen: undefined;
@@ -103,7 +103,25 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 const HomeStackScreen = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name="HomeDashboard" component={HomeDashboardScreen} />
-    <HomeStack.Screen name="Events" component={EventsScreen} />
+    <HomeStack.Screen
+      name="Events"
+      component={EventsScreen}
+      options={{
+        headerShown: false,
+        gestureEnabled: true,
+        gestureDirection: "horizontal",
+        headerLeft: () => null, // This removes the back button
+        headerBackTitle: null,
+      }}
+      listeners={({ navigation }) => ({
+        beforeRemove: (e) => {
+          // Prevent the default back action
+          e.preventDefault();
+          // Navigate to HomeDashboard instead
+          navigation.navigate("HomeDashboard");
+        },
+      })}
+    />
     <HomeStack.Screen name="EventsForm" component={EventsFormScreen} />
     <HomeStack.Screen name="RegisterEvent" component={RegisterEventScreen} />
     <HomeStack.Screen name="JournalScreen" component={JournalScreen} />
@@ -170,9 +188,27 @@ const TabNavigator = () => (
     screenOptions={{ headerShown: false }}
     initialRouteName={TabRoutes.Home}
   >
-    <Tab.Screen name={TabRoutes.Resources} component={ResourcesStackScreen} />
-    <Tab.Screen name={TabRoutes.Home} component={HomeStackScreen} />
-    <Tab.Screen name={TabRoutes.Settings} component={SettingsStackScreen} />
+    <Tab.Screen
+      name={TabRoutes.Resources}
+      component={ResourcesStackScreen}
+      options={{
+        unmountOnBlur: true, // This will reset the Resources stack when switching tabs
+      }}
+    />
+    <Tab.Screen
+      name={TabRoutes.Home}
+      component={HomeStackScreen}
+      options={{
+        unmountOnBlur: false, // Keep Home stack mounted to preserve state
+      }}
+    />
+    <Tab.Screen
+      name={TabRoutes.Settings}
+      component={SettingsStackScreen}
+      options={{
+        unmountOnBlur: true, // This will reset the Settings stack when switching tabs
+      }}
+    />
   </Tab.Navigator>
 );
 

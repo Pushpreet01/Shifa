@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { HomeStackParamList } from "../../navigation/AppNavigator";
 import { saveJournalEntry } from "../../services/firebaseJournalService";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");
@@ -36,7 +37,10 @@ const NewJournalEntryScreen = () => {
       navigation.goBack();
     } catch (error) {
       console.error("Error saving:", error);
-      Alert.alert("Error", error instanceof Error ? error.message : "Unknown error");
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   };
 
@@ -52,21 +56,27 @@ const NewJournalEntryScreen = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Entry</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.keyboardAvoidingView}
-      >
-        <ScrollView 
+      <KeyboardAwareWrapper>
+        <ScrollView
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
         >
@@ -98,7 +108,7 @@ const NewJournalEntryScreen = () => {
             <Text style={styles.saveButtonText}>Save Entry</Text>
           </TouchableOpacity>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAwareWrapper>
     </SafeAreaView>
   );
 };

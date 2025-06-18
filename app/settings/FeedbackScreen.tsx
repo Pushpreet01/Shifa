@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
-  ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
@@ -15,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, addDoc, collection } from "firebase/firestore";
 import { db, auth } from "../../config/firebaseConfig";
 import StarRating from "../../components/StarRating";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Feedback">;
 
@@ -25,25 +25,28 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      Alert.alert("Error", "Please select a rating");
+      Alert.alert("Error", "Please provide a rating");
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("No user logged in");
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
 
       await addDoc(collection(db, "feedback"), {
-        userId: currentUser.uid,
+        userId: user.uid,
         rating,
-        comment,
-        timestamp: new Date(),
+        comment: comment.trim(),
+        createdAt: new Date().toISOString(),
       });
 
       Alert.alert(
         "Thank You!",
-        "Your feedback has been submitted successfully",
+        "Your feedback has been submitted successfully.",
         [{ text: "OK", onPress: () => navigation.goBack() }]
       );
     } catch (error) {
@@ -85,46 +88,50 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.ratingContainer}>
-          <Text style={styles.ratingTitle}>
-            How would you rate your experience?
-          </Text>
-          <StarRating
-            rating={rating}
-            onRatingChange={setRating}
-            size={45}
-            starColor="#F4A941"
-            inactiveStarColor="#D1D1D1"
-          />
-          <Text style={styles.ratingValue}>
-            {rating > 0 ? `${rating.toFixed(1)} / 5.0` : "Tap or slide to rate"}
-          </Text>
-        </View>
+      <KeyboardAwareWrapper>
+        <View style={styles.content}>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.ratingTitle}>
+              How would you rate your experience?
+            </Text>
+            <StarRating
+              rating={rating}
+              onRatingChange={setRating}
+              size={45}
+              starColor="#F4A941"
+              inactiveStarColor="#D1D1D1"
+            />
+            <Text style={styles.ratingValue}>
+              {rating > 0
+                ? `${rating.toFixed(1)} / 5.0`
+                : "Tap or slide to rate"}
+            </Text>
+          </View>
 
-        <View style={styles.commentContainer}>
-          <Text style={styles.commentTitle}>Additional Comments</Text>
-          <TextInput
-            style={styles.commentInput}
-            multiline
-            numberOfLines={6}
-            placeholder="Tell us what you think..."
-            value={comment}
-            onChangeText={setComment}
-            textAlignVertical="top"
-          />
-        </View>
+          <View style={styles.commentContainer}>
+            <Text style={styles.commentTitle}>Additional Comments</Text>
+            <TextInput
+              style={styles.commentInput}
+              multiline
+              numberOfLines={6}
+              placeholder="Tell us what you think..."
+              value={comment}
+              onChangeText={setComment}
+              textAlignVertical="top"
+            />
+          </View>
 
-        <TouchableOpacity
-          style={[styles.submitButton, isSubmitting && styles.disabledButton]}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          <Text style={styles.submitButtonText}>
-            {isSubmitting ? "Submitting..." : "Submit Feedback"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            style={[styles.submitButton, isSubmitting && styles.disabledButton]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareWrapper>
     </SafeAreaView>
   );
 };
@@ -183,7 +190,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   content: {
-    flex: 1,
     padding: 20,
   },
   ratingContainer: {

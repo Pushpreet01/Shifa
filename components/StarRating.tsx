@@ -1,12 +1,7 @@
-import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  PanResponder,
-  GestureResponderEvent,
-  Dimensions,
-} from "react-native";
+import React from "react";
+import { View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 interface StarRatingProps {
   rating: number;
@@ -23,92 +18,54 @@ const StarRating: React.FC<StarRatingProps> = ({
   starColor = "#F4A941",
   inactiveStarColor = "#D1D1D1",
 }) => {
+  const starWidth = size + 10; // Width of a star including margin
+
   const calculateRating = (locationX: number) => {
-    const starWidth = size + 10; // Width of star plus padding
-    const position = locationX / starWidth;
-    const decimal = position % 1;
-    let newRating: number;
-
-    if (decimal < 0.25) {
-      newRating = Math.floor(position);
-    } else if (decimal >= 0.25 && decimal < 0.75) {
-      newRating = Math.floor(position) + 0.5;
-    } else {
-      newRating = Math.ceil(position);
-    }
-
-    return Math.max(0.5, Math.min(5, newRating));
+    const position = Math.max(0, locationX);
+    const rawRating = position / starWidth;
+    const roundedRating = Math.round(rawRating * 2) / 2; // Round to nearest 0.5
+    return Math.max(0.5, Math.min(5, roundedRating)); // Clamp between 0.5 and 5
   };
 
-  const [panResponder] = useState(() =>
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (event: GestureResponderEvent) => {
-        const { locationX } = event.nativeEvent;
-        const newRating = calculateRating(locationX);
-        if (newRating !== rating) {
-          onRatingChange(newRating);
-        }
-      },
-      onPanResponderGrant: (event: GestureResponderEvent) => {
-        const { locationX } = event.nativeEvent;
-        const newRating = calculateRating(locationX);
-        if (newRating !== rating) {
-          onRatingChange(newRating);
-        }
-      },
-    })
-  );
+  // --- Gestures ---
+  const tapGesture = Gesture.Tap().onStart((event) => {
+    // Handles single taps
+    onRatingChange(calculateRating(event.x));
+  });
+
+  const panGesture = Gesture.Pan().onUpdate((event) => {
+    // Handles sliding
+    onRatingChange(calculateRating(event.x));
+  });
+
+  const composedGesture = Gesture.Simultaneous(panGesture, tapGesture);
 
   const renderStars = () => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
     for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(
-          <Ionicons
-            key={i}
-            name="star"
-            size={size}
-            color={starColor}
-            style={styles.star}
-          />
-        );
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(
-          <Ionicons
-            key={i}
-            name="star-half"
-            size={size}
-            color={starColor}
-            style={styles.star}
-          />
-        );
-      } else {
-        stars.push(
-          <Ionicons
-            key={i}
-            name="star-outline"
-            size={size}
-            color={inactiveStarColor}
-            style={styles.star}
-          />
-        );
+      let iconName: "star" | "star-half" | "star-outline" = "star-outline";
+      if (rating >= i) {
+        iconName = "star";
+      } else if (rating >= i - 0.5) {
+        iconName = "star-half";
       }
+      stars.push(
+        <Ionicons
+          key={i}
+          name={iconName}
+          size={size}
+          color={iconName === "star-outline" ? inactiveStarColor : starColor}
+          style={styles.star}
+        />
+      );
     }
     return stars;
   };
 
   return (
-    <View
-      style={[styles.container, { height: size }]}
-      {...panResponder.panHandlers}
-    >
-      {renderStars()}
-    </View>
+    <GestureDetector gesture={composedGesture}>
+      <View style={[styles.container, { height: size }]}>{renderStars()}</View>
+    </GestureDetector>
   );
 };
 
@@ -116,7 +73,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     paddingHorizontal: 10,
   },
   star: {

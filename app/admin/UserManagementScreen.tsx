@@ -39,20 +39,28 @@ const UserManagementScreen = () => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Manage Users" showBackButton customBackRoute="AdminDashboard" />
 
-      <View style={styles.tabs}>
-        {roles.map((role) => (
-          <TouchableOpacity
-            key={role}
-            style={[styles.tab, activeRole === role && styles.activeTab]}
-            onPress={() => setActiveRole(role)}
-          >
-            <Text style={[styles.tabText, activeRole === role && styles.activeTabText]}>
-              {role}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Role Tabs */}
+      <View style={styles.tabWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabs}
+        >
+          {roles.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[styles.tab, activeRole === role && styles.activeTab]}
+              onPress={() => setActiveRole(role)}
+            >
+              <Text style={[styles.tabText, activeRole === role && styles.activeTabText]}>
+                {role}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
+      {/* User Cards */}
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.totalText}>Total Registered Users: {totalUsers}</Text>
 
@@ -87,19 +95,22 @@ const UserManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#FDF6EC' },
+  tabWrapper: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
   tabs: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
+    gap: 8,
   },
   tab: {
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     borderRadius: 22,
     backgroundColor: '#F1F1F1',
+    marginRight: 8,
   },
   activeTab: {
     backgroundColor: '#1B6B63',

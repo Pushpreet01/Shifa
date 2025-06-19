@@ -34,7 +34,7 @@ const AttendanceReportScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeroBox title="Attendance Report" showBackButton customBackRoute="AdminTabs" />
+      <AdminHeroBox title="Attendance Report" showBackButton customBackRoute="Events" />
 
       <ScrollView contentContainerStyle={styles.content}>
         {attendees.map((attendee) => (

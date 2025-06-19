@@ -108,7 +108,7 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 15,

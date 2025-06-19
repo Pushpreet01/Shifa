@@ -100,7 +100,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   container: {
     paddingBottom: 120,

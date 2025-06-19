@@ -29,6 +29,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [opportunityDetails, setOpportunityDetails] = useState<VolunteerOpportunity | null>(null);
   const [isApplied, setIsApplied] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
   const [checkingApplication, setCheckingApplication] = useState(true);
   const [loadingOpportunity, setLoadingOpportunity] = useState(true);
   const [formData, setFormData] = useState({
@@ -38,6 +39,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [fetchingUser, setFetchingUser] = useState(true);
+  const [canceling, setCanceling] = useState(false);
 
   useEffect(() => {
     fetchOpportunityDetails();
@@ -128,6 +130,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       const app = apps.find((a) => a.opportunityId === opportunityId);
       setIsApplied(!!app);
       setApplicationStatus(app ? app.status.toUpperCase() : null);
+      setApplicationId(app ? app.id : null);
     } catch (error) {
       console.error("Error checking application status:", error);
     } finally {
@@ -165,11 +168,36 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       setIsApplied(true);
       setApplicationStatus("PENDING");
       setFormData({ ...formData, aboutYourself: "" });
+      await checkApplicationStatus();
     } catch (error) {
       console.error("[OpportunityDetails] Error submitting application:", error);
       Alert.alert("Error", "Failed to submit application. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!currentUser) {
+      Alert.alert("Not logged in", "Please log in to cancel.");
+      return;
+    }
+    if (!applicationId) {
+      Alert.alert("Error", "No application found to cancel.");
+      return;
+    }
+    setCanceling(true);
+    try {
+      await FirebaseVolunteerApplicationService.deleteApplication(applicationId);
+      Alert.alert("Success", "Your application has been canceled.");
+      setIsApplied(false);
+      setApplicationStatus(null);
+      setApplicationId(null);
+    } catch (error) {
+      console.error("[OpportunityDetails] Error canceling application:", error);
+      Alert.alert("Error", "Failed to cancel application. Please try again.");
+    } finally {
+      setCanceling(false);
     }
   };
 
@@ -286,6 +314,15 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.registeredText}>
               Application Status: {applicationStatus}
             </Text>
+            <TouchableOpacity
+              style={[styles.cancelButton, canceling && styles.disabledButton]}
+              onPress={handleCancel}
+              disabled={canceling}
+            >
+              <Text style={styles.buttonText}>
+                {canceling ? "Canceling..." : "Cancel Registration"}
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.formContainer}>
@@ -340,7 +377,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
@@ -444,7 +481,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    marginBottom: 20,
+    marginBottom: 100,
   },
   formTitle: {
     fontSize: 18,
@@ -480,6 +517,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     alignItems: "center",
     marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: "#C44536",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    alignItems: "center",
+    marginTop: 15,
   },
   disabledButton: {
     backgroundColor: "#F4A941",

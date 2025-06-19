@@ -443,7 +443,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
     backgroundColor: "#FDF6EC",

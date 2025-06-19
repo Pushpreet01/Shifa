@@ -10,10 +10,9 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import AdminHeroBox from '../../components/AdminHeroBox';
 import { useNavigation } from '@react-navigation/native';
+import AdminHeroBox from '../../components/AdminHeroBox';
 
 type Event = {
   id: string;
@@ -76,99 +75,90 @@ const EventsScreen = () => {
     ]);
   };
 
-  const renderRightActions = (event: Event) => (
-    <View style={styles.swipeButtons}>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#3f8390' }]}
-        onPress={() => navigation.navigate('AttendanceReport')}
-      >
-        <Ionicons name="clipboard-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#F4A941' }]}
-        onPress={() => navigation.navigate('AssignVolunteers')}
-      >
-        <Ionicons name="people-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#1B6B63' }]}
-        onPress={() => openModal(event)}
-      >
-        <Ionicons name="create-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#C44536' }]}
-        onPress={() => handleDelete(event.id)}
-      >
-        <Ionicons name="close" size={24} color="#fff" />
-      </TouchableOpacity>
-    </View>
-  );
-
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        <AdminHeroBox title="Manage Events" showBackButton customBackRoute="AdminDashboard" />
+    <SafeAreaView style={styles.container}>
+      <AdminHeroBox title="Manage Events" showBackButton customBackRoute="AdminDashboard" />
 
-        <ScrollView contentContainerStyle={{ padding: 16 }}>
-          <TouchableOpacity style={styles.createButton} onPress={() => openModal()}>
-            <Ionicons name="add-circle-outline" size={20} color="#1B6B63" />
-            <Text style={styles.createButtonText}>Create New Event</Text>
-          </TouchableOpacity>
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <TouchableOpacity style={styles.createButton} onPress={() => openModal()}>
+          <Ionicons name="add-circle-outline" size={20} color="#1B6B63" />
+          <Text style={styles.createButtonText}>Create New Event</Text>
+        </TouchableOpacity>
 
-          {events.map((event) => (
-            <Swipeable
-              key={event.id}
-              renderRightActions={() => renderRightActions(event)}
-            >
-              <View style={styles.card}>
-                <View style={styles.cardContent}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventDetail}>📅 {event.date}</Text>
-                  <Text style={styles.eventDetail}>📍 {event.location}</Text>
-                </View>
-              </View>
-            </Swipeable>
-          ))}
-        </ScrollView>
+        {events.map((event) => (
+          <View key={event.id} style={styles.card}>
+            <View style={styles.cardContent}>
+              <Text style={styles.eventTitle}>{event.title}</Text>
+              <Text style={styles.eventDetail}>📅 {event.date}</Text>
+              <Text style={styles.eventDetail}>📍 {event.location}</Text>
+            </View>
 
-        <Modal visible={modalVisible} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                {editingEventId ? 'Edit Event' : 'Create Event'}
-              </Text>
-              <TextInput
-                placeholder="Title"
-                style={styles.input}
-                value={formData.title}
-                onChangeText={(text) => setFormData({ ...formData, title: text })}
-              />
-              <TextInput
-                placeholder="Date (YYYY-MM-DD)"
-                style={styles.input}
-                value={formData.date}
-                onChangeText={(text) => setFormData({ ...formData, date: text })}
-              />
-              <TextInput
-                placeholder="Location"
-                style={styles.input}
-                value={formData.location}
-                onChangeText={(text) => setFormData({ ...formData, location: text })}
-              />
-              <View style={styles.modalActions}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
-                  <Text style={{ color: '#444' }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
-                  <Text style={{ color: '#fff' }}>{editingEventId ? 'Update' : 'Save'}</Text>
-                </TouchableOpacity>
-              </View>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: '#008080' }]}
+                onPress={() => navigation.navigate('AttendanceReport')}
+              >
+                <Ionicons name="clipboard-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: '#008080' }]}
+                onPress={() => navigation.navigate('AssignVolunteers')}
+              >
+                <Ionicons name="people-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: '#008080' }]}
+                onPress={() => openModal(event)}
+              >
+                <Ionicons name="create-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: '#008080' }]}
+                onPress={() => handleDelete(event.id)}
+              >
+                <Ionicons name="close" size={18} color="#fff" />
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+        ))}
+      </ScrollView>
+
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {editingEventId ? 'Edit Event' : 'Create Event'}
+            </Text>
+            <TextInput
+              placeholder="Title"
+              style={styles.input}
+              value={formData.title}
+              onChangeText={(text) => setFormData({ ...formData, title: text })}
+            />
+            <TextInput
+              placeholder="Date (YYYY-MM-DD)"
+              style={styles.input}
+              value={formData.date}
+              onChangeText={(text) => setFormData({ ...formData, date: text })}
+            />
+            <TextInput
+              placeholder="Location"
+              style={styles.input}
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
+                <Text style={{ color: '#444' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
+                <Text style={{ color: '#fff' }}>{editingEventId ? 'Update' : 'Save'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
@@ -192,16 +182,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDF6EC',
     borderRadius: 10,
     padding: 14,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 3,
     elevation: 2,
   },
-  cardContent: { flex: 1 },
+  cardContent: {
+    marginBottom: 12,
+  },
   eventTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -212,13 +202,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-  swipeButtons: {
+  actionsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 4,
   },
-  swipeButton: {
-    width: 50,
-    height: '100%',
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

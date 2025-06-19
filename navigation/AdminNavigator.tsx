@@ -15,6 +15,7 @@ import AttendanceReportScreen from '../app/admin/AttendanceReportScreen';
 import UserManagementScreen from '../app/admin/UserManagementScreen';
 import UserDetailsScreen from '../app/admin/UserDetailsScreen';
 import AssignUserRoleScreen from '../app/admin/AssignUserRoleScreen';
+import AdminEmailScreen from '../app/admin/AdminEmailScreen';
 
 // Settings Screens
 import SettingsScreen from '../app/admin/SettingsScreen';
@@ -41,12 +42,12 @@ export type AdminStackParamList = {
   UserManagement: undefined;
   UserDetails: { userId: string };
   AssignUserRole: { user: UserType };
+  AdminEmail: undefined;
 };
 
-// Other stacks
+// Compose stack now includes AdminEmail
 export type ComposeStackParamList = {
-  Compose1: undefined;
-  Compose2: undefined;
+  AdminEmail: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -59,12 +60,6 @@ const AdminStack = createNativeStackNavigator<AdminStackParamList>();
 const ComposeStack = createNativeStackNavigator<ComposeStackParamList>();
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
-const PlaceholderScreen = ({ title }: { title: string }) => (
-  <View style={styles.placeholderContainer}>
-    <Text style={styles.placeholderText}>{title}</Text>
-  </View>
-);
-
 const AdminHomeStackScreen = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
@@ -76,13 +71,14 @@ const AdminHomeStackScreen = () => (
     <AdminStack.Screen name="UserManagement" component={UserManagementScreen} />
     <AdminStack.Screen name="UserDetails" component={UserDetailsScreen} />
     <AdminStack.Screen name="AssignUserRole" component={AssignUserRoleScreen} />
+    <AdminStack.Screen name="AdminEmail" component={AdminEmailScreen} />
   </AdminStack.Navigator>
 );
 
+// 👇 Replaces Compose1 with AdminEmailScreen
 const ComposeStackScreen = () => (
   <ComposeStack.Navigator screenOptions={{ headerShown: false }}>
-    <ComposeStack.Screen name="Compose1" children={() => <PlaceholderScreen title="Compose 1" />} />
-    <ComposeStack.Screen name="Compose2" children={() => <PlaceholderScreen title="Compose 2" />} />
+    <ComposeStack.Screen name="AdminEmail" component={AdminEmailScreen} />
   </ComposeStack.Navigator>
 );
 

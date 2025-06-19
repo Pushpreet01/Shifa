@@ -21,6 +21,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
       return isFocused ? "settings" : "settings-outline";
     if (route === "Resources") return isFocused ? "book" : "book-outline";
     return "ellipse-outline";
+    if (route === "Compose") return isFocused ? "mail" : "mail-outline";
   };
 
   const getDynamicLabel = () => {
@@ -32,6 +33,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         return "Settings";
       case "Resources":
         return "Resources";
+      case "Compose":
+        return "Compose";
       default:
         return "Shifa";
     }

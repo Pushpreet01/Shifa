@@ -15,9 +15,14 @@ import { Ionicons } from "@expo/vector-icons";
 
 type AuthStackParamList = {
   Login: undefined;
-  SignUp: undefined;
-  RoleSelection: undefined;
-  UserSettings: { role: string };
+  Signup: undefined;
+  RoleSelection: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+  };
+  UserSettings: { role: string; fullName: string; email: string; phoneNumber: string; password: string };
 };
 
 type UserSettingsScreenRouteProp = RouteProp<AuthStackParamList, "UserSettings">;
@@ -57,12 +62,27 @@ const UserSettingsScreen = () => {
 
   const handleComplete = () => {
     // Placeholder for future backend integration
-    navigation.navigate("SignUp");
+    navigation.navigate("Signup");
   };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
+        {/* Progress Tracker */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBar, { width: "100%" }]} />
+          </View>
+          <View style={styles.circleContainer}>
+            <View style={[styles.circle, styles.activeCircle]} />
+            <View style={[styles.circle, styles.activeCircle]} />
+            <View style={[styles.circle, styles.activeCircle, styles.enlargedCircle]}>
+              <Text style={styles.circleText}>3</Text>
+            </View>
+          </View>
+          <Text style={styles.progressText}>Step 3 of 3</Text>
+        </View>
+
         <Text style={styles.title}>Complete Your Profile</Text>
         <Text style={styles.subtitle}>Customize your experience</Text>
 
@@ -164,6 +184,13 @@ const UserSettingsScreen = () => {
         >
           <Text style={styles.completeButtonText}>Complete Setup</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -178,12 +205,66 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  progressContainer: {
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 30,
+  },
+  progressBarContainer: {
+    position: "relative",
+    width: 300,
+    height: 6,
+    flexDirection: "row",
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: "#1B6B63",
+  },
+  inactiveBar: {
+    backgroundColor: "#E0E0E0",
+  },
+  circleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 301,
+    position: "absolute",
+    top: 0,
+    left: 26,
+  },
+  circle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
+    top: -6,
+  },
+  activeCircle: {
+    backgroundColor: "#1B6B63",
+  },
+  enlargedCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    top: -9,
+  },
+  circleText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  progressText: {
+    color: "#1B6B63",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1B6B63",
     textAlign: "center",
-    marginTop: 20,
     marginBottom: 8,
   },
   subtitle: {
@@ -228,6 +309,29 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#1B6B63",
     borderStyle: "dashed",
+  },
+  completeButton: {
+    backgroundColor: "#1B6B63",
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  completeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  backButton: {
+    marginBottom: 60,
+  },
+  backButtonText: {
+    color: "#1B6B63",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   uploadText: {
     color: "#1B6B63",
@@ -278,20 +382,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 8,
   },
-  completeButton: {
-    backgroundColor: "#1B6B63",
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
-  },
-  completeButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
 });
 
-export default UserSettingsScreen; 
+export default UserSettingsScreen;

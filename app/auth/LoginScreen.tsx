@@ -95,7 +95,7 @@ const LoginScreen = () => {
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
-      <Text style={styles.Text}>Or</Text>
+      {/* <Text style={styles.Text}>Or</Text> */}
 
       {/*  Google Sign-In Button */}
       <TouchableOpacity
@@ -134,17 +134,6 @@ elevation: 5,
 
       <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate("Signup")}>
         <Text style={styles.signUpButtonText}>Sign Up</Text>
-      </TouchableOpacity>
-
-      {/* Optional test button */}
-      <TouchableOpacity
-        style={[styles.signUpButton, { marginTop: 20, backgroundColor: "#F4A941" }]}
-        onPress={() => {
-          // @ts-ignore
-          navigation.navigate("RoleSelection");
-        }}
-      >
-        <Text style={styles.signUpButtonText}>Test New Signup Flow</Text>
       </TouchableOpacity>
     </View>
   );

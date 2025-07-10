@@ -163,7 +163,7 @@ const EventsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#FDF6EC' },
   createButton: {
     flexDirection: 'row',
     backgroundColor: '#E0F2F1',
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   card: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 14,
     marginBottom: 20,

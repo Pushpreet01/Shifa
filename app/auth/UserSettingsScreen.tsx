@@ -15,7 +15,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebaseConfig";
 
@@ -34,6 +34,9 @@ type AuthStackParamList = {
     email: string;
     phoneNumber: string;
     password: string;
+  };
+  EmailVerification: {
+    email: string;
   };
 };
 
@@ -61,6 +64,7 @@ const UserSettingsScreen = () => {
   const [emergencyContacts, setEmergencyContacts] = useState([
     { name: "", phone: "" },
   ]);
+  const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | null, text: string }>({ type: null, text: '' });
 
   const handleAddContact = () => {
     setEmergencyContacts([...emergencyContacts, { name: "", phone: "" }]);
@@ -145,6 +149,7 @@ const UserSettingsScreen = () => {
 
   const handleComplete = async () => {
     setLoading(true);
+    setInlineMessage({ type: null, text: '' });
     try {
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
@@ -174,16 +179,16 @@ const UserSettingsScreen = () => {
       // Save user data to Firestore
       await setDoc(doc(db, "users", user.uid), userData);
 
+      // Send email verification
+      // await sendEmailVerification(user);
       setLoading(false);
-      Alert.alert(
-        "Setup Complete!",
-        "Your profile has been created successfully. You can now log in.",
-        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
-      );
-    } catch (error) {
+      // navigation.navigate("EmailVerification", { email });
+      setInlineMessage({ type: 'success', text: 'Setup complete! You can now log in.' });
+      return;
+    } catch (error: any) {
       setLoading(false);
       console.error("Error completing setup:", error);
-      Alert.alert("Error", "Failed to complete setup. Please try again.");
+      setInlineMessage({ type: 'error', text: error?.message || 'Failed to complete setup. Please try again.' });
     }
   };
 
@@ -221,6 +226,11 @@ const UserSettingsScreen = () => {
 
         <Text style={styles.title}>Complete Your Profile</Text>
         <Text style={styles.subtitle}>Customize your experience</Text>
+        {inlineMessage.type && (
+          <Text style={inlineMessage.type === 'success' ? styles.successText : styles.errorText}>
+            {inlineMessage.text}
+          </Text>
+        )}
 
         {/* Profile Picture Section */}
         <View style={styles.section}>
@@ -530,6 +540,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F8F5E9",
+  },
+  successText: {
+    color: '#4CAF50',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: '#FF4D4D',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

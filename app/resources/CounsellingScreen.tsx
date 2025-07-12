@@ -24,9 +24,9 @@ const CounsellingScreen = ({ navigation }) => {
         {/* Image Section */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../../assets/counselling-placeholder.jpg")}
+            source={require("../../assets/aiplaceholder.png")}
             style={styles.image}
-            resizeMode="contain"
+            resizeMode="cover"
           />
         </View>
 
@@ -65,18 +65,22 @@ const styles = StyleSheet.create({
   imageWrapper: {
     backgroundColor: "#ffffff",
     borderRadius: 20,
-    padding: 16,
+    padding: 2, // Removed padding to align image perfectly
     marginTop: 20,
-    width: "85%",
+    width: "75%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
+    overflow: "hidden", // Ensures image stays within rounded corners
+    borderWidth: 2,
+    borderColor: "#E0F2F1", 
   },
   image: {
     width: "100%",
-    height: 150,
+    height: 190,
+    borderRadius: 18, 
   },
   infoBox: {
     backgroundColor: "#FCE9C8",

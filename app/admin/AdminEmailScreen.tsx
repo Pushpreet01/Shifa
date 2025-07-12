@@ -1,5 +1,3 @@
-// app/admin/AdminEmailScreen.tsx
-
 import React, { useState } from 'react';
 import {
   View,
@@ -18,6 +16,30 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 const MAX_WORD_LIMIT = 250;
+
+// Placeholder email data for each role
+const placeholderEmails = {
+  Admin: [
+    'admin1@example.com',
+    'admin2@example.com',
+    'admin3@example.com',
+  ],
+  'Support Seeker': [
+    'support1@example.com',
+    'support2@example.com',
+    'support3@example.com',
+  ],
+  Volunteer: [
+    'volunteer1@example.com',
+    'volunteer2@example.com',
+    'volunteer3@example.com',
+    'volunteer4@example.com',
+  ],
+  'Event Organizer': [
+    'organizer1@example.com',
+    'organizer2@example.com',
+  ],
+};
 
 const AdminEmailScreen = () => {
   const [selectedRole, setSelectedRole] = useState('');
@@ -79,70 +101,88 @@ const AdminEmailScreen = () => {
       <AdminHeroBox title="Send Email" showBackButton customBackRoute="AdminDashboard" />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Select Recipient:</Text>
-        <TouchableOpacity style={styles.dropdown} onPress={() => setShowRoleDropdown(true)}>
-          <Text style={styles.dropdownText}>
-            {selectedRole || 'Choose a Role'}
-          </Text>
-          <Ionicons name="chevron-down" size={18} color="#1B6B63" />
-        </TouchableOpacity>
-
-        {/* Primary Role Dropdown */}
-        <Modal transparent visible={showRoleDropdown} animationType="fade">
+        <View style={styles.dropdownContainer}>
           <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setShowRoleDropdown(false)}
-            activeOpacity={1}
+            onPress={() => setShowRoleDropdown(!showRoleDropdown)}
+            style={styles.dropdown}
           >
-            <View style={styles.dropdownModal}>
+            <Text style={styles.dropdownText}>
+              {selectedRole || 'Choose a Role'}
+            </Text>
+            <Ionicons
+              name={showRoleDropdown ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color="#1B6B63"
+            />
+          </TouchableOpacity>
+          {showRoleDropdown && (
+            <View style={styles.dropdownList}>
               {['Particular User', ...roles].map((role) => (
                 <TouchableOpacity
                   key={role}
-                  style={styles.dropdownItem}
                   onPress={() => {
                     setSelectedRole(role);
                     setShowRoleDropdown(false);
                   }}
                 >
-                  <Text style={styles.dropdownItemText}>{role}</Text>
+                  <Text style={styles.dropdownItem}>{role}</Text>
                 </TouchableOpacity>
               ))}
             </View>
-          </TouchableOpacity>
-        </Modal>
+          )}
+        </View>
 
-        {/* Secondary Role Dropdown if "Particular User" selected */}
+        {/* Email List for Role-Based Recipients */}
+        {selectedRole && selectedRole !== 'Particular User' && (
+          <View style={styles.emailListContainer}>
+            <Text style={styles.label}>Users in {selectedRole}:</Text>
+            {placeholderEmails[selectedRole]?.length > 0 ? (
+              placeholderEmails[selectedRole].map((email, index) => (
+                <View key={index} style={styles.emailItem}>
+                  <Ionicons name="mail-outline" size={16} color="#1B6B63" style={styles.emailIcon} />
+                  <Text style={styles.emailText}>{email}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noEmailsText}>No users found for this role.</Text>
+            )}
+          </View>
+        )}
+
+        {/* Secondary Role Dropdown and Email Input if "Particular User" selected */}
         {selectedRole === 'Particular User' && (
           <>
             <Text style={styles.label}>User Role:</Text>
-            <TouchableOpacity style={styles.dropdown} onPress={() => setShowUserRoleDropdown(true)}>
-              <Text style={styles.dropdownText}>
-                {specificUserRole || 'Select User Role'}
-              </Text>
-              <Ionicons name="chevron-down" size={18} color="#1B6B63" />
-            </TouchableOpacity>
-
-            <Modal transparent visible={showUserRoleDropdown} animationType="fade">
+            <View style={styles.dropdownContainer}>
               <TouchableOpacity
-                style={styles.modalOverlay}
-                onPress={() => setShowUserRoleDropdown(false)}
-                activeOpacity={1}
+                onPress={() => setShowUserRoleDropdown(!showUserRoleDropdown)}
+                style={styles.dropdown}
               >
-                <View style={styles.dropdownModal}>
+                <Text style={styles.dropdownText}>
+                  {specificUserRole || 'Select User Role'}
+                </Text>
+                <Ionicons
+                  name={showUserRoleDropdown ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color="#1B6B63"
+                />
+              </TouchableOpacity>
+              {showUserRoleDropdown && (
+                <View style={styles.dropdownList}>
                   {roles.map((role) => (
                     <TouchableOpacity
                       key={role}
-                      style={styles.dropdownItem}
                       onPress={() => {
                         setSpecificUserRole(role);
                         setShowUserRoleDropdown(false);
                       }}
                     >
-                      <Text style={styles.dropdownItemText}>{role}</Text>
+                      <Text style={styles.dropdownItem}>{role}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-              </TouchableOpacity>
-            </Modal>
+              )}
+            </View>
 
             <Text style={styles.label}>User Email:</Text>
             <TextInput
@@ -201,6 +241,9 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
   },
+  dropdownContainer: {
+    marginBottom: 10,
+  },
   dropdown: {
     backgroundColor: '#fff',
     borderColor: '#DDD',
@@ -216,24 +259,42 @@ const styles = StyleSheet.create({
     color: '#1B6B63',
     fontWeight: 'bold',
   },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 30,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  dropdownModal: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 10,
+  dropdownList: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
+    elevation: 2,
   },
   dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 6,
+    fontSize: 15,
+    color: '#2E2E2E',
   },
-  dropdownItemText: {
-    fontSize: 16,
-    color: '#1B6B63',
+  emailListContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  emailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  emailIcon: {
+    marginRight: 8,
+  },
+  emailText: {
+    fontSize: 14,
+    color: '#2E2E2E',
+  },
+  noEmailsText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    paddingVertical: 10,
   },
   input: {
     borderWidth: 1,
@@ -263,6 +324,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   successPopup: {
     backgroundColor: '#fff',

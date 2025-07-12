@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Modal,
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,42 +62,36 @@ const AssignVolunteersScreen = () => {
 
       <View style={styles.dropdownWrapper}>
         <Text style={styles.label}>Select Event:</Text>
-        <TouchableOpacity
-          style={styles.dropdownButton}
-          onPress={() => setEventDropdownVisible(true)}
-        >
-          <Text style={styles.dropdownText}>{selectedEventTitle}</Text>
-          <Ionicons name="chevron-down" size={20} color="#1B6B63" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Event Dropdown Modal */}
-      <Modal visible={eventDropdownVisible} animationType="fade" transparent>
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPressOut={() => setEventDropdownVisible(false)}
-        >
-          <View style={styles.dropdownModal}>
-            <FlatList
-              data={events}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
+        <View style={styles.dropdownContainer}>
+          <TouchableOpacity
+            onPress={() => setEventDropdownVisible(!eventDropdownVisible)}
+            style={styles.dropdownButton}
+          >
+            <Text style={styles.dropdownText}>{selectedEventTitle}</Text>
+            <Ionicons
+              name={eventDropdownVisible ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color="#1B6B63"
+            />
+          </TouchableOpacity>
+          {eventDropdownVisible && (
+            <View style={styles.dropdownList}>
+              {events.map((item) => (
                 <TouchableOpacity
-                  style={styles.dropdownItem}
+                  key={item.id}
                   onPress={() => {
                     setSelectedEventId(item.id);
                     setSelectedEventTitle(item.title);
                     setEventDropdownVisible(false);
                   }}
                 >
-                  <Text style={styles.dropdownItemText}>{item.title}</Text>
+                  <Text style={styles.dropdownItem}>{item.title}</Text>
                 </TouchableOpacity>
-              )}
-            />
-          </View>
-        </TouchableOpacity>
-      </Modal>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {selectedEventId &&
@@ -145,13 +138,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 16,
   },
+  dropdownContainer: {
+    marginBottom: 10,
+  },
   dropdownButton: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
+    borderColor: '#CCC',
+    borderRadius: 8,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -160,32 +156,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1B6B63',
   },
-  dropdownModal: {
-    marginHorizontal: 30,
-    marginTop: 128,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
- 
+  dropdownList: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 10,
+    elevation: 2,
   },
   dropdownItem: {
-    paddingVertical: 12,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: '#1B6B63',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingVertical: 6,
+    fontSize: 15,
+    color: '#2E2E2E',
   },
   content: {
     padding: 16,

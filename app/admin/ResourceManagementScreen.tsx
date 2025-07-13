@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: '#fff', fontSize: 16, marginLeft: 10, fontWeight: 'bold' },
   card: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,

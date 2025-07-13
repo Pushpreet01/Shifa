@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     color: '#1B6B63',
   },
   userCard: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,

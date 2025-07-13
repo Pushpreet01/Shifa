@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   content: { flex: 1, paddingTop: 12 },
   approvalCard: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,

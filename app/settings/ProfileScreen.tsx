@@ -15,9 +15,16 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../../config/firebaseConfig";
+import { db, auth, storage } from "../../config/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
@@ -107,12 +114,15 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setUploading(true);
-
         try {
-          const base64Data = result.assets[0].base64;
-
-          if (!base64Data) {
-            throw new Error("Failed to get image data");
+          const asset = result.assets[0];
+          if (asset.fileSize && asset.fileSize > 2 * 1024 * 1024) {
+            Alert.alert(
+              "Image Too Large",
+              "Please select an image smaller than 2MB."
+            );
+            setUploading(false);
+            return;
           }
 
           const currentUser = auth.currentUser;
@@ -120,51 +130,26 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             throw new Error("No user logged in");
           }
 
-          // Create base64 image URL
-          const base64ImageUrl = `data:image/jpeg;base64,${base64Data}`;
-
-          console.log(
-            "Image size (base64):",
-            Math.round(base64Data.length * 0.75),
-            "bytes"
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          const storageRef = ref(
+            storage,
+            `profile_pictures/${currentUser.uid}`
           );
 
-          // Check if image is too large (Firestore has 1MB document limit)
-          if (base64Data.length > 1000000) {
-            // ~750KB limit for safety
-            Alert.alert(
-              "Image Too Large",
-              "Please select a smaller image. The current image is too large to store."
-            );
-            return;
-          }
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
 
-          // Update the local state
-          setProfileImage(base64ImageUrl);
-
-          // Update the user profile in Firestore with base64 data
           await updateDoc(doc(db, "users", currentUser.uid), {
-            profileImage: base64ImageUrl,
-            profileImageType: "base64",
+            profileImage: downloadURL,
             profileImageUpdated: new Date().toISOString(),
           });
 
+          setProfileImage(downloadURL);
           Alert.alert("Success", "Profile picture updated successfully!");
         } catch (error) {
-          console.error("Error saving image:", error);
-
-          let errorMessage =
-            "Failed to save profile picture. Please try again.";
-
-          if (error.message?.includes("permission")) {
-            errorMessage =
-              "Permission denied. Please check your Firestore rules.";
-          } else if (error.message?.includes("quota")) {
-            errorMessage =
-              "Storage quota exceeded. Please try a smaller image.";
-          }
-
-          Alert.alert("Save Failed", errorMessage);
+          console.error("Error uploading image:", error);
+          Alert.alert("Error", "Failed to upload profile picture.");
         } finally {
           setUploading(false);
         }
@@ -198,6 +183,19 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
               setUploading(true);
 
+              const storageRef = ref(
+                storage,
+                `profile_pictures/${currentUser.uid}`
+              );
+              try {
+                await deleteObject(storageRef);
+              } catch (error) {
+                // if file does not exist, we can ignore the error
+                if (error.code !== "storage/object-not-found") {
+                  throw error;
+                }
+              }
+
               // Update the user profile in Firestore to remove the profile image
               await updateDoc(doc(db, "users", currentUser.uid), {
                 profileImage: null,
@@ -222,7 +220,21 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleSave = async () => {
+    if (!name.trim()) {
+      Alert.alert("Error", "Please enter your name");
+      return;
+    }
+
     try {
+      const hasProfanity = await ProfanityFilterService.hasProfanity(name);
+      if (hasProfanity) {
+        Alert.alert(
+          "Inappropriate Content",
+          "Your name contains inappropriate language. Please revise it."
+        );
+        return;
+      }
+
       const currentUser = auth.currentUser;
       if (!currentUser) return;
 

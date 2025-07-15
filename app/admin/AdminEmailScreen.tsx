@@ -98,7 +98,11 @@ const AdminEmailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeroBox title="Send Email" showBackButton customBackRoute="AdminDashboard" />
+      <AdminHeroBox
+        title="Send Email"
+        showBackButton
+        customBackRoute="AdminDashboard"
+      />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Select Recipient:</Text>
         <View style={styles.dropdownContainer}>
@@ -232,14 +236,14 @@ const AdminEmailScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FDF6EC' },
+  container: { flex: 1, backgroundColor: "#FDF6EC" },
   content: { padding: 20 },
   label: {
     marginTop: 16,
     marginBottom: 6,
     fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    color: "#333",
+    fontWeight: "600",
   },
   dropdownContainer: {
     marginBottom: 10,
@@ -298,15 +302,15 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#DDD',
+    borderColor: "#DDD",
     borderRadius: 10,
     padding: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginBottom: 10,
   },
   messageInput: {
     height: 120,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   wordCount: {
     alignSelf: 'flex-end',
@@ -315,15 +319,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sendButton: {
-    backgroundColor: '#1B6B63',
+    backgroundColor: "#1B6B63",
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
   },
   sendButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalOverlay: {
     flex: 1,

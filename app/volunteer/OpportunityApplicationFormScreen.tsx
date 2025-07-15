@@ -5,22 +5,30 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   TextInput,
   Alert,
+  SafeAreaView,
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
+import { auth, db } from "../../config/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { FirebaseVolunteerApplicationService } from "../../services/FirebaseVolunteerApplicationService";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<
   HomeStackParamList,
   "OpportunityApplicationForm"
 >;
 
-const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { title, description } = route.params;
+const OpportunityApplicationFormScreen: React.FC<Props> = ({
+  navigation,
+  route,
+}) => {
+  const { title, description, opportunityId, eventId, timing, date, location } =
+    route.params;
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -29,7 +37,6 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
   const [loading, setLoading] = useState(false);
   const [fetchingUser, setFetchingUser] = useState(true);
 
-  // Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
@@ -54,10 +61,15 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
             fullName: "",
             email: currentUser.email || "",
           });
-          console.warn("[OpportunityApplicationForm] User document not found, using auth email.");
+          console.warn(
+            "[OpportunityApplicationForm] User document not found, using auth email."
+          );
         }
       } catch (error) {
-        console.error("[OpportunityApplicationForm] Error fetching user data:", error);
+        console.error(
+          "[OpportunityApplicationForm] Error fetching user data:",
+          error
+        );
         Alert.alert("Error", "Failed to load user data. Please try again.");
       } finally {
         setFetchingUser(false);
@@ -80,12 +92,26 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
 
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      Alert.alert("Error", "Please log in to submit the application.");
+      Alert.alert("Error", "You must be logged in to apply.");
       return;
     }
 
     setLoading(true);
     try {
+      if (formData.aboutYourself.trim()) {
+        const hasProfanity = await ProfanityFilterService.hasProfanity(
+          formData.aboutYourself
+        );
+        if (hasProfanity) {
+          Alert.alert(
+            "Inappropriate Content Detected",
+            "Your application contains inappropriate language. Please revise it before submitting."
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       await FirebaseVolunteerApplicationService.applyForOpportunity({
         userId: currentUser.uid,
         opportunityId,
@@ -102,7 +128,10 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
         location,
       });
     } catch (error) {
-      console.error("[OpportunityApplicationForm] Error submitting application:", error);
+      console.error(
+        "[OpportunityApplicationForm] Error submitting application:",
+        error
+      );
       Alert.alert("Error", "Failed to submit application. Please try again.");
     } finally {
       setLoading(false);
@@ -129,10 +158,19 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Application</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Announcements")}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color="#C44536"
+              />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity
+              style={styles.sosWrapper}
+              onPress={() => navigation.navigate("Emergency")}
+            >
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -146,7 +184,9 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
             <TextInput
               style={[styles.input, styles.disabledInput]}
               value={formData.fullName}
-              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, fullName: text })
+              }
             />
           </View>
 
@@ -180,7 +220,11 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }
             <Text style={styles.opportunityDescription}>{description}</Text>
           </View>
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
             {loading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
@@ -317,4 +361,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OpportunityApplicationFormScreen; 
+export default OpportunityApplicationFormScreen;

@@ -15,6 +15,7 @@ import { doc, addDoc, collection } from "firebase/firestore";
 import { db, auth } from "../../config/firebaseConfig";
 import StarRating from "../../components/StarRating";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Feedback">;
 
@@ -25,16 +26,27 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      Alert.alert("Error", "Please provide a rating");
+      Alert.alert("Error", "Please give a rating to submit your feedback");
       return;
     }
 
     setIsSubmitting(true);
-
     try {
       const user = auth.currentUser;
       if (!user) {
         throw new Error("User not authenticated");
+      }
+
+      if (comment.trim()) {
+        const hasProfanity = await ProfanityFilterService.hasProfanity(comment);
+        if (hasProfanity) {
+          Alert.alert(
+            "Inappropriate Content Detected",
+            "Your feedback contains inappropriate language. Please revise it before submitting."
+          );
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       await addDoc(collection(db, "feedback"), {

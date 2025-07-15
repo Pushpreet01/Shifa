@@ -20,6 +20,7 @@ import { doc, getDoc, collection } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
@@ -39,7 +40,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
     })
   );
   const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(() => {
+    const initialEndTime = new Date();
+    initialEndTime.setHours(initialEndTime.getHours() + 1);
+    return initialEndTime;
+  });
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -175,13 +180,42 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsSubmitting(true);
     try {
+      const fieldsToCheck = [
+        { name: "title", value: title },
+        { name: "location", value: location },
+        { name: "description", value: description },
+        {
+          name: "volunteerDescription",
+          value: volunteerDescription,
+          check: needsVolunteers,
+        },
+        { name: "rewards", value: rewards, check: needsVolunteers },
+        { name: "refreshments", value: refreshments, check: needsVolunteers },
+      ];
+
+      let hasAnyProfanity = false;
+      for (const field of fieldsToCheck) {
+        if (field.check === false || !field.value) continue;
+        const hasProfanity = await ProfanityFilterService.hasProfanity(
+          field.value
+        );
+        if (hasProfanity) {
+          Alert.alert(
+            "Inappropriate Content Detected",
+            `Your input for "${field.name}" contains inappropriate language. Please revise it.`
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const eventData = {
-        title,
+        title: title,
         date,
         startTime: formatTime(startTime),
         endTime: formatTime(endTime),
-        location,
-        description,
+        location: location,
+        description: description,
         needsVolunteers,
       };
 
@@ -192,11 +226,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         const opportunityData = {
           opportunityId,
           eventId,
-          title,
+          title: title,
           noVolunteersNeeded: volunteersNeeded,
           description: volunteerDescription.trim(),
           timings: timings.trim(),
-          location,
+          location: location,
           rewards: rewards.trim() || undefined,
           refreshments: refreshments.trim() || undefined,
         };
@@ -369,6 +403,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
               This event needs volunteers
             </Text>
           </View>
+
           {needsVolunteers && (
             <>
               <Text style={styles.helperText}>

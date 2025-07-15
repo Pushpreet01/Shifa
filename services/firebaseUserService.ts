@@ -1,4 +1,11 @@
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  setDoc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { db, auth } from "../config/firebaseConfig";
 
 export interface UserProfile {
@@ -104,6 +111,23 @@ export const triggerSOS = async (
   } catch (error) {
     console.error("Error triggering SOS:", error);
     throw error;
+  }
+};
+
+export const getAllPushTokens = async (): Promise<string[]> => {
+  try {
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const tokens: string[] = [];
+    usersSnapshot.forEach((doc) => {
+      const userData = doc.data();
+      if (userData.pushToken) {
+        tokens.push(userData.pushToken);
+      }
+    });
+    return tokens;
+  } catch (error) {
+    console.error("Error getting all push tokens:", error);
+    return [];
   }
 };
 

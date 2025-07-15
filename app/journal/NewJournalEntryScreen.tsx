@@ -12,17 +12,17 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../../config/firebaseConfig";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { HomeStackParamList } from "../../navigation/AppNavigator";
 import { saveJournalEntry } from "../../services/firebaseJournalService";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
 
   const handleSave = async () => {
@@ -31,7 +31,22 @@ const NewJournalEntryScreen = () => {
       return;
     }
 
+    setLoading(true);
     try {
+      const titleHasProfanity = await ProfanityFilterService.hasProfanity(
+        title
+      );
+      const bodyHasProfanity = await ProfanityFilterService.hasProfanity(body);
+
+      if (titleHasProfanity || bodyHasProfanity) {
+        Alert.alert(
+          "Inappropriate Content",
+          "Inappropriate words were detected in your entry. Please remove them and try again."
+        );
+        setLoading(false);
+        return;
+      }
+
       await saveJournalEntry(title, body);
       Alert.alert("Success", "Journal saved successfully.");
       navigation.goBack();
@@ -41,6 +56,8 @@ const NewJournalEntryScreen = () => {
         "Error",
         error instanceof Error ? error.message : "Unknown error"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,7 +121,11 @@ const NewJournalEntryScreen = () => {
             />
           </View>
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity
+            style={[styles.saveButton, loading && styles.disabledButton]}
+            onPress={handleSave}
+            disabled={loading}
+          >
             <Text style={styles.saveButtonText}>Save Entry</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -166,9 +187,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12,
   },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
   content: {
     flex: 1,
   },
@@ -214,6 +232,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   saveButtonText: {
     color: "#FFFFFF",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,44 +9,95 @@ import {
   TextInput,
   Modal,
   Alert,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
-import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import AdminHeroBox from '../../components/AdminHeroBox';
 import { useNavigation } from '@react-navigation/native';
+import AdminHeroBox from '../../components/AdminHeroBox';
+import Calendar from '../../components/Calendar';
 
 type Event = {
   id: string;
   title: string;
-  date: string;
+  date: Date;
   location: string;
 };
 
 const EventsScreen = () => {
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [currentMonth, setCurrentMonth] = useState<Date>(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
   const [events, setEvents] = useState<Event[]>([
     {
       id: '1',
       title: 'Mental Health Awareness Drive',
-      date: '2024-06-25',
+      date: new Date('2025-07-15'), // Updated to future dates
       location: 'Calgary Community Center',
     },
     {
       id: '2',
       title: 'Substance Abuse Prevention Seminar',
-      date: '2024-07-02',
+      date: new Date('2025-07-20'),
       location: 'SAIT Wellness Hall',
     },
   ]);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [formData, setFormData] = useState({ id: '', title: '', date: '', location: '' });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [scaleAnims] = useState(events.map(() => new Animated.Value(1)));
 
   const navigation = useNavigation<any>();
 
+  // Ensure currentMonth is not in the past
+  useEffect(() => {
+    const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (currentMonth < todayMonth) {
+      setCurrentMonth(todayMonth);
+    }
+  }, []);
+
+  const goToPreviousMonth = () => {
+    const previousMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() - 1,
+      1
+    );
+    const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (previousMonth < todayMonth) {
+      Alert.alert('Past Month', 'Only current and future months are available.');
+      return;
+    }
+    setCurrentMonth(previousMonth);
+  };
+
+  const goToNextMonth = () => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+    );
+  };
+
+  const handleDateSelect = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date >= today) {
+      setSelectedDate(date);
+    } else {
+      Alert.alert('Invalid Date', 'You can only view events for today and future dates.');
+    }
+  };
+
   const openModal = (event?: Event) => {
     if (event) {
-      setFormData(event);
+      setFormData({
+        id: event.id,
+        title: event.title,
+        date: event.date.toISOString().split('T')[0],
+        location: event.location,
+      });
       setEditingEventId(event.id);
     } else {
       setFormData({ id: '', title: '', date: '', location: '' });
@@ -56,16 +107,42 @@ const EventsScreen = () => {
   };
 
   const handleSave = () => {
-    if (!formData.title || !formData.date || !formData.location) return;
-
-    if (editingEventId) {
-      setEvents((prev) =>
-        prev.map((ev) => (ev.id === editingEventId ? { ...formData } : ev))
-      );
-    } else {
-      setEvents((prev) => [...prev, { ...formData, id: Date.now().toString() }]);
+    if (!formData.title || !formData.date || !formData.location) {
+      Alert.alert('Error', 'Please fill all fields.');
+      return;
     }
 
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(formData.date)) {
+      Alert.alert('Error', 'Date must be in YYYY-MM-DD format.');
+      return;
+    }
+
+    const eventDate = new Date(formData.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (eventDate < today) {
+      Alert.alert('Error', 'Event date cannot be in the past.');
+      return;
+    }
+
+    setLoading(true);
+    if (editingEventId) {
+      setEvents((prev) =>
+        prev.map((ev) =>
+          ev.id === editingEventId
+            ? { ...formData, date: eventDate }
+            : ev
+        )
+      );
+    } else {
+      setEvents((prev) => [
+        ...prev,
+        { ...formData, id: Date.now().toString(), date: eventDate },
+      ]);
+      scaleAnims.push(new Animated.Value(1));
+    }
+    setLoading(false);
     setModalVisible(false);
   };
 
@@ -76,151 +153,271 @@ const EventsScreen = () => {
     ]);
   };
 
-  const renderRightActions = (event: Event) => (
-    <View style={styles.swipeButtons}>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#3f8390' }]}
-        onPress={() => navigation.navigate('AttendanceReport')}
-      >
-        <Ionicons name="clipboard-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#F4A941' }]}
-        onPress={() => navigation.navigate('AssignVolunteers')}
-      >
-        <Ionicons name="people-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#1B6B63' }]}
-        onPress={() => openModal(event)}
-      >
-        <Ionicons name="create-outline" size={24} color="#fff" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.swipeButton, { backgroundColor: '#C44536' }]}
-        onPress={() => handleDelete(event.id)}
-      >
-        <Ionicons name="close" size={24} color="#fff" />
-      </TouchableOpacity>
-    </View>
+  const handlePressIn = (index: number) => {
+    Animated.spring(scaleAnims[index], {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = (index: number) => {
+    Animated.spring(scaleAnims[index], {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const filteredEvents = events.filter(
+    (event) =>
+      event.date.getDate() === selectedDate.getDate() &&
+      event.date.getMonth() === selectedDate.getMonth() &&
+      event.date.getFullYear() === selectedDate.getFullYear()
   );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        <AdminHeroBox title="Manage Events" showBackButton customBackRoute="AdminDashboard" />
+    <SafeAreaView style={styles.container}>
+      <AdminHeroBox title="Manage Events" showBackButton customBackRoute="AdminDashboard" />
 
-        <ScrollView contentContainerStyle={{ padding: 16 }}>
-          <TouchableOpacity style={styles.createButton} onPress={() => openModal()}>
-            <Ionicons name="add-circle-outline" size={20} color="#1B6B63" />
-            <Text style={styles.createButtonText}>Create New Event</Text>
-          </TouchableOpacity>
+      <View style={styles.dateSelectionContainer}>
+        <View style={styles.selectedDateContainer}>
+          <Text style={styles.selectedDateText}>
+            {selectedDate
+              ? `${selectedDate.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}`
+              : 'Select date'}
+          </Text>
+        </View>
 
-          {events.map((event) => (
-            <Swipeable
+        <Calendar
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
+          events={events}
+          currentMonth={currentMonth}
+          onNextMonth={goToNextMonth}
+          onPrevMonth={goToPreviousMonth}
+        />
+      </View>
+
+      <ScrollView style={styles.eventsListContainer}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#F4A941" />
+            <Text style={styles.loadingText}>Loading events...</Text>
+          </View>
+        ) : filteredEvents.length > 0 ? (
+          filteredEvents.map((event, index) => (
+            <Animated.View
               key={event.id}
-              renderRightActions={() => renderRightActions(event)}
+              style={[styles.card, { transform: [{ scale: scaleAnims[index] }] }]}
             >
-              <View style={styles.card}>
-                <View style={styles.cardContent}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventDetail}>📅 {event.date}</Text>
-                  <Text style={styles.eventDetail}>📍 {event.location}</Text>
-                </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventDetail}>📅 {event.date.toLocaleDateString('en-US')}</Text>
+                <Text style={styles.eventDetail}>📍 {event.location}</Text>
               </View>
-            </Swipeable>
-          ))}
-        </ScrollView>
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                  onPress={() => navigation.navigate('AttendanceReport', { eventId: event.id })}
+                  onPressIn={() => handlePressIn(index)}
+                  onPressOut={() => handlePressOut(index)}
+                  accessibilityLabel="View attendance report"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="clipboard-outline" size={16} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                  onPress={() => navigation.navigate('AssignVolunteers', { eventId: event.id })}
+                  onPressIn={() => handlePressIn(index)}
+                  onPressOut={() => handlePressOut(index)}
+                  accessibilityLabel="Assign volunteers"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="people-outline" size={16} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                  onPress={() => openModal(event)}
+                  onPressIn={() => handlePressIn(index)}
+                  onPressOut={() => handlePressOut(index)}
+                  accessibilityLabel="Edit event"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="create-outline" size= {16} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                  onPress={() => handleDelete(event.id)}
+                  onPressIn={() => handlePressIn(index)}
+                  onPressOut={() => handlePressOut(index)}
+                  accessibilityLabel="Delete event"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="close" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          ))
+        ) : (
+          <View style={styles.noEventsContainer}>
+            <Text style={styles.noEventsText}>No events for this date</Text>
+            <TouchableOpacity
+              style={styles.addEventSmallButton}
+              onPress={() => openModal()}
+              accessibilityLabel="Create new event"
+              accessibilityRole="button"
+            >
+              <Text style={styles.addEventSmallButtonText}>Add Event</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
 
-        <Modal visible={modalVisible} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                {editingEventId ? 'Edit Event' : 'Create Event'}
-              </Text>
-              <TextInput
-                placeholder="Title"
-                style={styles.input}
-                value={formData.title}
-                onChangeText={(text) => setFormData({ ...formData, title: text })}
-              />
-              <TextInput
-                placeholder="Date (YYYY-MM-DD)"
-                style={styles.input}
-                value={formData.date}
-                onChangeText={(text) => setFormData({ ...formData, date: text })}
-              />
-              <TextInput
-                placeholder="Location"
-                style={styles.input}
-                value={formData.location}
-                onChangeText={(text) => setFormData({ ...formData, location: text })}
-              />
-              <View style={styles.modalActions}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
-                  <Text style={{ color: '#444' }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
-                  <Text style={{ color: '#fff' }}>{editingEventId ? 'Update' : 'Save'}</Text>
-                </TouchableOpacity>
-              </View>
+      <TouchableOpacity
+        style={styles.floatingAddButton}
+        onPress={() => openModal()}
+        accessibilityLabel="Create new event"
+        accessibilityRole="button"
+      >
+        <Ionicons name="add" size={30} color="#FFFFFF" />
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {editingEventId ? 'Edit Event' : 'Create Event'}
+            </Text>
+            <TextInput
+              placeholder="Title"
+              style={styles.input}
+              value={formData.title}
+              onChangeText={(text) => setFormData({ ...formData, title: text })}
+              accessibilityLabel="Event title"
+            />
+            <TextInput
+              placeholder="Date (YYYY-MM-DD)"
+              style={styles.input}
+              value={formData.date}
+              onChangeText={(text) => setFormData({ ...formData, date: text })}
+              accessibilityLabel="Event date"
+            />
+            <TextInput
+              placeholder="Location"
+              style={styles.input}
+              value={formData.location}
+              onChangeText={(text) => setFormData({ ...formData, location: text })}
+              accessibilityLabel="Event location"
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={styles.cancelBtn}
+                accessibilityLabel="Cancel"
+                accessibilityRole="button"
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.saveBtn}
+                accessibilityLabel={editingEventId ? 'Update event' : 'Save event'}
+                accessibilityRole="button"
+              >
+                <Text style={styles.saveBtnText}>{editingEventId ? 'Update' : 'Save'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  createButton: {
-    flexDirection: 'row',
-    backgroundColor: '#E0F2F1',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    backgroundColor: '#FDF6EC',
   },
-  createButtonText: {
-    color: '#1B6B63',
+  dateSelectionContainer: {
+    padding: 20,
+  },
+  selectedDateContainer: {
+    marginBottom: 15,
+  },
+  selectedDateText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 8,
-    fontSize: 16,
+    color: '#2E2E2E',
+  },
+  eventsListContainer: {
+    flex: 1,
+    padding: 20,
   },
   card: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    padding: 14,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    padding: 16,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F4A941',
   },
-  cardContent: { flex: 1 },
+  cardContent: {
+    marginBottom: 12,
+  },
   eventTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1B6B63',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   eventDetail: {
     fontSize: 14,
     color: '#555',
+    marginBottom: 4,
   },
-  swipeButtons: {
+  actionsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 8,
   },
-  swipeButton: {
-    width: 50,
-    height: '100%',
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+  },
+  floatingAddButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    backgroundColor: '#F4A941',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   modalOverlay: {
     flex: 1,
@@ -233,6 +430,7 @@ const styles = StyleSheet.create({
     width: '90%',
     padding: 20,
     borderRadius: 16,
+    elevation: 5,
   },
   modalTitle: {
     fontSize: 18,
@@ -247,6 +445,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 12,
+    backgroundColor: '#fff',
+    fontSize: 14,
   },
   modalActions: {
     flexDirection: 'row',
@@ -258,10 +458,51 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#eee',
   },
+  cancelBtnText: {
+    color: '#444',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   saveBtn: {
     padding: 10,
     borderRadius: 8,
     backgroundColor: '#1B6B63',
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#2E2E2E',
+    fontSize: 16,
+  },
+  noEventsContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noEventsText: {
+    color: '#2E2E2E',
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  addEventSmallButton: {
+    backgroundColor: '#F4A941',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  addEventSmallButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

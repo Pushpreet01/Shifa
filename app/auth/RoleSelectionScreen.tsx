@@ -7,17 +7,23 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type AuthStackParamList = {
   Login: undefined;
-  SignUp: undefined;
-  RoleSelection: undefined;
-  UserSettings: { role: string };
+  Signup: undefined;
+  RoleSelection: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+  };
+  UserSettings: { role: string; fullName: string; email: string; phoneNumber: string; password: string };
 };
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "RoleSelection">;
+type RoleSelectionScreenRouteProp = RouteProp<AuthStackParamList, "RoleSelection">;
 
 const roles = [
   {
@@ -42,6 +48,8 @@ const roles = [
 
 const RoleSelectionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RoleSelectionScreenRouteProp>();
+  const { fullName, email, phoneNumber, password } = route.params;
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleRoleSelect = (roleId: string) => {
@@ -50,12 +58,34 @@ const RoleSelectionScreen = () => {
 
   const handleContinue = () => {
     if (selectedRole) {
-      navigation.navigate("UserSettings", { role: selectedRole });
+      navigation.navigate("UserSettings", {
+        role: selectedRole,
+        fullName,
+        email,
+        phoneNumber,
+        password,
+      });
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* Progress Tracker */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBar, { width: "67%" }]} />
+          <View style={[styles.progressBar, styles.inactiveBar, { width: "33%" }]} />
+        </View>
+        <View style={styles.circleContainer}>
+          <View style={[styles.circle, styles.activeCircle]} />
+          <View style={[styles.circle, styles.activeCircle, styles.enlargedCircle]}>
+            <Text style={styles.circleText}>2</Text>
+          </View>
+          <View style={styles.circle} />
+        </View>
+        <Text style={styles.progressText}>Step 2 of 3</Text>
+      </View>
+
       <Image source={require("../../assets/logo.png")} style={styles.logo} />
       
       <Text style={styles.title}>Choose Your Role</Text>
@@ -90,6 +120,13 @@ const RoleSelectionScreen = () => {
       >
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -100,11 +137,65 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F5E9",
     padding: 20,
   },
+  progressContainer: {
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 30,
+  },
+  progressBarContainer: {
+    position: "relative",
+    width: 300,
+    height: 6,
+    flexDirection: "row",
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: "#1B6B63",
+  },
+  inactiveBar: {
+    backgroundColor: "#E0E0E0",
+  },
+  circleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 301,
+    position: "absolute",
+    top: 0,
+    left: 26,
+  },
+  circle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
+    top: -6,
+  },
+  activeCircle: {
+    backgroundColor: "#1B6B63",
+  },
+  enlargedCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    top: -9,
+  },
+  circleText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  progressText: {
+    color: "#1B6B63",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
+  },
   logo: {
     width: 150,
     height: 150,
     alignSelf: "center",
-    marginTop: 20,
     marginBottom: 20,
   },
   title: {
@@ -167,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     alignItems: "center",
     marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   disabledButton: {
     backgroundColor: "#F4A941",
@@ -178,6 +269,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  backButton: {
+    marginBottom: 20,
+  },
+  backButtonText: {
+    color: "#1B6B63",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });
 
-export default RoleSelectionScreen; 
+export default RoleSelectionScreen;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -26,55 +26,67 @@ const mockUsers: User[] = [
   { id: '4', name: 'Hemant Gupta', email: 'hemant@example.com', role: 'Admin', banned: false },
 ];
 
-const groupByRole = (users: User[]) => {
-  const grouped: { [key: string]: User[] } = {};
-  users.forEach(user => {
-    if (!grouped[user.role]) grouped[user.role] = [];
-    grouped[user.role].push(user);
-  });
-  return grouped;
-};
+const roles: User['role'][] = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 
 const UserManagementScreen = () => {
   const navigation = useNavigation<any>();
-  const groupedUsers = groupByRole(mockUsers);
+  const [activeRole, setActiveRole] = useState<User['role']>('Support Seeker');
+
+  const filteredUsers = mockUsers.filter(user => user.role === activeRole);
   const totalUsers = mockUsers.length;
 
   return (
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Manage Users" showBackButton customBackRoute="AdminDashboard" />
 
+      {/* Role Tabs */}
+      <View style={styles.tabWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabs}
+        >
+          {roles.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[styles.tab, activeRole === role && styles.activeTab]}
+              onPress={() => setActiveRole(role)}
+            >
+              <Text style={[styles.tabText, activeRole === role && styles.activeTabText]}>
+                {role}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* User Cards */}
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.totalText}>Total Registered Users: {totalUsers}</Text>
 
-        {Object.keys(groupedUsers).map(role => (
-          <View key={role} style={styles.roleSection}>
-            <Text style={styles.roleTitle}>{role}</Text>
-            {groupedUsers[role].map(user => (
-              <View key={user.id} style={styles.userCard}>
-                <View style={styles.userInfo}>
-                  <Text style={styles.userName}>{user.name}</Text>
-                  <Text style={styles.userEmail}>{user.email}</Text>
-                </View>
-                <View style={styles.actionsRow}>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('UserDetails', { userId: user.id })}
-                    style={[styles.actionButton, styles.viewBtn]}>
-                    <Ionicons name="eye-outline" size={18} color="#fff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => console.log('Edit:', user.id)}
-                    style={[styles.actionButton, styles.editBtn]}>
-                    <Ionicons name="create-outline" size={18} color="#fff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => console.log(user.banned ? 'Unban' : 'Ban', user.id)}
-                    style={[styles.actionButton, styles.banBtn]}>
-                    <Ionicons name={user.banned ? 'checkmark-circle-outline' : 'close-circle-outline'} size={18} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
+        {filteredUsers.map(user => (
+          <View key={user.id} style={styles.userCard}>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
+            </View>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('UserDetails', { userId: user.id })}
+                style={[styles.actionButton, styles.viewBtn]}>
+                <Ionicons name="eye-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => console.log('Edit:', user.id)}
+                style={[styles.actionButton, styles.editBtn]}>
+                <Ionicons name="create-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => console.log('Ban/Unban:', user.id)}
+                style={[styles.actionButton, styles.banBtn]}>
+                <Ionicons name="close-circle-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -83,26 +95,49 @@ const UserManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 20, paddingBottom: 60 },
+  container: { flex: 1, backgroundColor: '#FDF6EC' },
+  tabWrapper: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  tabs: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 22,
+    backgroundColor: '#F1F1F1',
+    marginRight: 8,
+  },
+  activeTab: {
+    backgroundColor: '#1B6B63',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  activeTabText: {
+    color: '#fff',
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 60,
+  },
   totalText: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 16,
     color: '#1B6B63',
   },
-  roleSection: { marginBottom: 24 },
-  roleTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1B6B63',
-    marginBottom: 12,
-  },
   userCard: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 2 },

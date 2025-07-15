@@ -24,7 +24,7 @@ const AwarenessScreen = ({ navigation }) => {
         {/* Image placeholder */}
         <View style={styles.imageWrapper}>
           <Image
-            source={require("../../assets/awareness-placeholder.jpg")}
+            source={require("../../assets/awareness-placeholder.png")}
             style={styles.image}
             resizeMode="contain"
           />
@@ -72,18 +72,22 @@ const styles = StyleSheet.create({
   imageWrapper: {
     backgroundColor: "#ffffff",
     borderRadius: 20,
-    padding: 16,
+    padding: 2,
     marginTop: 20,
-    width: "85%",
+    width: "75%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#E0F2F1",
   },
   image: {
     width: "100%",
-    height: 140,
+    height: 200,
+    borderRadius: 20, // Changed from 18 to 20 to match imageWrapper
   },
   infoBox: {
     backgroundColor: "#E0F2F1",

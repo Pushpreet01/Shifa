@@ -20,6 +20,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     if (route === "Settings")
       return isFocused ? "settings" : "settings-outline";
     if (route === "Resources") return isFocused ? "book" : "book-outline";
+    if (route === "Compose") return isFocused ? "mail" : "mail-outline";
     return "ellipse-outline";
   };
 
@@ -32,6 +33,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         return "Settings";
       case "Resources":
         return "Resources";
+      case "Compose":
+        return "Compose";
       default:
         return "Shifa";
     }

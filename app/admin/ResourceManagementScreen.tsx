@@ -204,7 +204,7 @@ const ResourceManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#FDF6EC' },
   content: { padding: 20 },
   addButton: {
     backgroundColor: '#1B6B63',
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: '#fff', fontSize: 16, marginLeft: 10, fontWeight: 'bold' },
   card: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,

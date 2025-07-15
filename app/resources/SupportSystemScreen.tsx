@@ -17,15 +17,15 @@ const SupportSystemScreen = () => {
   const supportResources = [
     {
       label: "Women's Helplines",
-      image: require("../../assets/support-women.jpg"),
+      icon: "woman",
     },
     {
       label: "Family and Youth Services",
-      image: require("../../assets/support-family.jpg"),
+      icon: "people",
     },
     {
       label: "Transitional Homes",
-      image: require("../../assets/support-transitional.jpg"),
+      icon: "home",
     },
   ];
 
@@ -63,8 +63,8 @@ const SupportSystemScreen = () => {
       <ScrollView contentContainerStyle={styles.container}>
         {supportResources.map((item, index) => (
           <View key={index} style={styles.cardRow}>
-            <View style={styles.imageBox}>
-              <Image source={item.image} style={styles.image} resizeMode="contain" />
+            <View style={styles.iconBox}>
+              <Ionicons name={item.icon} size={60} color="#1B6B63" />
             </View>
             <TouchableOpacity style={styles.infoButton}>
               <Text style={styles.infoButtonText}>{item.label}</Text>
@@ -142,20 +142,19 @@ const styles = StyleSheet.create({
     width: "90%",
     justifyContent: "space-between",
   },
-  imageBox: {
-    backgroundColor: "#E0F2F1",
-    borderRadius: 20,
+  iconBox: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 60, // Half of 120 for a perfect circle
     padding: 16,
-    width: "45%",
+    width: 120, // Fixed width to match height
+    height: 120, // Fixed height
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  image: {
-    width: "100%",
-    height: 100,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 5,
   },
   infoButton: {
     backgroundColor: "#A8D8C9",

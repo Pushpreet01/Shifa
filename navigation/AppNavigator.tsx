@@ -50,8 +50,24 @@ export type HomeStackParamList = {
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
-  OpportunityDetails: undefined;
-  OpportunityApplicationForm: undefined;
+  OpportunityDetails: {
+    title: string;
+    timing: string;
+    eventId: string;
+    opportunityId: string; // Added and required
+    description: string;
+    date?: string;
+    location?: string;
+  };
+  OpportunityApplicationForm: {
+    opportunityId: string;
+    eventId: string;
+    title: string;
+    description: string;
+    timing: string;
+    date?: string;
+    location?: string;
+  };
   VolunteerLearnings: undefined;
   Emergency: undefined;
   VolunteerRewards: undefined;

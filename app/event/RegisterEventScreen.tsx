@@ -389,7 +389,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    marginBottom: 20,
+    marginBottom: 150,
   },
   formTitle: {
     fontSize: 18,

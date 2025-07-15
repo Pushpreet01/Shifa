@@ -11,35 +11,24 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  setDoc,
-  where,
-} from "firebase/firestore";
-import { auth, db } from "../../config/firebaseConfig";
-import { useAuth } from "../../context/AuthContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
-import { useGoogleAuth } from "./googleAuth"; // ✅ Reused
+import { useGoogleAuth } from "./googleAuth";
 
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
+  RoleSelection: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+  };
+  UserSettings: { role: string; fullName: string; email: string; phoneNumber: string; password: string };
 };
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
-
-const roles = [
-  { label: "Support Seeker", value: "Support Seeker" },
-  { label: "Volunteer", value: "Volunteer" },
-  { label: "Event Organizer", value: "Event Organizer" },
-];
 
 const SignUpScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -47,10 +36,11 @@ const SignUpScreen: React.FC = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Support Seeker");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const { setUser } = useAuth();
 
   const formatPhoneNumber = (input: string) => {
     const digits = input.replace(/\D/g, "");
@@ -77,7 +67,12 @@ const SignUpScreen: React.FC = () => {
     if (!password) newErrors.password = "Password is required.";
     else if (password.length < 6)
       newErrors.password = "Password should be at least 6 characters.";
-    if (!role) newErrors.role = "Role selection is required.";
+    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password.";
+    else if (password !== confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match.";
+    // The original code had a role selection, but the new_code removed it.
+    // Assuming role is no longer a field, so this validation is removed.
+    // if (!role) newErrors.role = "Role selection is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -86,91 +81,25 @@ const SignUpScreen: React.FC = () => {
   const handlePhoneNumberChange = (text: string) =>
     setPhoneNumber(formatPhoneNumber(text));
 
-  const handleSignUp = async () => {
+  const handleContinue = () => {
     if (!validate()) return;
-
-    try {
-      setLoading(true);
-      const digits = phoneNumber.replace(/\D/g, "");
-
-      const q = query(
-        collection(db, "users"),
-        where("phoneNumber", "==", digits)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        setErrors({
-          phoneNumber:
-            "This phone number is already registered. Please sign in or use a different number.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-      const approved = role === "Support Seeker";
-
-      await setDoc(doc(db, "users", user.uid), {
-        fullName,
-        email,
-        phoneNumber: digits,
-        role,
-        approved,
-        createdAt: new Date().toISOString(),
-      });
-
-      setUser(user);
-
-      if (!approved) {
-        setErrors({
-          general:
-            "Your account requires admin approval before access is granted.",
-        });
-      }
-    } catch (error: any) {
-      console.error(error);
-      let errorMessage = "Sign-up failed. Please try again.";
-      if (error.code === "auth/email-already-in-use") {
-        setErrors({ email: "This email is already in use." });
-      } else if (error.code === "auth/invalid-email") {
-        setErrors({ email: "Invalid email format." });
-      } else if (error.code === "auth/weak-password") {
-        setErrors({ password: "Password should be at least 6 characters." });
-      } else {
-        setErrors({ general: errorMessage });
-      }
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    navigation.navigate("RoleSelection", {
+      fullName,
+      email,
+      phoneNumber: phoneNumber.replace(/\D/g, ""),
+      password,
+    });
+    setLoading(false);
   };
 
   const { promptAsync } = useGoogleAuth(async () => {
-    const user = auth.currentUser;
-    if (user) {
-      const userQuery = query(
-        collection(db, "users"),
-        where("email", "==", user.email)
-      );
-      const existing = await getDocs(userQuery);
-
-      if (existing.empty) {
-        await setDoc(doc(db, "users", user.uid), {
-          fullName: user.displayName || "",
-          email: user.email,
-          phoneNumber: "",
-          role: "Support Seeker",
-          approved: true,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
-      setUser(user);
-    }
+    navigation.navigate("RoleSelection", {
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      password: "",
+    });
   });
 
   return (
@@ -182,6 +111,22 @@ const SignUpScreen: React.FC = () => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Progress Tracker */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBar, { width: "33%" }]} />
+            <View style={[styles.progressBar, styles.inactiveBar, { width: "67%" }]} />
+          </View>
+          <View style={styles.circleContainer}>
+            <View style={[styles.circle, styles.activeCircle, styles.enlargedCircle]}>
+              <Text style={styles.circleText}>1</Text>
+            </View>
+            <View style={styles.circle} />
+            <View style={styles.circle} />
+          </View>
+          <Text style={styles.progressText}>Step 1 of 3</Text>
+        </View>
+
         <Image source={require("../../assets/logo.png")} style={styles.logo} />
 
         {!!errors.general && (
@@ -247,48 +192,60 @@ const SignUpScreen: React.FC = () => {
             onChangeText={(text) => {
               setPassword(text);
               if (errors.password) setErrors((e) => ({ ...e, password: "" }));
+              if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
             }}
-            secureTextEntry
+            secureTextEntry={!showPassword}
             style={styles.input}
+            contextMenuHidden={true}
+            autoCorrect={false}
+            autoComplete="off"
+            importantForAutofill="no"
           />
+          <TouchableOpacity
+            style={styles.showPasswordButton}
+            onPress={() => setShowPassword((prev) => !prev)}
+          >
+            <AntDesign name={showPassword ? "eye" : "eyeo"} size={20} color="#008080" />
+          </TouchableOpacity>
           {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
         </View>
-
-        <Text style={styles.label}>Select Role:</Text>
-        <View
-          style={[
-            styles.pickerContainer,
-            errors.role && { borderColor: "#FF4D4D" },
-          ]}
-        >
-          <Picker
-            selectedValue={role}
-            onValueChange={(itemValue) => {
-              setRole(itemValue);
-              if (errors.role) setErrors((e) => ({ ...e, role: "" }));
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Confirm Password"
+            placeholderTextColor="#008080"
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
             }}
-            style={styles.picker}
+            secureTextEntry={!showConfirmPassword}
+            style={styles.input}
+            contextMenuHidden={true}
+            autoCorrect={false}
+            autoComplete="off"
+            importantForAutofill="no"
+          />
+          <TouchableOpacity
+            style={styles.showPasswordButton}
+            onPress={() => setShowConfirmPassword((prev) => !prev)}
           >
-            {roles.map((r) => (
-              <Picker.Item key={r.value} label={r.label} value={r.value} />
-            ))}
-          </Picker>
+            <AntDesign name={showConfirmPassword ? "eye" : "eyeo"} size={20} color="#008080" />
+          </TouchableOpacity>
+          {errors.confirmPassword && (
+            <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+          )}
         </View>
-        {errors.role && <Text style={styles.errorText}>{errors.role}</Text>}
 
         <TouchableOpacity
-          style={[styles.signUpButton, loading && { opacity: 0.7 }]}
-          onPress={handleSignUp}
+          style={[styles.continueButton, loading && { opacity: 0.7 }]}
+          onPress={handleContinue}
           disabled={loading}
         >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+          <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
 
-        <Text style={styles.Text}>Or</Text>
-
-        {/* ✅ Google Sign-In Button */}
         <View style={{ marginVertical: 15 }}>
           <TouchableOpacity
             onPress={() => promptAsync()}
@@ -296,9 +253,9 @@ const SignUpScreen: React.FC = () => {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#DB4437",
+              backgroundColor: "#FFFFFF",
               paddingVertical: 12,
-              paddingHorizontal: 30,
+              paddingHorizontal: 40,
               borderRadius: 25,
               marginTop: 5,
               shadowColor: "#000",
@@ -308,10 +265,13 @@ const SignUpScreen: React.FC = () => {
               elevation: 5,
             }}
           >
-            <AntDesign name="google" size={24} color="white" />
+            <Image
+              source={require("../../assets/google-logo.png")}
+              style={{ width: 24, height: 24 }}
+            />
             <Text
               style={{
-                color: "white",
+                color: "#000000",
                 marginLeft: 10,
                 fontWeight: "bold",
                 fontSize: 16,
@@ -346,18 +306,73 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: "#F8F5E9",
-    justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  progressContainer: {
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 30,
+  },
+  progressBarContainer: {
+    position: "relative",
+    width: 300,
+    height: 6,
+    flexDirection: "row",
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: "#1B6B63",
+  },
+  inactiveBar: {
+    backgroundColor: "#E0E0E0",
+  },
+  circleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 300,
+    position: "absolute",
+    top: 0,
+    left: 0,
+  },
+  circle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
+    top: -6,
+  },
+  activeCircle: {
+    backgroundColor: "#1B6B63",
+  },
+  enlargedCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    top: -9,
+  },
+  circleText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  progressText: {
+    color: "#1B6B63",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
   },
   logo: {
     width: 200,
     height: 200,
-    marginBottom: 80,
+    marginBottom: 50,
   },
   inputContainer: {
     width: "75%",
     marginBottom: 10,
+    position: "relative", // Added for show password button positioning
   },
   input: {
     borderBottomWidth: 2,
@@ -366,31 +381,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#008080",
   },
-  label: {
-    color: "#008080",
-    fontWeight: "bold",
-    marginBottom: 6,
-    alignSelf: "flex-start",
-    marginLeft: "12.5%",
-  },
-  pickerContainer: {
-    width: "75%",
-    borderWidth: 1,
-    borderColor: "#008080",
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  picker: {
-    color: "#008080",
-  },
-  signUpButton: {
+  continueButton: {
     backgroundColor: "#008080",
     paddingVertical: 12,
     paddingHorizontal: 100,
     borderRadius: 25,
     marginTop: 10,
   },
-  signUpButtonText: {
+  continueButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
@@ -405,7 +403,7 @@ const styles = StyleSheet.create({
   },
   Text: {
     marginTop: 20,
-    color: "#008080",
+    color: "#000000",
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
@@ -424,6 +422,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  showPasswordButton: {
+    position: 'absolute',
+    right: 0,
+    top: 10,
+    padding: 8,
   },
 });
 

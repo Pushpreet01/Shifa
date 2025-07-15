@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,33 +7,115 @@ import {
   ScrollView,
   SafeAreaView,
   TextInput,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
-import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
 type Props = NativeStackScreenProps<
   HomeStackParamList,
   "OpportunityApplicationForm"
 >;
 
-const OpportunityApplicationFormScreen: React.FC<Props> = ({
-  navigation,
-  route,
-}) => {
+const OpportunityApplicationFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const { title, description } = route.params;
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     aboutYourself: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [fetchingUser, setFetchingUser] = useState(true);
 
-  const handleSubmit = () => {
-    // Here you would typically submit the form data to your backend
-    // For now, we'll just go back to the details screen
-    navigation.goBack();
+  // Fetch user data from Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        Alert.alert("Error", "Please log in to access the application form.");
+        setFetchingUser(false);
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setFormData({
+            ...formData,
+            fullName: userData.fullName || "",
+            email: userData.email || currentUser.email || "",
+          });
+        } else {
+          setFormData({
+            ...formData,
+            fullName: "",
+            email: currentUser.email || "",
+          });
+          console.warn("[OpportunityApplicationForm] User document not found, using auth email.");
+        }
+      } catch (error) {
+        console.error("[OpportunityApplicationForm] Error fetching user data:", error);
+        Alert.alert("Error", "Failed to load user data. Please try again.");
+      } finally {
+        setFetchingUser(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const validateForm = () => {
+    if (!formData.aboutYourself.trim()) {
+      Alert.alert("Error", "Please provide a description about yourself.");
+      return false;
+    }
+    return true;
   };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      Alert.alert("Error", "Please log in to submit the application.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await FirebaseVolunteerApplicationService.applyForOpportunity({
+        userId: currentUser.uid,
+        opportunityId,
+        message: formData.aboutYourself,
+      });
+      Alert.alert("Success", "Your application has been submitted.");
+      navigation.navigate("OpportunityDetails", {
+        opportunityId,
+        eventId,
+        title,
+        description,
+        timing,
+        date,
+        location,
+      });
+    } catch (error) {
+      console.error("[OpportunityApplicationForm] Error submitting application:", error);
+      Alert.alert("Error", "Failed to submit application. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (fetchingUser) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1B6B63" />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,19 +129,10 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Application</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -71,24 +144,19 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Full Name</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter name"
+              style={[styles.input, styles.disabledInput]}
               value={formData.fullName}
-              onChangeText={(text) =>
-                setFormData({ ...formData, fullName: text })
-              }
+              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
             />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter email address"
-              keyboardType="email-address"
-              autoCapitalize="none"
+              style={[styles.input, styles.disabledInput]}
               value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
+              editable={false}
+              placeholder="Email not available"
             />
           </View>
 
@@ -112,8 +180,12 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({
             <Text style={styles.opportunityDescription}>{description}</Text>
           </View>
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit</Text>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.submitButtonText}>Submit</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -124,7 +196,7 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
@@ -197,6 +269,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E0E0E0",
   },
+  disabledInput: {
+    backgroundColor: "#F5F5F5",
+    color: "#666",
+  },
   textArea: {
     height: 120,
     textAlignVertical: "top",
@@ -234,6 +310,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
-export default OpportunityApplicationFormScreen;
+export default OpportunityApplicationFormScreen; 

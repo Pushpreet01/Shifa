@@ -46,12 +46,18 @@ const ApprovalManagementScreen = () => {
   const handleDeny = (id: string) => console.log('Denied:', id);
 
   const renderRightActions = (id: string) => (
-    <View style={styles.swipeActions}>
-      <TouchableOpacity style={[styles.swipeButton, { backgroundColor: '#1B6B63' }]} onPress={() => handleApprove(id)}>
-        <Ionicons name="checkmark-outline" size={24} color="#fff" />
+    <View style={styles.verticalSwipeActions}>
+      <TouchableOpacity
+        style={[styles.swipeButton, styles.approveBtn]}
+        onPress={() => handleApprove(id)}
+      >
+        <Ionicons name="checkmark-outline" size={20} color="#fff" />
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.swipeButton, { backgroundColor: '#C44536' }]} onPress={() => handleDeny(id)}>
-        <Ionicons name="close-outline" size={24} color="#fff" />
+      <TouchableOpacity
+        style={[styles.swipeButton, styles.denyBtn]}
+        onPress={() => handleDeny(id)}
+      >
+        <Ionicons name="close-outline" size={20} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -69,7 +75,11 @@ const ApprovalManagementScreen = () => {
               onPress={() => setActiveTab(type as any)}
             >
               <Text style={[styles.tabText, activeTab === type && styles.activeTabText]}>
-                {type === 'event' ? 'Events' : type === 'volunteer' ? 'Volunteers' : 'Event Organizers'}
+                {type === 'event'
+                  ? 'Events'
+                  : type === 'volunteer'
+                  ? 'Volunteers'
+                  : 'Event Organizers'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -100,13 +110,13 @@ const ApprovalManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#FDF6EC' },
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
+    paddingBottom: 12,
+    backgroundColor: '#FDF6EC',
   },
   tab: {
     flex: 1,
@@ -129,7 +139,7 @@ const styles = StyleSheet.create({
   },
   content: { flex: 1, paddingTop: 12 },
   approvalCard: {
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,
@@ -158,15 +168,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#444',
   },
-  swipeActions: {
-    flexDirection: 'row',
+  verticalSwipeActions: {
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   swipeButton: {
-    width: 50,
-    height: '100%',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginVertical: 5,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  approveBtn: {
+    backgroundColor: '#1B6B63',
+  },
+  denyBtn: {
+    backgroundColor: '#C44536',
   },
   emptyContainer: {
     alignItems: 'center',

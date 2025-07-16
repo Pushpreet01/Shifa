@@ -9,6 +9,7 @@ import UserSettingsScreen from "../app/auth/UserSettingsScreen";
 import EmailVerificationScreen from "../app/auth/EmailVerificationScreen";
 import { useAuth } from "../context/AuthContext";
 import { View, Text, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const AuthStack = createStackNavigator();
 
@@ -24,9 +25,21 @@ const RoleErrorScreen = () => {
 };
 
 const AuthNavigator = () => {
-  const { errorMsg } = useAuth();
+  const { errorMsg, user } = useAuth();
+  const navigation = useNavigation();
 
-  if (errorMsg) {
+  React.useEffect(() => {
+    if (errorMsg === "Please verify your email address to continue." && user?.email) {
+      (navigation as any).reset({
+        index: 0,
+        routes: [
+          { name: "EmailVerification", params: { email: user.email } },
+        ],
+      });
+    }
+  }, [errorMsg, user, navigation]);
+
+  if (errorMsg && errorMsg !== "Please verify your email address to continue.") {
     return <RoleErrorScreen />;
   }
 
@@ -38,7 +51,7 @@ const AuthNavigator = () => {
       {/* Test screens - will be removed when integrating into main flow */}
       <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
       <AuthStack.Screen name="UserSettings" component={UserSettingsScreen} />
-      {/* <AuthStack.Screen name="EmailVerification" component={EmailVerificationScreen} /> */}
+      <AuthStack.Screen name="EmailVerification" component={EmailVerificationScreen} />
     </AuthStack.Navigator>
   );
 };

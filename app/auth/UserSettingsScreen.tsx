@@ -37,6 +37,13 @@ type AuthStackParamList = {
   };
   EmailVerification: {
     email: string;
+    password: string;
+    fullName: string;
+    phoneNumber: string;
+    role: string;
+    profileImage: string | null;
+    notifications: any;
+    emergencyContacts: any;
   };
 };
 
@@ -149,22 +156,13 @@ const UserSettingsScreen = () => {
 
   const handleComplete = async () => {
     setLoading(true);
-    setInlineMessage({ type: null, text: '' });
     try {
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      // 1. Create the Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Clean phone number to store only digits
+      // 2. Add user data to Firestore with emailVerified: false, using UID
       const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
-
-      // Prepare user data to be saved in Firestore
       const userData = {
-        uid: user.uid,
         fullName,
         email,
         phoneNumber: cleanedPhoneNumber,
@@ -172,23 +170,25 @@ const UserSettingsScreen = () => {
         profileImage,
         notifications,
         emergencyContacts,
-        approved: true, // Set approved to true by default
+        approved: true,
         createdAt: new Date().toISOString(),
+        emailVerified: false,
       };
-
-      // Save user data to Firestore
       await setDoc(doc(db, "users", user.uid), userData);
-
-      // Send email verification
-      // await sendEmailVerification(user);
       setLoading(false);
-      // navigation.navigate("EmailVerification", { email });
-      setInlineMessage({ type: 'success', text: 'Setup complete! You can now log in.' });
-      return;
-    } catch (error: any) {
+      navigation.navigate("EmailVerification", {
+        email,
+        password,
+        fullName,
+        phoneNumber,
+        role,
+        profileImage,
+        notifications,
+        emergencyContacts,
+      });
+    } catch (error) {
       setLoading(false);
-      console.error("Error completing setup:", error);
-      setInlineMessage({ type: 'error', text: error?.message || 'Failed to complete setup. Please try again.' });
+      Alert.alert("Error", "Failed to save user data. Please try again.");
     }
   };
 

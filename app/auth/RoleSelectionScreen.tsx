@@ -51,21 +51,25 @@ const RoleSelectionScreen = () => {
   const route = useRoute<RoleSelectionScreenRouteProp>();
   const { fullName, email, phoneNumber, password } = route.params;
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string>("");
 
   const handleRoleSelect = (roleId: string) => {
     setSelectedRole(roleId);
+    setRoleError("");
   };
 
   const handleContinue = () => {
-    if (selectedRole) {
-      navigation.navigate("UserSettings", {
-        role: selectedRole,
-        fullName,
-        email,
-        phoneNumber,
-        password,
-      });
+    if (!selectedRole || !roles.some(r => r.id === selectedRole)) {
+      setRoleError("Please select a valid role to continue.");
+      return;
     }
+    navigation.navigate("UserSettings", {
+      role: selectedRole,
+      fullName,
+      email,
+      phoneNumber,
+      password,
+    });
   };
 
   return (
@@ -87,9 +91,13 @@ const RoleSelectionScreen = () => {
       </View>
 
       <Image source={require("../../assets/logo.png")} style={styles.logo} />
-      
+
       <Text style={styles.title}>Choose Your Role</Text>
       <Text style={styles.subtitle}>Select how you'd like to use Shifa</Text>
+
+      {roleError ? (
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>{roleError}</Text>
+      ) : null}
 
       <ScrollView style={styles.rolesContainer}>
         {roles.map((role) => (

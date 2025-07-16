@@ -68,18 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // if (!firebaseUser.emailVerified) {
-          //   await firebaseSignOut();
-          //   setUser(null);
-          //   setErrorMsg(
-          //     "Please verify your email address before logging in. Check your inbox for a verification link."
-          //   );
-          //   setLoading(false);
-          //   return;
-          // }
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           const userData = userDoc.exists() ? userDoc.data() : null;
           const roleFromDb = userData?.role as Role | undefined;
+          const emailVerified = userData?.emailVerified === true;
           const validRoles: Role[] = [
             "Admin",
             "Support Seeker",
@@ -91,6 +83,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setErrorMsg(
               "User role is not assigned or invalid. Please contact support."
             );
+          } else if (!emailVerified) {
+            // If email is not verified, redirect to EmailVerificationScreen
+            setUser(null);
+            setErrorMsg("Please verify your email address to continue.");
           } else {
             setUser({
               uid: firebaseUser.uid,

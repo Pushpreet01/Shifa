@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -33,6 +34,7 @@ const LoginScreen = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { setUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -50,7 +52,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!validate()) return;
-
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
@@ -64,6 +66,8 @@ const LoginScreen = () => {
         errorMessage = "Incorrect password.";
       }
       setErrors({ general: errorMessage });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,6 +80,12 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Loading Spinner Overlay */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#008080" />
+        </View>
+      )}
       <Image source={require("../../assets/logo.png")} style={styles.logo} />
 
       {!!errors.general && (
@@ -246,6 +256,17 @@ const styles = StyleSheet.create({
     right: 0,
     top: 10,
     padding: 8,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });
 

@@ -19,6 +19,9 @@ export type HomeStackParamList = {
 
 export type SettingsStackParamList = {
   Settings: undefined;
+  Profile: undefined;
+  Feedback: undefined;
+  AboutUs: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -37,7 +40,22 @@ export type RootTabParamList = {
   [TabRoutes.Resources]: undefined;
 };
 
-export type RootStackParamList = AuthStackParamList &
-  HomeStackParamList &
-  SettingsStackParamList &
-  ResourcesStackParamList;
+export type RootStackParamList = {
+  Login: undefined;
+  SignUp: undefined;
+  ForgotPassword: undefined;
+  CheckInbox: undefined;
+  HomeDashboard: undefined;
+  JournalScreen: undefined;
+  NewJournalEntryScreen: undefined;
+  Events: { refresh?: number } | undefined;
+  EventsForm: undefined;
+  RegisterEvent: { eventId: string };
+  Announcements: undefined;
+  MyJournalsScreen: undefined;
+  Settings: undefined;
+  Profile: undefined;
+  Feedback: undefined;
+  AboutUs: undefined;
+  Resources: undefined;
+};

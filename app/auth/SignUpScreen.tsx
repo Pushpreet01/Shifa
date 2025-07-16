@@ -185,54 +185,61 @@ const SignUpScreen: React.FC = () => {
         </View>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Create Password"
-            placeholderTextColor="#008080"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (errors.password) setErrors((e) => ({ ...e, password: "" }));
-              if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
-            }}
-            secureTextEntry={!showPassword}
-            style={styles.input}
-            contextMenuHidden={true}
-            autoCorrect={false}
-            autoComplete="off"
-            importantForAutofill="no"
-          />
-          <TouchableOpacity
-            style={styles.showPasswordButton}
-            onPress={() => setShowPassword((prev) => !prev)}
-          >
-            <AntDesign name={showPassword ? "eye" : "eyeo"} size={20} color="#008080" />
-          </TouchableOpacity>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder="Create Password"
+              placeholderTextColor="#008080"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errors.password) setErrors((e) => ({ ...e, password: "" }));
+                if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
+              }}
+              secureTextEntry={!showPassword}
+              style={[styles.input, { flex: 1, borderBottomWidth: 0 }]}
+              contextMenuHidden={true}
+              autoCorrect={false}
+              autoComplete="off"
+              importantForAutofill="no"
+            />
+            <TouchableOpacity
+              style={styles.showPasswordButton}
+              onPress={() => setShowPassword((prev) => !prev)}
+            >
+              <AntDesign name={showPassword ? "eye" : "eyeo"} size={20} color="#008080" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.passwordBorder} />
           {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
         </View>
+
         <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Confirm Password"
-            placeholderTextColor="#008080"
-            value={confirmPassword}
-            onChangeText={(text) => {
-              setConfirmPassword(text);
-              if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
-            }}
-            secureTextEntry={!showConfirmPassword}
-            style={styles.input}
-            contextMenuHidden={true}
-            autoCorrect={false}
-            autoComplete="off"
-            importantForAutofill="no"
-          />
-          <TouchableOpacity
-            style={styles.showPasswordButton}
-            onPress={() => setShowConfirmPassword((prev) => !prev)}
-          >
-            <AntDesign name={showConfirmPassword ? "eye" : "eyeo"} size={20} color="#008080" />
-          </TouchableOpacity>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder="Confirm Password"
+              placeholderTextColor="#008080"
+              value={confirmPassword}
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                if (errors.confirmPassword) setErrors((e) => ({ ...e, confirmPassword: "" }));
+              }}
+              secureTextEntry={!showConfirmPassword}
+              style={[styles.input, { flex: 1, borderBottomWidth: 0 }]}
+              contextMenuHidden={true}
+              autoCorrect={false}
+              autoComplete="off"
+              importantForAutofill="no"
+            />
+            <TouchableOpacity
+              style={styles.showPasswordButton}
+              onPress={() => setShowConfirmPassword((prev) => !prev)}
+            >
+              <AntDesign name={showConfirmPassword ? "eye" : "eyeo"} size={20} color="#008080" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.passwordBorder} />
           {errors.confirmPassword && (
             <Text style={styles.errorText}>{errors.confirmPassword}</Text>
           )}
@@ -243,44 +250,25 @@ const SignUpScreen: React.FC = () => {
           onPress={handleContinue}
           disabled={loading}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.continueButtonText}>Continue</Text>
+          )}
         </TouchableOpacity>
 
-        <View style={{ marginVertical: 15 }}>
-          <TouchableOpacity
-            onPress={() => promptAsync()}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#FFFFFF",
-              paddingVertical: 12,
-              paddingHorizontal: 40,
-              borderRadius: 25,
-              marginTop: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 3,
-              elevation: 5,
-            }}
-          >
-            <Image
-              source={require("../../assets/google-logo.png")}
-              style={{ width: 24, height: 24 }}
-            />
-            <Text
-              style={{
-                color: "#000000",
-                marginLeft: 10,
-                fontWeight: "bold",
-                fontSize: 16,
-              }}
-            >
-              Continue with Google
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.Text}>Or</Text>
+
+        <TouchableOpacity
+          onPress={() => promptAsync()}
+          style={styles.googleButton}
+          disabled={loading}
+        >
+          <Image source={require("../../assets/google-logo.png")} style={styles.googleIcon} />
+          <Text style={styles.googleButtonText}>
+            Continue with Google
+          </Text>
+        </TouchableOpacity>
 
         <Text style={styles.Text}>Already have an account?</Text>
 
@@ -384,17 +372,51 @@ const styles = StyleSheet.create({
   continueButton: {
     backgroundColor: "#008080",
     paddingVertical: 12,
-    paddingHorizontal: 100,
+    paddingHorizontal: 30,
     borderRadius: 25,
-    marginTop: 10,
+    marginTop: 30,
+    width: "75%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   continueButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+    width: "75%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+  },
+  googleButtonText: {
+    color: "#000000",
+    marginLeft: 10,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   loginButton: {
-    marginTop: 0,
+    marginTop: 10,
+    paddingVertical: 8,
   },
   loginButtonText: {
     color: "#008080",
@@ -423,10 +445,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  passwordBorder: {
+    height: 2,
+    backgroundColor: '#F6A800',
+    width: '100%',
+  },
   showPasswordButton: {
-    position: 'absolute',
-    right: 0,
-    top: 10,
     padding: 8,
   },
 });

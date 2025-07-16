@@ -104,24 +104,27 @@ const LoginScreen = () => {
       </View>
 
       <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#008080"
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            if (errors.password) setErrors((e) => ({ ...e, password: "" }));
-            if (errors.general) setErrors((e) => ({ ...e, general: "" }));
-          }}
-          secureTextEntry={!showPassword}
-          style={styles.input}
-        />
-        <TouchableOpacity
-          style={styles.showPasswordButton}
-          onPress={() => setShowPassword((prev) => !prev)}
-        >
-          <AntDesign name={showPassword ? "eye" : "eyeo"} size={20} color="#008080" />
-        </TouchableOpacity>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#008080"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors((e) => ({ ...e, password: "" }));
+              if (errors.general) setErrors((e) => ({ ...e, general: "" }));
+            }}
+            secureTextEntry={!showPassword}
+            style={[styles.input, { flex: 1, borderBottomWidth: 0 }]}
+          />
+          <TouchableOpacity
+            style={styles.showPasswordButton}
+            onPress={() => setShowPassword((prev) => !prev)}
+          >
+            <AntDesign name={showPassword ? "eye" : "eyeo"} size={20} color="#008080" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordBorder} />
         {errors.password && (
           <Text style={styles.errorText}>{errors.password}</Text>
         )}
@@ -134,44 +137,21 @@ const LoginScreen = () => {
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
-      {/* <Text style={styles.Text}>Or</Text> */}
+      <Text style={styles.Text}>Or</Text>
 
-      {/*  Google Sign-In Button */}
       <TouchableOpacity
         onPress={() => promptAsync()}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#FFFFFF",
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          borderRadius: 25,
-          marginTop: 20,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 3,
-          elevation: 5,
-
-        }}
+        style={styles.googleButton}
       >
-        <Image source={require("../../assets/google-logo.png")} style={{ width: 24, height: 24 }} />
-        <Text
-          style={{
-            color: "#000000",
-            marginLeft: 10,
-            fontWeight: "bold",
-            fontSize: 16,
-          }}
-        >
+        <Image source={require("../../assets/google-logo.png")} style={styles.googleIcon} />
+        <Text style={styles.googleButtonText}>
           Continue with Google
         </Text>
       </TouchableOpacity>
 
       <Text style={styles.Text}>Don't have an account?</Text>
 
-      <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate({ name: "SignUp", params: undefined })}>
+      <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.navigate("Signup")}>
         <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>
@@ -212,17 +192,51 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: "#008080",
     paddingVertical: 12,
-    paddingHorizontal: 100,
+    paddingHorizontal: 30,
     borderRadius: 25,
     marginTop: 30,
+    width: "75%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   loginButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+    width: "75%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+  },
+  googleButtonText: {
+    color: "#000000",
+    marginLeft: 10,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   signUpButton: {
-    marginTop: 0,
+    marginTop: 10,
+    paddingVertical: 8,
   },
   signUpButtonText: {
     color: "#008080",
@@ -241,10 +255,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  passwordBorder: {
+    height: 2,
+    backgroundColor: '#F6A800',
+    width: '100%',
+  },
   showPasswordButton: {
-    position: 'absolute',
-    right: 0,
-    top: 10,
     padding: 8,
   },
 });

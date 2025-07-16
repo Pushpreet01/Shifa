@@ -18,7 +18,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
 import { deleteCurrentUserAndData } from '../../services/firebaseUserService';
 
-type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList>;
+type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList & { Login: undefined }>;
 
 const SettingsScreen = () => {
   const { signOut } = useAuth();
@@ -33,6 +33,9 @@ const SettingsScreen = () => {
       case "Feedback":
         navigation.navigate("Feedback");
         break;
+      case "About Us":
+        navigation.navigate("AboutUs");
+        break;
       default:
         console.log(`${option} pressed`);
     }
@@ -41,19 +44,51 @@ const SettingsScreen = () => {
   const settingsOptions = [
     {
       title: "Account",
-      icon: "person-outline" as const,
-      items: ["Profile", "Privacy", "Security"],
+      icon: "person-circle-outline" as const,
+      items: [
+        {
+          name: "Profile",
+          icon: "person-outline" as const,
+          description: "View and edit your profile information"
+        },
+        {
+          name: "Privacy",
+          icon: "shield-checkmark-outline" as const,
+          description: "Manage your privacy settings"
+        },
+        {
+          name: "Security",
+          icon: "lock-closed-outline" as const,
+          description: "Update your security preferences"
+        },
+        {
+          name: "Notifications",
+          icon: "notifications-outline" as const,
+          description: "Customize your notification preferences"
+        }
+      ]
     },
     {
-      title: "Preferences",
-      icon: "settings-outline" as const,
-      items: ["Notifications", "Language", "Theme"],
-    },
-    {
-      title: "Support",
-      icon: "help-circle-outline" as const,
-      items: ["Feedback", "Help Center", "About"],
-    },
+      title: "Support & Info",
+      icon: "information-circle-outline" as const,
+      items: [
+        {
+          name: "Feedback",
+          icon: "chatbox-outline" as const,
+          description: "Share your thoughts with us"
+        },
+        {
+          name: "Help Center",
+          icon: "help-circle-outline" as const,
+          description: "Get help and support"
+        },
+        {
+          name: "About Us",
+          icon: "heart-outline" as const,
+          description: "Learn more about Shifa"
+        }
+      ]
+    }
   ];
 
   const handleSignOut = async () => {
@@ -78,8 +113,10 @@ const SettingsScreen = () => {
             try {
               await deleteCurrentUserAndData();
               setDeleting(false);
-              navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // Use your root auth/login stack name here
-              // If your root navigator uses a different name, adjust accordingly.
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
             } catch (error) {
               setDeleting(false);
               Alert.alert('Error', 'Failed to delete account. Please try again.');
@@ -93,7 +130,6 @@ const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-
         <HeroBox title="Settings" showBackButton customBackRoute="Home" />
 
         {settingsOptions.map((section, index) => (
@@ -106,29 +142,42 @@ const SettingsScreen = () => {
               <TouchableOpacity
                 key={itemIndex}
                 style={styles.optionButton}
-                onPress={() => handleOptionPress(item)}
+                onPress={() => handleOptionPress(item.name)}
               >
-                <Text style={styles.optionText}>{item}</Text>
-                <Ionicons
-                  name="chevron-forward-outline"
-                  size={20}
-                  color="#1B6B63"
-                />
+                <View style={styles.optionLeft}>
+                  <Ionicons name={item.icon} size={22} color="#1B6B63" />
+                  <View style={styles.optionTextContainer}>
+                    <Text style={styles.optionTitle}>{item.name}</Text>
+                    <Text style={styles.optionDescription}>{item.description}</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward-outline" size={20} color="#1B6B63" />
               </TouchableOpacity>
             ))}
           </View>
         ))}
 
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={deleting}>
-          {deleting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.deleteText}>Delete Account</Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.accountActions}>
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Ionicons name="log-out-outline" size={22} color="#FFFFFF" />
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.deleteButton} 
+            onPress={handleDeleteAccount} 
+            disabled={deleting}
+          >
+            {deleting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+                <Text style={styles.deleteText}>Delete Account</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -149,7 +198,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 15,
+    paddingHorizontal: 5,
   },
   sectionTitle: {
     fontSize: 18,
@@ -164,26 +214,44 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 15,
     borderRadius: 14,
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2,
-    borderLeftWidth: 5,
-    borderLeftColor: "#F4A941",
   },
-  optionText: {
+  optionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  optionTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  optionTitle: {
     fontSize: 16,
     color: "#2E2E2E",
+    fontWeight: "500",
+  },
+  optionDescription: {
+    fontSize: 13,
+    color: "#666666",
+    marginTop: 2,
+  },
+  accountActions: {
+    marginTop: 30,
+    paddingHorizontal: 20,
   },
   signOutButton: {
-    marginTop: 40,
-    marginHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#C44536",
     padding: 15,
     borderRadius: 14,
-    alignItems: "center",
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -194,14 +262,15 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+    marginLeft: 8,
   },
   deleteButton: {
-    marginTop: 20,
-    marginHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: '#B00020',
     padding: 15,
     borderRadius: 14,
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -212,6 +281,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
 

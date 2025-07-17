@@ -27,6 +27,7 @@ import SupportSystemScreen from "../app/resources/SupportSystemScreen";
 import VolunteerRewardsScreen from "../app/volunteer/VolunteerRewardsScreen";
 import ProfileScreen from "../app/settings/ProfileScreen";
 import FeedbackScreen from "../app/settings/FeedbackScreen";
+import AboutUsScreen from "../app/settings/AboutUsScreen";
 
 // Custom Tab Bar
 import CustomTabBar from "./CustomTabBar";
@@ -77,6 +78,7 @@ export type SettingsStackParamList = {
   Settings: undefined;
   Profile: undefined;
   Feedback: undefined;
+  AboutUs: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -158,6 +160,7 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
+    <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
   </SettingsStack.Navigator>
 );
 

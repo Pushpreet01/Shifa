@@ -69,12 +69,14 @@ class NotificationService {
           projectId: Constants.expoConfig?.extra?.eas.projectId,
         })
       ).data;
+      console.log("Obtained push token:", token);
 
       const currentUser = auth.currentUser;
       if (currentUser && token) {
         await updateDoc(doc(db, "users", currentUser.uid), {
           pushToken: token,
         });
+        console.log("Push token saved to Firestore.");
       }
     } catch (error) {
       console.error("Error getting or saving push token:", error);
@@ -193,7 +195,7 @@ class NotificationService {
       data: data,
     };
 
-    await fetch("https://exp.host/--/api/v2/push/send", {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -202,15 +204,21 @@ class NotificationService {
       },
       body: JSON.stringify(message),
     });
+    const result = await response.json();
+    console.log("Expo push notification response:", result);
   }
 
   // Configure notification behavior
   configureNotifications() {
     Notifications.setNotificationHandler({
       handleNotification: async (notification) => {
+        console.log(
+          "Notification received while app is in foreground:",
+          JSON.stringify(notification, null, 2)
+        );
         return {
           shouldShowAlert: true,
-          shouldPlaySound: false,
+          shouldPlaySound: true,
           shouldSetBadge: false,
         };
       },

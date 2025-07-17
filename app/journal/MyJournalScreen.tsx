@@ -7,8 +7,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
 } from "react-native";
-import { getUserJournals } from "../../services/firebaseJournalService";
+import { getUserJournals, deleteJournalEntry } from "../../services/firebaseJournalService";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
@@ -19,20 +20,38 @@ const MyJournalsScreen = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
 
-  useEffect(() => {
-    const fetchJournals = async () => {
-      try {
-        const data = await getUserJournals();
-        setJournals(data);
-      } catch (err) {
-        console.error("Error loading journals:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchJournals = async () => {
+    try {
+      const data = await getUserJournals();
+      setJournals(data);
+    } catch (err) {
+      console.error("Error loading journals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchJournals();
   }, []);
+
+  const handleDelete = (id: string) => {
+    Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteJournalEntry(id);
+          fetchJournals(); // Refresh list
+        },
+      },
+    ]);
+  };
+
+  const handleEdit = (entry: any) => {
+    navigation.navigate("NewJournalEntryScreen", { entry }); // pass journal entry
+  };
 
   if (loading) {
     return (
@@ -46,18 +65,15 @@ const MyJournalsScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.heroBox}>
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Entries</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
               <Ionicons name="notifications-outline" size={24} color="#C44536" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate('Emergency')}>
+            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate("Emergency")}>
               <Text style={styles.sosText}>SOS</Text>
             </TouchableOpacity>
           </View>
@@ -65,13 +81,6 @@ const MyJournalsScreen = () => {
       </View>
 
       <View style={styles.content}>
-        <TouchableOpacity 
-          style={styles.newEntryButton}
-          onPress={() => navigation.navigate("NewJournalEntryScreen")}
-        >
-          <Text style={styles.newEntryButtonText}>New Entry</Text>
-        </TouchableOpacity>
-
         {journals.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyMessage}>No journal entries found.</Text>
@@ -89,20 +98,34 @@ const MyJournalsScreen = () => {
                 <Text style={styles.entryDate}>
                   {item.createdAt?.toDate?.().toLocaleString?.() || "No Date"}
                 </Text>
+                <View style={styles.actionRow}>
+                  <TouchableOpacity style={styles.actionBtn} onPress={() => handleEdit(item)}>
+                    <Ionicons name="create-outline" size={20} color="#1B6B63" />
+                    <Text style={styles.actionText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionBtn} onPress={() => handleDelete(item.id)}>
+                    <Ionicons name="trash-outline" size={20} color="#C44536" />
+                    <Text style={styles.actionText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           />
         )}
       </View>
+
+      <TouchableOpacity
+        style={styles.newEntryButton}
+        onPress={() => navigation.navigate("NewJounalEntryScreen", undefined )}
+      >
+        <Text style={styles.newEntryButtonText}>New Entry</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FDF6EC",
-  },
+  container: { flex: 1, backgroundColor: "#FDF6EC" },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -123,15 +146,8 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  header: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButtonContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  header: { width: "100%", flexDirection: "row", alignItems: "center" },
+  backButtonContainer: { flexDirection: "row", alignItems: "center" },
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
@@ -152,31 +168,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  sosText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 12,
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  newEntryButton: {
-    backgroundColor: "#1B6B63",
-    borderRadius: 30,
-    paddingVertical: 12,
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  newEntryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
+  sosText: { color: "#FFFFFF", fontWeight: "bold", fontSize: 12 },
+  content: { flex: 1, padding: 20, paddingBottom: 90 },
+  listContainer: { paddingBottom: 20 },
   entry: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
@@ -196,16 +190,8 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
     marginBottom: 8,
   },
-  entryBody: {
-    fontSize: 14,
-    color: "#666666",
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  entryDate: {
-    fontSize: 12,
-    color: "#999999",
-  },
+  entryBody: { fontSize: 14, color: "#666666", marginBottom: 8, lineHeight: 20 },
+  entryDate: { fontSize: 12, color: "#999999" },
   emptyContainer: {
     flex: 1,
     alignItems: "center",
@@ -224,6 +210,36 @@ const styles = StyleSheet.create({
     color: "#666666",
     textAlign: "center",
     lineHeight: 20,
+  },
+  newEntryButton: {
+    backgroundColor: "#1B6B63",
+    borderRadius: 30,
+    paddingVertical: 12,
+    width: "90%",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+  },
+  newEntryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+  },
+  actionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 12,
+  },
+  actionText: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
 

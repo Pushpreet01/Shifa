@@ -13,6 +13,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../config/firebaseConfig";
 import { AntDesign } from "@expo/vector-icons";
+import { doc, getDocs, collection, query, where } from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
 
 type AuthStackParamList = {
     Login: undefined;
@@ -50,11 +52,12 @@ const ForgotPassword = () => {
             await sendPasswordResetEmail(auth, email);
             setEmailSent(true);
             setErrors({ success: "Password reset email sent! Please check your inbox and follow the instructions to reset your password." });
-            // Navigate back to login after a short delay
+            // Navigate back to login after 45 seconds
             setTimeout(() => {
                 navigation.navigate("Login");
-            }, 2000);
+            }, 45000);
         } catch (error: any) {
+            console.log("Error sending reset email:", error);
             let errorMessage = "Failed to send reset email. Please try again.";
             if (error.code === "auth/invalid-email") {
                 errorMessage = "Invalid email format.";

@@ -46,7 +46,14 @@ export type HomeStackParamList = {
   RegisterEvent: undefined;
   JournalScreen: undefined;
   MyJournalsScreen: undefined;
-  NewJournalEntryScreen: { entry?: any } | undefined;
+  NewJournalEntryScreen: {
+  entry?: {
+    id: string;
+    title: string;
+    body: string;
+  };
+  };
+
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
@@ -70,7 +77,7 @@ export type HomeStackParamList = {
   };
   VolunteerLearnings: undefined;
   Emergency: undefined;
-  VolunteerRewards: undefined;
+  VolunteerRewards: undefined ;
 };
 
 export type SettingsStackParamList = {

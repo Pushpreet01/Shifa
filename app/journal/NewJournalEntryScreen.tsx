@@ -6,24 +6,27 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
   SafeAreaView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { HomeStackParamList } from "../../navigation/AppNavigator";
-import { saveJournalEntry } from "../../services/firebaseJournalService";
+import { saveJournalEntry, updateJournalEntry } from "../../services/firebaseJournalService";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
-import ProfanityFilterService from "../../services/profanityFilterService";
+
+// 📦 Accepting entry from params
+type ScreenRouteProp = RouteProp<HomeStackParamList, "NewJournalEntryScreen">;
 
 const NewJournalEntryScreen = () => {
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const route = useRoute<ScreenRouteProp>();
+  const entry = route.params?.entry;
+
+  // 📝 Prefill if editing
+  const [title, setTitle] = useState(entry?.title || "");
+  const [body, setBody] = useState(entry?.body || "");
 
   const handleSave = async () => {
     if (!title.trim() || !body.trim()) {
@@ -31,24 +34,15 @@ const NewJournalEntryScreen = () => {
       return;
     }
 
-    setLoading(true);
     try {
-      const titleHasProfanity = await ProfanityFilterService.hasProfanity(
-        title
-      );
-      const bodyHasProfanity = await ProfanityFilterService.hasProfanity(body);
-
-      if (titleHasProfanity || bodyHasProfanity) {
-        Alert.alert(
-          "Inappropriate Content",
-          "Inappropriate words were detected in your entry. Please remove them and try again."
-        );
-        setLoading(false);
-        return;
+      if (entry?.id) {
+        await updateJournalEntry(entry.id, title, body); // EDIT
+        Alert.alert("Success", "Journal updated successfully.");
+      } else {
+        await saveJournalEntry(title, body); // NEW
+        Alert.alert("Success", "Journal saved successfully.");
       }
 
-      await saveJournalEntry(title, body);
-      Alert.alert("Success", "Journal saved successfully.");
       navigation.goBack();
     } catch (error) {
       console.error("Error saving:", error);
@@ -56,8 +50,6 @@ const NewJournalEntryScreen = () => {
         "Error",
         error instanceof Error ? error.message : "Unknown error"
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -71,16 +63,14 @@ const NewJournalEntryScreen = () => {
           >
             <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Entry</Text>
+          <Text style={styles.headerTitle}>
+            {entry ? "Edit Entry" : "New Entry"}
+          </Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity
               onPress={() => navigation.navigate("Announcements")}
             >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
+              <Ionicons name="notifications-outline" size={24} color="#C44536" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.sosWrapper}
@@ -121,12 +111,10 @@ const NewJournalEntryScreen = () => {
             />
           </View>
 
-          <TouchableOpacity
-            style={[styles.saveButton, loading && styles.disabledButton]}
-            onPress={handleSave}
-            disabled={loading}
-          >
-            <Text style={styles.saveButtonText}>Save Entry</Text>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>
+              {entry ? "Update Entry" : "Save Entry"}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAwareWrapper>
@@ -134,6 +122,7 @@ const NewJournalEntryScreen = () => {
   );
 };
 
+// ⏬ Keep your same styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -232,9 +221,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-  },
-  disabledButton: {
-    opacity: 0.7,
   },
   saveButtonText: {
     color: "#FFFFFF",

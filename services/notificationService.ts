@@ -179,14 +179,41 @@ class NotificationService {
     }
   }
 
+  async sendPushNotification(
+    pushToken: string,
+    title: string,
+    body: string,
+    data?: object
+  ) {
+    const message = {
+      to: pushToken,
+      sound: "default",
+      title: title,
+      body: body,
+      data: data,
+    };
+
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
+  }
+
   // Configure notification behavior
   configureNotifications() {
     Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-      }),
+      handleNotification: async (notification) => {
+        return {
+          shouldShowAlert: true,
+          shouldPlaySound: false,
+          shouldSetBadge: false,
+        };
+      },
     });
   }
 }

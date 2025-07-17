@@ -9,12 +9,35 @@ import {
 import { CalendarEvent } from "../services/calendarService";
 
 // Helper function to format Firestore Timestamp
-const formatTime = (timestamp: any) => {
-  if (!timestamp || typeof timestamp.seconds !== "number") {
+const formatTime = (time: any) => {
+  if (!time) {
+    return "N/A";
+  }
+
+  let date: Date;
+
+  if (time.seconds) {
+    // Firestore Timestamp
+    date = new Date(time.seconds * 1000);
+  } else if (time instanceof Date) {
+    // JavaScript Date object
+    date = time;
+  } else if (typeof time === "string") {
+    // ISO 8601 string
+    date = new Date(time);
+  } else {
     return "Invalid time";
   }
-  const date = new Date(timestamp.seconds * 1000);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  if (isNaN(date.getTime())) {
+    return "Invalid time";
+  }
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 interface EventCardProps {

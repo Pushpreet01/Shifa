@@ -43,14 +43,18 @@ const MyJournalsScreen = () => {
         style: "destructive",
         onPress: async () => {
           await deleteJournalEntry(id);
-          fetchJournals(); // Refresh list
+          setJournals((prev) => prev.filter((entry) => entry.id !== id)); // local delete for faster UI
         },
       },
     ]);
   };
 
   const handleEdit = (entry: any) => {
-    navigation.navigate("NewJournalEntryScreen", { entry }); // pass journal entry
+    navigation.navigate("NewJournalEntryScreen", { entry }); // pass selected journal to edit
+  };
+
+  const handleNewEntry = () => {
+    navigation.navigate("NewJournalEntryScreen", { entry: undefined }); // fresh new entry
   };
 
   if (loading) {
@@ -116,7 +120,7 @@ const MyJournalsScreen = () => {
 
       <TouchableOpacity
         style={styles.newEntryButton}
-        onPress={() => navigation.navigate("NewJounalEntryScreen", undefined )}
+        onPress={handleNewEntry}
       >
         <Text style={styles.newEntryButtonText}>New Entry</Text>
       </TouchableOpacity>

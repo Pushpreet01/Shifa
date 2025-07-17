@@ -35,13 +35,13 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  setUser: () => {},
+  setUser: () => { },
   isAuthenticated: false,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
+  signIn: async () => { },
+  signUp: async () => { },
+  signOut: async () => { },
   errorMsg: null,
-  setErrorMsg: () => {},
+  setErrorMsg: () => { },
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -68,19 +68,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
+          // if (!firebaseUser.emailVerified) {
+          //   await firebaseSignOut();
+          //   setUser(null);
+          //   setErrorMsg(
+          //     "Please verify your email address before logging in. Check your inbox for a verification link."
+          //   );
+          //   setLoading(false);
+          //   return;
+          // }
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           const userData = userDoc.exists() ? userDoc.data() : null;
-
           const roleFromDb = userData?.role as Role | undefined;
-
-          // Check role existence and validity
           const validRoles: Role[] = [
             "Admin",
             "Support Seeker",
             "Event Organizer",
             "Volunteer",
           ];
-
           if (!roleFromDb || !validRoles.includes(roleFromDb)) {
             setUser(null);
             setErrorMsg(
@@ -118,8 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         loading,
         setUser,
         isAuthenticated,
-        signIn: async () => {},
-        signUp: async () => {},
+        signIn: async () => { },
+        signUp: async () => { },
         signOut,
         errorMsg,
         setErrorMsg,

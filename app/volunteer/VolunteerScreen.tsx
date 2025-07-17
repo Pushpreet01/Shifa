@@ -594,15 +594,7 @@ const VolunteerScreen: React.FC<
                   <Text style={styles.appliedText}>
                     Application Status: {status?.toUpperCase()}
                   </Text>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.applyButton}
-                    onPress={() => handleApply(opportunity)}
-                    disabled={loading}
-                  >
-                    <Text style={styles.applyButtonText}>Apply</Text>
-                  </TouchableOpacity>
-                )}
+                ) : (<Text></Text>)}
                 <TouchableOpacity
                   style={styles.detailsButton}
                   onPress={() =>

@@ -8,10 +8,16 @@ import {
   Image,
   Switch,
   TextInput,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../config/firebaseConfig";
 
 type AuthStackParamList = {
   Login: undefined;
@@ -22,18 +28,34 @@ type AuthStackParamList = {
     phoneNumber: string;
     password: string;
   };
-  UserSettings: { role: string; fullName: string; email: string; phoneNumber: string; password: string };
+  UserSettings: {
+    role: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+  };
+  EmailVerification: {
+    email: string;
+  };
 };
 
-type UserSettingsScreenRouteProp = RouteProp<AuthStackParamList, "UserSettings">;
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "UserSettings">;
+type UserSettingsScreenRouteProp = RouteProp<
+  AuthStackParamList,
+  "UserSettings"
+>;
+type NavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  "UserSettings"
+>;
 
 const UserSettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<UserSettingsScreenRouteProp>();
-  const { role } = route.params;
+  const { role, fullName, email, phoneNumber, password } = route.params;
 
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState({
     push: true,
     email: true,
@@ -42,14 +64,45 @@ const UserSettingsScreen = () => {
   const [emergencyContacts, setEmergencyContacts] = useState([
     { name: "", phone: "" },
   ]);
+  const [inlineMessage, setInlineMessage] = useState<{ type: 'success' | 'error' | null, text: string }>({ type: null, text: '' });
 
   const handleAddContact = () => {
     setEmergencyContacts([...emergencyContacts, { name: "", phone: "" }]);
   };
 
-  const handleContactChange = (index: number, field: "name" | "phone", value: string) => {
+  const formatPhoneNumber = (text: string) => {
+    // Remove all non-numeric characters
+    const cleaned = text.replace(/\D/g, "");
+
+    // Format as (XXX) XXX-XXXX
+    if (cleaned.length >= 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+        6,
+        10
+      )}`;
+    } else if (cleaned.length > 6) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+        6
+      )}`;
+    } else if (cleaned.length > 3) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    } else if (cleaned.length > 0) {
+      return `(${cleaned}`;
+    }
+    return "";
+  };
+
+  const handleContactChange = (
+    index: number,
+    field: "name" | "phone",
+    value: string
+  ) => {
     const newContacts = [...emergencyContacts];
-    newContacts[index][field] = value;
+    if (field === "phone") {
+      newContacts[index][field] = formatPhoneNumber(value);
+    } else {
+      newContacts[index][field] = value;
+    }
     setEmergencyContacts(newContacts);
   };
 
@@ -60,10 +113,92 @@ const UserSettingsScreen = () => {
     }
   };
 
-  const handleComplete = () => {
-    // Placeholder for future backend integration
-    navigation.navigate("Signup");
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "Please grant permission to access your photos to select a profile picture."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.3,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const base64Data = result.assets[0].base64;
+      if (base64Data) {
+        if (base64Data.length > 1000000) {
+          Alert.alert(
+            "Image Too Large",
+            "Please select a smaller image. The current image is too large to store."
+          );
+          return;
+        }
+        const base64ImageUrl = `data:image/jpeg;base64,${base64Data}`;
+        setProfileImage(base64ImageUrl);
+      }
+    }
   };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    setInlineMessage({ type: null, text: '' });
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Clean phone number to store only digits
+      const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
+
+      // Prepare user data to be saved in Firestore
+      const userData = {
+        uid: user.uid,
+        fullName,
+        email,
+        phoneNumber: cleanedPhoneNumber,
+        role,
+        profileImage,
+        notifications,
+        emergencyContacts,
+        approved: true, // Set approved to true by default
+        createdAt: new Date().toISOString(),
+      };
+
+      // Save user data to Firestore
+      await setDoc(doc(db, "users", user.uid), userData);
+
+      // Send email verification
+      // await sendEmailVerification(user);
+      setLoading(false);
+      // navigation.navigate("EmailVerification", { email });
+      setInlineMessage({ type: 'success', text: 'Setup complete! You can now log in.' });
+      return;
+    } catch (error: any) {
+      setLoading(false);
+      console.error("Error completing setup:", error);
+      setInlineMessage({ type: 'error', text: error?.message || 'Failed to complete setup. Please try again.' });
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1B6B63" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -76,7 +211,13 @@ const UserSettingsScreen = () => {
           <View style={styles.circleContainer}>
             <View style={[styles.circle, styles.activeCircle]} />
             <View style={[styles.circle, styles.activeCircle]} />
-            <View style={[styles.circle, styles.activeCircle, styles.enlargedCircle]}>
+            <View
+              style={[
+                styles.circle,
+                styles.activeCircle,
+                styles.enlargedCircle,
+              ]}
+            >
               <Text style={styles.circleText}>3</Text>
             </View>
           </View>
@@ -85,13 +226,24 @@ const UserSettingsScreen = () => {
 
         <Text style={styles.title}>Complete Your Profile</Text>
         <Text style={styles.subtitle}>Customize your experience</Text>
+        {inlineMessage.type && (
+          <Text style={inlineMessage.type === 'success' ? styles.successText : styles.errorText}>
+            {inlineMessage.text}
+          </Text>
+        )}
 
         {/* Profile Picture Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Profile Picture</Text>
-          <TouchableOpacity style={styles.profilePictureContainer}>
-            {profilePicture ? (
-              <Image source={{ uri: profilePicture }} style={styles.profilePicture} />
+          <TouchableOpacity
+            style={styles.profilePictureContainer}
+            onPress={pickImage}
+          >
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profilePicture}
+              />
             ) : (
               <View style={styles.profilePicturePlaceholder}>
                 <Ionicons name="person" size={40} color="#1B6B63" />
@@ -149,13 +301,17 @@ const UserSettingsScreen = () => {
                   style={styles.input}
                   placeholder="Contact Name"
                   value={contact.name}
-                  onChangeText={(value) => handleContactChange(index, "name", value)}
+                  onChangeText={(value) =>
+                    handleContactChange(index, "name", value)
+                  }
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Phone Number"
                   value={contact.phone}
-                  onChangeText={(value) => handleContactChange(index, "phone", value)}
+                  onChangeText={(value) =>
+                    handleContactChange(index, "phone", value)
+                  }
                   keyboardType="phone-pad"
                 />
               </View>
@@ -169,10 +325,7 @@ const UserSettingsScreen = () => {
               )}
             </View>
           ))}
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddContact}
-          >
+          <TouchableOpacity style={styles.addButton} onPress={handleAddContact}>
             <Ionicons name="add-circle" size={24} color="#1B6B63" />
             <Text style={styles.addButtonText}>Add Another Contact</Text>
           </TouchableOpacity>
@@ -381,6 +534,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8F5E9",
+  },
+  successText: {
+    color: '#4CAF50',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: '#FF4D4D',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

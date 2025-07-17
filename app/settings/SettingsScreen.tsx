@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import HeroBox from "../../components/HeroBox";
@@ -14,12 +16,14 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
+import { deleteCurrentUserAndData } from '../../services/firebaseUserService';
 
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList>;
 
 const SettingsScreen = () => {
   const { signOut } = useAuth();
   const navigation = useNavigation<SettingsScreenNavigationProp>();
+  const [deleting, setDeleting] = React.useState(false);
 
   const handleOptionPress = (option: string) => {
     switch (option) {
@@ -60,10 +64,36 @@ const SettingsScreen = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteCurrentUserAndData();
+              setDeleting(false);
+              navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // Use your root auth/login stack name here
+              // If your root navigator uses a different name, adjust accordingly.
+            } catch (error) {
+              setDeleting(false);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        
+
         <HeroBox title="Settings" showBackButton customBackRoute="Home" />
 
         {settingsOptions.map((section, index) => (
@@ -92,6 +122,13 @@ const SettingsScreen = () => {
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={deleting}>
+          {deleting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.deleteText}>Delete Account</Text>
+          )}
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -100,7 +137,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FDF6EC",
   },
   container: {
     paddingBottom: 120,
@@ -157,6 +194,24 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  deleteButton: {
+    marginTop: 20,
+    marginHorizontal: 20,
+    backgroundColor: '#B00020',
+    padding: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  deleteText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

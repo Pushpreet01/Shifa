@@ -1,5 +1,6 @@
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "../config/firebaseConfig";
+import { deleteUser } from "firebase/auth";
 
 export interface UserProfile {
   userId: string;
@@ -105,6 +106,34 @@ export const triggerSOS = async (
     console.error("Error triggering SOS:", error);
     throw error;
   }
+};
+
+export const deleteCurrentUserAndData = async (): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user is currently signed in.");
+  const userId = user.uid;
+  // Delete user document
+  await deleteDoc(doc(db, "users", userId));
+  // Optionally: delete related feedback
+  const feedbackQuery = query(collection(db, "feedback"), where("userId", "==", userId));
+  const feedbackSnap = await getDocs(feedbackQuery);
+  for (const docSnap of feedbackSnap.docs) {
+    await deleteDoc(doc(db, "feedback", docSnap.id));
+  }
+  // Optionally: delete related sosAlerts
+  const sosQuery = query(collection(db, "sosAlerts"), where("userId", "==", userId));
+  const sosSnap = await getDocs(sosQuery);
+  for (const docSnap of sosSnap.docs) {
+    await deleteDoc(doc(db, "sosAlerts", docSnap.id));
+  }
+  // Optionally: delete related notifications
+  const notifQuery = query(collection(db, "notifications"), where("userId", "==", userId));
+  const notifSnap = await getDocs(notifQuery);
+  for (const docSnap of notifSnap.docs) {
+    await deleteDoc(doc(db, "notifications", docSnap.id));
+  }
+  // Delete user from Auth
+  await deleteUser(user);
 };
 
 export const signOut = async (): Promise<void> => {

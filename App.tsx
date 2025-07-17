@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AppNavigator from "./navigation/AppNavigator";
 import { AuthProvider } from "./context/AuthContext";
@@ -6,11 +6,17 @@ import RootNavigator from "./navigation/RootNavigator";
 import NetworkStatus from "./components/NetworkStatus";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
+import NotificationService from "./services/notificationService";
 
 // Import or define your WebWrapper here
 import WebWrapper from "./components/WebWrapper";
 
 export default function App() {
+  useEffect(() => {
+    NotificationService.requestPermissions();
+    NotificationService.configureNotifications();
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>

@@ -12,6 +12,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { CalendarEvent } from "./calendarService";
+import NotificationService from "./notificationService";
 
 class FirebaseEventService {
   async fetchEvents(startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
@@ -85,6 +86,24 @@ class FirebaseEventService {
         eventId: eventRef.id,
       };
       await addDoc(collection(db, "announcements"), announcement);
+
+      // Send push notifications to all users
+      const usersQuery = query(
+        collection(db, "users"),
+        where("pushToken", "!=", null)
+      );
+      const usersSnapshot = await getDocs(usersQuery);
+      usersSnapshot.forEach((userDoc) => {
+        const userData = userDoc.data();
+        if (userData.pushToken) {
+          NotificationService.sendPushNotification(
+            userData.pushToken,
+            "New Event Announcement",
+            announcement.message,
+            { eventId: eventRef.id }
+          );
+        }
+      });
 
       return eventRef.id;
     } catch (error) {

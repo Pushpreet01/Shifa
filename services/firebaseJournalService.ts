@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { collection, query, where, doc, deleteDoc, getDocs, addDoc, updateDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import { db, auth } from "../config/firebaseConfig";
 
 export const saveJournalEntry = async (title: string, body: string) => {
@@ -28,4 +28,21 @@ export const getUserJournals = async () => {
     id: doc.id,
     ...doc.data(),
   }));
+
+
+
+
+  
+};
+export const deleteJournalEntry = async (entryId: string) => {
+  const entryRef = doc(db, "journals", entryId);
+  await deleteDoc(entryRef);
+};
+
+export const updateJournalEntry = async (entryId: string, title: string, body: string) => {
+  const entryRef = doc(db, "journals", entryId);
+  await updateDoc(entryRef, {
+    title,
+    body,
+  });
 };

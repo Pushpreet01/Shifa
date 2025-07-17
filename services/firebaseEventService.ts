@@ -87,23 +87,43 @@ class FirebaseEventService {
       };
       await addDoc(collection(db, "announcements"), announcement);
 
-      // Send push notifications to all users
+      // Send push notifications
       const usersQuery = query(
         collection(db, "users"),
         where("pushToken", "!=", null)
       );
       const usersSnapshot = await getDocs(usersQuery);
+
+      // Separate creator notification from others
+      const creatorId = currentUser.uid;
+      let creatorToken: string | null = null;
+
       usersSnapshot.forEach((userDoc) => {
         const userData = userDoc.data();
         if (userData.pushToken) {
-          NotificationService.sendPushNotification(
-            userData.pushToken,
-            "New Event Announcement",
-            announcement.message,
-            { eventId: eventRef.id }
-          );
+          if (userDoc.id === creatorId) {
+            creatorToken = userData.pushToken;
+          } else {
+            // Send to all other users
+            NotificationService.sendPushNotification(
+              userData.pushToken,
+              "New Event Announcement",
+              `A new event has been posted: ${eventData.title}`,
+              { eventId: eventRef.id }
+            );
+          }
         }
       });
+
+      // Send a separate notification to the event creator
+      if (creatorToken) {
+        NotificationService.sendPushNotification(
+          creatorToken,
+          "Event Created Successfully",
+          `Your event "${eventData.title}" has been created.`,
+          { eventId: eventRef.id }
+        );
+      }
 
       return eventRef.id;
     } catch (error) {

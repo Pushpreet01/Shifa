@@ -27,7 +27,6 @@ import SupportSystemScreen from "../app/resources/SupportSystemScreen";
 import VolunteerRewardsScreen from "../app/volunteer/VolunteerRewardsScreen";
 import ProfileScreen from "../app/settings/ProfileScreen";
 import FeedbackScreen from "../app/settings/FeedbackScreen";
-import AboutUsScreen from "../app/settings/AboutUsScreen";
 
 // Custom Tab Bar
 import CustomTabBar from "./CustomTabBar";
@@ -47,7 +46,14 @@ export type HomeStackParamList = {
   RegisterEvent: undefined;
   JournalScreen: undefined;
   MyJournalsScreen: undefined;
-  NewJournalEntryScreen: undefined;
+  NewJournalEntryScreen: {
+  entry?: {
+    id: string;
+    title: string;
+    body: string;
+  };
+  };
+
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
@@ -71,14 +77,13 @@ export type HomeStackParamList = {
   };
   VolunteerLearnings: undefined;
   Emergency: undefined;
-  VolunteerRewards: undefined;
+  VolunteerRewards: undefined ;
 };
 
 export type SettingsStackParamList = {
   Settings: undefined;
   Profile: undefined;
   Feedback: undefined;
-  AboutUs: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -160,7 +165,6 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
-    <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
   </SettingsStack.Navigator>
 );
 

@@ -93,6 +93,7 @@ class FirebaseEventService {
         where("pushToken", "!=", null)
       );
       const usersSnapshot = await getDocs(usersQuery);
+      console.log(`Found ${usersSnapshot.size} users with push tokens.`);
 
       // Separate creator notification from others
       const creatorId = currentUser.uid;
@@ -105,6 +106,7 @@ class FirebaseEventService {
             creatorToken = userData.pushToken;
           } else {
             // Send to all other users
+            console.log(`Sending notification to token: ${userData.pushToken}`);
             NotificationService.sendPushNotification(
               userData.pushToken,
               "New Event Announcement",
@@ -117,6 +119,7 @@ class FirebaseEventService {
 
       // Send a separate notification to the event creator
       if (creatorToken) {
+        console.log(`Sending creator notification to token: ${creatorToken}`);
         NotificationService.sendPushNotification(
           creatorToken,
           "Event Created Successfully",

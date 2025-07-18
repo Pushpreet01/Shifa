@@ -47,6 +47,19 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     checkApplicationStatus();
   }, []);
 
+  // If not approved, show a message and do not allow application
+  const isOpportunityApproved = opportunityDetails?.approvalStatus === 'approved';
+
+  if (!loadingOpportunity && opportunityDetails && !isOpportunityApproved) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FDF6EC' }}>
+        <Text style={{ color: '#C44536', fontSize: 18, textAlign: 'center', margin: 20 }}>
+          This opportunity is not available. It may be pending admin approval or has been rejected.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   const fetchOpportunityDetails = async () => {
     try {
       setLoadingOpportunity(true);

@@ -55,6 +55,7 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setLoading(true);
       const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
+      // Only show opportunities with approvalStatus: 'approved'
       const approved = allOpportunities.filter((opp) => opp.approvalStatus === "approved");
       setOpportunities(approved);
       const locs = Array.from(new Set(approved.map((opp) => opp.location).filter(Boolean)));
@@ -137,8 +138,8 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
       opportunity.createdAt instanceof Date
         ? opportunity.createdAt
         : typeof opportunity.createdAt?.toDate === "function"
-        ? opportunity.createdAt.toDate()
-        : new Date();
+          ? opportunity.createdAt.toDate()
+          : new Date();
 
     navigation.navigate("OpportunityDetails", {
       title: opportunity.title,
@@ -434,7 +435,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   // New styles for dropdowns
-    dropdownContainer: {
+  dropdownContainer: {
     marginBottom: 10,
   },
   dropdownButton: {

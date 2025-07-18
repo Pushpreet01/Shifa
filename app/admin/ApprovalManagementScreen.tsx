@@ -1,49 +1,95 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import AdminHeroBox from '../../components/AdminHeroBox';
-
-type ApprovalItem = {
-  id: string;
-  type: 'event' | 'volunteer' | 'organizer';
-  status: 'pending' | 'approved' | 'denied';
-  title: string;
-  userName: string;
-  date: string;
-};
+import { db } from '../../config/firebaseConfig';
+import { collection, getDocs, updateDoc, doc, query, where } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import FirebaseOpportunityService from '../../services/FirebaseOpportunityService';
 
 const ApprovalManagementScreen = () => {
   const [activeTab, setActiveTab] = useState<'event' | 'volunteer' | 'organizer'>('event');
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const navigation = useNavigation<any>();
 
-  const eventApprovals: ApprovalItem[] = [
-    { id: '1', type: 'event', status: 'pending', title: 'Mental Health Workshop', userName: 'Sarah Johnson', date: '2024-03-15' },
-    { id: '2', type: 'event', status: 'pending', title: 'Support Group Meeting', userName: 'Michael Chen', date: '2024-03-16' },
-  ];
+  // Fetch pending approvals from Firestore
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      setLoading(true);
+      let q;
+      if (activeTab === 'event') {
+        q = query(collection(db, 'events'), where('approvalStatus', '==', 'pending'));
+      } else if (activeTab === 'volunteer') {
+        q = query(collection(db, 'opportunities'), where('approvalStatus', '==', 'pending'));
+      } else {
+        q = query(collection(db, 'organizerRequests'), where('approvalStatus', '==', 'pending'));
+      }
+      const snapshot = await getDocs(q);
+      setApprovals(snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() })));
+      setLoading(false);
+    };
+    fetchApprovals();
+  }, [activeTab]);
 
-  const volunteerApprovals: ApprovalItem[] = [
-    { id: '3', type: 'volunteer', status: 'pending', title: 'Community Outreach', userName: 'Lisa Anderson', date: '2024-03-17' },
-  ];
+  const handleApprove = async (id: string) => {
+    setActionLoading(true);
+    let col = activeTab === 'event' ? 'events' : activeTab === 'volunteer' ? 'opportunities' : 'organizerRequests';
+    try {
+      await updateDoc(doc(db, col, id), { approvalStatus: 'approved' });
+      // If approving an event, also approve associated opportunity (if any)
+      if (activeTab === 'event') {
+        const q = query(collection(db, 'opportunities'), where('eventId', '==', id));
+        const oppSnap = await getDocs(q);
+        if (!oppSnap.empty) {
+          for (const oppDoc of oppSnap.docs) {
+            await FirebaseOpportunityService.updateOpportunity(oppDoc.id, { approvalStatus: 'approved' });
+          }
+        }
+      }
+      setApprovals(approvals.filter(item => item.id !== id));
+      Alert.alert('Approved', 'Item has been approved.');
+    } catch (err) {
+      console.log('Error approving item:', err);
+      Alert.alert('Error', 'Failed to approve item.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-  const organizerApprovals: ApprovalItem[] = [
-    { id: '4', type: 'organizer', status: 'pending', title: 'Organizer Request', userName: 'Nina Patel', date: '2024-03-18' },
-  ];
+  const handleDeny = async (id: string) => {
+    setActionLoading(true);
+    let col = activeTab === 'event' ? 'events' : activeTab === 'volunteer' ? 'opportunities' : 'organizerRequests';
+    try {
+      await updateDoc(doc(db, col, id), { approvalStatus: 'rejected' });
+      // If denying an event, also reject associated opportunity (if any)
+      if (activeTab === 'event') {
+        const q = query(collection(db, 'opportunities'), where('eventId', '==', id));
+        const oppSnap = await getDocs(q);
+        if (!oppSnap.empty) {
+          for (const oppDoc of oppSnap.docs) {
+            await FirebaseOpportunityService.updateOpportunity(oppDoc.id, { approvalStatus: 'rejected' });
+          }
+        }
+      }
+      setApprovals(approvals.filter(item => item.id !== id));
+      Alert.alert('Denied', 'Item has been denied.');
+    } catch (err) {
+      console.log('Error denying item:', err);
+      Alert.alert('Error', 'Failed to deny item.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-  const approvalItems = {
-    event: eventApprovals,
-    volunteer: volunteerApprovals,
-    organizer: organizerApprovals,
-  }[activeTab];
-
-  const handleApprove = (id: string) => console.log('Approved:', id);
-  const handleDeny = (id: string) => console.log('Denied:', id);
+  const handleCardPress = (item: any) => {
+    navigation.navigate('ApprovalDetails', {
+      id: item.id,
+      type: activeTab, // 'event', 'volunteer', or 'organizer'
+    });
+  };
 
   const renderRightActions = (id: string) => (
     <View style={styles.verticalSwipeActions}>
@@ -65,6 +111,11 @@ const ApprovalManagementScreen = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
+        {actionLoading && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, backgroundColor: 'rgba(255,255,255,0.6)', justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#1B6B63" />
+          </View>
+        )}
         <AdminHeroBox title="Approvals" showBackButton customBackRoute="AdminDashboard" />
 
         <View style={styles.tabContainer}>
@@ -78,28 +129,36 @@ const ApprovalManagementScreen = () => {
                 {type === 'event'
                   ? 'Events'
                   : type === 'volunteer'
-                  ? 'Volunteers'
-                  : 'Event Organizers'}
+                    ? 'Volunteers'
+                    : 'Event Organizers'}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <ScrollView style={styles.content}>
-          {approvalItems.length === 0 ? (
+          {loading ? (
+            <Text style={styles.emptyText}>Loading...</Text>
+          ) : approvals.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No pending approvals</Text>
             </View>
           ) : (
-            approvalItems.map((item) => (
+            approvals.map((item) => (
               <Swipeable key={item.id} renderRightActions={() => renderRightActions(item.id)}>
-                <View style={styles.approvalCard}>
+                <TouchableOpacity onPress={() => !actionLoading && handleCardPress(item)} style={styles.approvalCard} disabled={actionLoading}>
                   <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <Text style={styles.timestamp}>{item.date}</Text>
+                    <Text style={styles.cardTitle}>{item.title || item.name || 'No Title'}</Text>
                   </View>
-                  <Text style={styles.userName}>By: {item.userName}</Text>
-                </View>
+                  <Text style={styles.cardDesc}>{item.description || ''}</Text>
+                  <Text style={styles.cardDetail}>
+                    {item.date ? `Date: ${item.date.seconds ? new Date(item.date.seconds * 1000).toLocaleDateString() : new Date(item.date).toLocaleDateString()}` : ''}
+                  </Text>
+                  <Text style={styles.cardDetail}>Location: {item.location || 'N/A'}</Text>
+                  <Text style={styles.cardDetail}>
+                    Needs Volunteers: {item.needsVolunteers ? 'Yes' : 'No'}
+                  </Text>
+                </TouchableOpacity>
               </Swipeable>
             ))
           )}
@@ -197,6 +256,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: '500',
+  },
+  cardDesc: {
+    fontSize: 14,
+    color: '#444',
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  cardDetail: {
+    fontSize: 13,
+    color: '#1B6B63',
+    marginTop: 2,
   },
 });
 

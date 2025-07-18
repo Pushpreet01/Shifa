@@ -217,11 +217,22 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         location: location,
         description: description,
         needsVolunteers,
+        approvalStatus: 'pending', // Require admin approval
       };
 
-      const eventId = await firebaseEventService.addEvent(eventData);
+      console.log('[EventsFormScreen] About to call addEvent with data:', eventData);
+      let eventId: string | null = null;
+      try {
+        eventId = await firebaseEventService.addEvent(eventData);
+        console.log('[EventsFormScreen] addEvent returned eventId:', eventId);
+      } catch (eventError) {
+        console.error('[EventsFormScreen] Error in addEvent call:', eventError);
+        throw eventError;
+      }
 
+      console.log('[EventsFormScreen] Checking if needsVolunteers and eventId:', needsVolunteers, eventId);
       if (needsVolunteers && eventId) {
+        console.log('[EventsFormScreen] Creating volunteer opportunity...');
         const opportunityId = doc(collection(db, "opportunities")).id;
         const opportunityData = {
           opportunityId,
@@ -231,11 +242,20 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           description: volunteerDescription.trim(),
           timings: timings.trim(),
           location: location,
-          rewards: rewards.trim() || undefined,
-          refreshments: refreshments.trim() || undefined,
+          rewards: rewards.trim() || null,
+          refreshments: refreshments.trim() || null,
+          approvalStatus: 'pending', // Require admin approval
         };
-
-        await firebaseOpportunityService.createOpportunity(opportunityData);
+        console.log('[EventsFormScreen] Creating opportunity with:', opportunityData);
+        try {
+          await firebaseOpportunityService.createOpportunity(opportunityData);
+          console.log('[EventsFormScreen] Opportunity created successfully');
+        } catch (err) {
+          console.log('[EventsFormScreen] Error creating opportunity:', err);
+          throw err;
+        }
+      } else {
+        console.log('[EventsFormScreen] Skipping opportunity creation - needsVolunteers:', needsVolunteers, 'eventId:', eventId);
       }
 
       if (eventId) {

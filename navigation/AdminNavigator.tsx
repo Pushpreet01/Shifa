@@ -8,6 +8,7 @@ import CustomTabBar from './CustomTabBar';
 // Home Screens
 import AdminDashboardScreen from '../app/admin/AdminDashboardScreen';
 import ApprovalManagementScreen from '../app/admin/ApprovalManagementScreen';
+import ApprovalDetailsScreen from '../app/admin/ApprovalDetailsScreen';
 import ResourceManagementScreen from '../app/admin/ResourceManagementScreen';
 import EventsScreen from '../app/admin/EventsScreen';
 import AssignVolunteersScreen from '../app/admin/AssignVolunteersScreen';
@@ -35,6 +36,7 @@ export type AdminStackParamList = {
   AdminTabs: undefined;
   AdminDashboard: undefined;
   Approvals: undefined;
+  ApprovalDetails: { id: string; type: 'event' | 'volunteer' | 'organizer' };
   ResourceManagement: undefined;
   Events: undefined;
   AssignVolunteers: undefined;
@@ -64,6 +66,7 @@ const AdminHomeStackScreen = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
     <AdminStack.Screen name="Approvals" component={ApprovalManagementScreen} />
+    <AdminStack.Screen name="ApprovalDetails" component={ApprovalDetailsScreen} />
     <AdminStack.Screen name="ResourceManagement" component={ResourceManagementScreen} />
     <AdminStack.Screen name="Events" component={EventsScreen} />
     <AdminStack.Screen name="AssignVolunteers" component={AssignVolunteersScreen} />

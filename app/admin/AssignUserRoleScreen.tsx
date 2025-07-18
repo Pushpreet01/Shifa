@@ -6,10 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { AdminStackParamList } from '../../navigation/AdminNavigator';
 import AdminHeroBox from '../../components/AdminHeroBox';
+import { banUser } from '../../services/adminUserService';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../config/firebaseConfig';
 
 type AssignUserRoleRouteProp = RouteProp<AdminStackParamList, 'AssignUserRole'>;
 
@@ -21,11 +26,22 @@ const AssignUserRoleScreen = () => {
   const user = route.params?.user;
 
   const [selectedRole, setSelectedRole] = useState(user?.role || '');
+  const [loading, setLoading] = useState(false);
 
-  const handleAssignRole = () => {
-    if (!selectedRole) return;
-    console.log(`Assigned role '${selectedRole}' to user ${user.name}`);
-    navigation.goBack();
+  const handleAssignRole = async () => {
+    if (!selectedRole || !user) return;
+    setLoading(true);
+    try {
+      // Update the user's role in Firestore
+      const userRef = doc(db, 'users', user.id);
+      await updateDoc(userRef, { role: selectedRole });
+      Alert.alert('Success', `Role assigned: ${selectedRole}`);
+      navigation.goBack();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to assign role.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!user) {
@@ -43,7 +59,7 @@ const AssignUserRoleScreen = () => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Assign Role" showBackButton customBackRoute="UserDetails" />
       <View style={styles.inner}>
-        <Text style={styles.label}>Select Role for {user.name}:</Text>
+        <Text style={styles.label}>Select Role for {user.fullName || 'No Name'}:</Text>
         {roles.map((role) => (
           <TouchableOpacity
             key={role}
@@ -52,6 +68,7 @@ const AssignUserRoleScreen = () => {
               selectedRole === role && styles.selectedButton,
             ]}
             onPress={() => setSelectedRole(role)}
+            disabled={loading}
           >
             <Text
               style={[
@@ -63,8 +80,12 @@ const AssignUserRoleScreen = () => {
             </Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity style={styles.assignButton} onPress={handleAssignRole}>
-          <Text style={styles.assignText}>Assign Role</Text>
+        <TouchableOpacity style={styles.assignButton} onPress={handleAssignRole} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.assignText}>Assign Role</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -107,6 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B6B63',
     padding: 14,
     borderRadius: 10,
+    alignItems: 'center',
   },
   assignText: {
     color: '#FFF',

@@ -1,26 +1,80 @@
 // app/admin/UserDetailsScreen.tsx
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/AdminNavigator';
 import AdminHeroBox from '../../components/AdminHeroBox';
+import { fetchUsers, banUser } from '../../services/adminUserService';
+import { useIsFocused } from '@react-navigation/native';
+
+// User type for UI
+// (should match the type in UserManagementScreen)
+type User = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  profileImage?: string;
+  role: 'Support Seeker' | 'Volunteer' | 'Event Organizer' | 'Admin';
+  approved: boolean;
+};
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'UserDetails'>;
 
 const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { userId } = route.params;
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const isFocused = useIsFocused();
 
-  // Replace this with your actual user fetching logic (API call, context, etc.)
-  // For demonstration, here's a placeholder user object:
-  const user = {
-    id: userId,
-    name: 'Loading...',
-    email: 'Loading...',
-    role: 'Loading...',
-    isBanned: false,
+  // Fetch user by userId
+  useEffect(() => {
+    const loadUser = async () => {
+      setLoading(true);
+      try {
+        // fetchUsers returns an array, so filter by id
+        const users = await fetchUsers(); // fetch all approved users
+        const found = users.find((u: any) => u.id === userId);
+        setUser(found || null);
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, [userId, isFocused]);
+
+  const handleBanUnban = async () => {
+    if (!user) return;
+    setUpdating(true);
+    try {
+      await banUser(user.id, !user.approved);
+      setUser({ ...user, approved: !user.approved });
+      Alert.alert('Success', `User has been ${user.approved ? 'banned' : 'unbanned'}.`);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to update user status.');
+    } finally {
+      setUpdating(false);
+    }
   };
 
-  // TODO: Replace the above with actual data fetching logic, e.g. useEffect + useState
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FDF6EC' }}>
+        <ActivityIndicator size="large" color="#1B6B63" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FDF6EC' }}>
+        <Text style={{ color: '#C44536', fontSize: 18 }}>User not found.</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -31,30 +85,41 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       />
 
       <View style={styles.card}>
+        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+          <Image
+            source={user.profileImage ? { uri: user.profileImage } : require('../../assets/aiplaceholder.png')}
+            style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#E0E0E0' }}
+          />
+        </View>
         <Text style={styles.label}>Full Name:</Text>
-        <Text style={styles.value}>{user.name}</Text>
+        <Text style={styles.value}>{user.fullName || 'No Name'}</Text>
 
         <Text style={styles.label}>Email:</Text>
         <Text style={styles.value}>{user.email}</Text>
+
+        <Text style={styles.label}>Phone:</Text>
+        <Text style={styles.value}>{user.phone || 'N/A'}</Text>
 
         <Text style={styles.label}>Role:</Text>
         <Text style={styles.value}>{user.role}</Text>
 
         <Text style={styles.label}>Status:</Text>
-        <Text style={styles.value}>{user.isBanned ? 'Banned' : 'Active'}</Text>
+        <Text style={styles.value}>{user.approved ? 'Active' : 'Banned'}</Text>
 
         <View style={styles.actions}>
-          <TouchableOpacity
+          {/* Edit Info button can be implemented as needed */}
+          {/* <TouchableOpacity
             style={[styles.button, styles.editButton]}
-            onPress={() => console.log('Edit')}
+            onPress={() => navigation.navigate('EditUser', { userId: user.id })}
           >
             <Text style={styles.buttonText}>Edit Info</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             style={[styles.button, styles.banButton]}
-            onPress={() => console.log(user.isBanned ? 'Unban' : 'Ban')}
+            onPress={handleBanUnban}
+            disabled={updating}
           >
-            <Text style={styles.buttonText}>{user.isBanned ? 'Unban' : 'Ban'}</Text>
+            <Text style={styles.buttonText}>{user.approved ? 'Ban' : 'Unban'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.roleButton]}

@@ -41,17 +41,17 @@ enum TabRoutes {
 // Stack Param Lists
 export type HomeStackParamList = {
   HomeDashboard: undefined;
-  Events: undefined;
+  Events: { refresh?: boolean } | undefined;
   EventsForm: undefined;
-  RegisterEvent: undefined;
+  RegisterEvent: { eventId: string };
   JournalScreen: undefined;
   MyJournalsScreen: undefined;
   NewJournalEntryScreen: {
-  entry?: {
-    id: string;
-    title: string;
-    body: string;
-  };
+    entry?: {
+      id: string;
+      title: string;
+      body: string;
+    };
   };
 
   Announcements: undefined;
@@ -77,7 +77,7 @@ export type HomeStackParamList = {
   };
   VolunteerLearnings: undefined;
   Emergency: undefined;
-  VolunteerRewards: undefined ;
+  VolunteerRewards: undefined;
 };
 
 export type SettingsStackParamList = {

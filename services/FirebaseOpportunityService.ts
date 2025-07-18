@@ -29,8 +29,7 @@ export class FirebaseOpportunityService {
       createdAt: new Date(),
       createdBy: currentUser.uid,
     };
-    console.log("[createOpportunity] newOpportunity data:", newOpportunity);
-
+    console.log("[createOpportunity] newOpportunity to be written:", newOpportunity);
     const opportunityRef = doc(db, "opportunities", newOpportunity.opportunityId);
     try {
       console.log("[createOpportunity] Writing document at:", opportunityRef.path);

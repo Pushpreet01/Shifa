@@ -38,6 +38,7 @@ class FirebaseEventService {
           description: data.description || "",
           registered: false,
           source: "firebase",
+          approvalStatus: data.approvalStatus || "pending", // Include approval status
         });
       });
 
@@ -65,6 +66,8 @@ class FirebaseEventService {
 
   async addEvent(eventData: any): Promise<string | null> {
     try {
+      console.log("[addEvent] Starting event creation with data:", eventData);
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (eventData.date < today) throw new Error("Event date is in the past");
@@ -72,65 +75,84 @@ class FirebaseEventService {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Not logged in");
 
+      console.log("[addEvent] User authenticated:", currentUser.uid);
+
+      console.log("[addEvent] Creating event document...");
       const eventRef = await addDoc(collection(db, "events"), {
         ...eventData,
         createdBy: currentUser.uid,
         createdAt: new Date(),
       });
+      console.log("[addEvent] Event document created with ID:", eventRef.id);
 
-      // Create a global announcement for the new event
-      const announcement = {
-        type: "new_event",
-        message: `A new event has been posted: ${eventData.title}`,
-        timestamp: new Date(),
-        eventId: eventRef.id,
-      };
-      await addDoc(collection(db, "announcements"), announcement);
-
-      // Send push notifications
-      const usersQuery = query(
-        collection(db, "users"),
-        where("pushToken", "!=", null)
-      );
-      const usersSnapshot = await getDocs(usersQuery);
-      console.log(`Found ${usersSnapshot.size} users with push tokens.`);
-
-      // Separate creator notification from others
-      const creatorId = currentUser.uid;
-      let creatorToken: string | null = null;
-
-      usersSnapshot.forEach((userDoc) => {
-        const userData = userDoc.data();
-        if (userData.pushToken) {
-          if (userDoc.id === creatorId) {
-            creatorToken = userData.pushToken;
-          } else {
-            // Send to all other users
-            console.log(`Sending notification to token: ${userData.pushToken}`);
-            NotificationService.sendPushNotification(
-              userData.pushToken,
-              "New Event Announcement",
-              `A new event has been posted: ${eventData.title}`,
-              { eventId: eventRef.id }
-            );
-          }
-        }
-      });
-
-      // Send a separate notification to the event creator
-      if (creatorToken) {
-        console.log(`Sending creator notification to token: ${creatorToken}`);
-        NotificationService.sendPushNotification(
-          creatorToken,
-          "Event Created Successfully",
-          `Your event "${eventData.title}" has been created.`,
-          { eventId: eventRef.id }
-        );
+      try {
+        console.log("[addEvent] Creating announcement...");
+        // Create a global announcement for the new event
+        const announcement = {
+          type: "new_event",
+          message: `A new event has been posted: ${eventData.title}`,
+          timestamp: new Date(),
+          eventId: eventRef.id,
+        };
+        await addDoc(collection(db, "announcements"), announcement);
+        console.log("[addEvent] Announcement created successfully");
+      } catch (announcementError) {
+        console.error("[addEvent] Error creating announcement:", announcementError);
+        // Don't throw here - continue with event creation
       }
 
+      try {
+        console.log("[addEvent] Starting push notification process...");
+        // Send push notifications
+        const usersQuery = query(
+          collection(db, "users"),
+          where("pushToken", "!=", null)
+        );
+        const usersSnapshot = await getDocs(usersQuery);
+        console.log(`[addEvent] Found ${usersSnapshot.size} users with push tokens.`);
+
+        // Separate creator notification from others
+        const creatorId = currentUser.uid;
+        let creatorToken: string | null = null;
+
+        usersSnapshot.forEach((userDoc) => {
+          const userData = userDoc.data();
+          if (userData.pushToken) {
+            if (userDoc.id === creatorId) {
+              creatorToken = userData.pushToken;
+            } else {
+              // Send to all other users
+              console.log(`[addEvent] Sending notification to token: ${userData.pushToken}`);
+              NotificationService.sendPushNotification(
+                userData.pushToken,
+                "New Event Announcement",
+                `A new event has been posted: ${eventData.title}`,
+                { eventId: eventRef.id }
+              );
+            }
+          }
+        });
+
+        // Send a separate notification to the event creator
+        if (creatorToken) {
+          console.log(`[addEvent] Sending creator notification to token: ${creatorToken}`);
+          NotificationService.sendPushNotification(
+            creatorToken,
+            "Event Created Successfully",
+            `Your event "${eventData.title}" has been created.`,
+            { eventId: eventRef.id }
+          );
+        }
+        console.log("[addEvent] Push notifications sent successfully");
+      } catch (notificationError) {
+        console.error("[addEvent] Error sending push notifications:", notificationError);
+        // Don't throw here - continue with event creation
+      }
+
+      console.log("[addEvent] Event creation completed successfully, returning ID:", eventRef.id);
       return eventRef.id;
     } catch (error) {
-      console.error("Error adding event:", error);
+      console.error("[addEvent] Error adding event:", error);
       throw error;
     }
   }

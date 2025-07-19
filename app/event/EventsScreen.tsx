@@ -169,7 +169,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleAddEvent = () => {
-    console.log("[EventsScreen] Navigating to EventsForm with selectedDate:", selectedDate);
+    console.log(
+      "[EventsScreen] Navigating to EventsForm with selectedDate:",
+      selectedDate
+    );
     navigation.navigate("EventsForm", { selectedDate });
   };
 
@@ -249,19 +252,29 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => (
-            <EventCard
-              key={`${event.source}-${event.id}`}
-              event={event}
-              onRegister={handleRegister}
-              onPress={() => handleEventClick(event.id)}
-              style={
-                event.source === "local"
-                  ? styles.localEvent
-                  : styles.firebaseEvent
-              }
-            />
-          ))
+          filteredEvents.map((event) => {
+            console.log("[EventsScreen] Rendering event:", {
+              id: event.id,
+              title: event.title,
+              startTime: event.startTime,
+              endTime: event.endTime,
+              startTimeType: typeof event.startTime,
+              endTimeType: typeof event.endTime,
+            });
+            return (
+              <EventCard
+                key={`${event.source}-${event.id}`}
+                event={event}
+                onRegister={handleRegister}
+                onPress={() => handleEventClick(event.id)}
+                style={
+                  event.source === "local"
+                    ? styles.localEvent
+                    : styles.firebaseEvent
+                }
+              />
+            );
+          })
         ) : (
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>

@@ -8,36 +8,63 @@ import {
 } from "react-native";
 import { CalendarEvent } from "../services/calendarService";
 
-// Helper function to format Firestore Timestamp
+// Helper function to format time from various sources
 const formatTime = (time: any) => {
+  console.log(
+    "[EventCard] formatTime called with:",
+    time,
+    "type:",
+    typeof time
+  );
+
   if (!time) {
+    console.log("[EventCard] Time is null/undefined, returning N/A");
     return "N/A";
+  }
+
+  // If it's already a formatted time string (e.g., "2:30 PM"), return it as is
+  if (
+    typeof time === "string" &&
+    (time.includes("AM") || time.includes("PM"))
+  ) {
+    console.log(
+      "[EventCard] Time is already formatted string, returning:",
+      time
+    );
+    return time;
   }
 
   let date: Date;
 
   if (time.seconds) {
     // Firestore Timestamp
+    console.log("[EventCard] Processing Firestore Timestamp");
     date = new Date(time.seconds * 1000);
   } else if (time instanceof Date) {
     // JavaScript Date object
+    console.log("[EventCard] Processing Date object");
     date = time;
   } else if (typeof time === "string") {
-    // ISO 8601 string
+    // Try to parse as ISO 8601 string
+    console.log("[EventCard] Processing string as ISO date");
     date = new Date(time);
   } else {
+    console.log("[EventCard] Unknown time format, returning Invalid time");
     return "Invalid time";
   }
 
   if (isNaN(date.getTime())) {
+    console.log("[EventCard] Invalid date, returning Invalid time");
     return "Invalid time";
   }
 
-  return date.toLocaleTimeString([], {
+  const formatted = date.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
+  console.log("[EventCard] Formatted time:", formatted);
+  return formatted;
 };
 
 interface EventCardProps {

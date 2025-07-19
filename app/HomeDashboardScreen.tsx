@@ -278,7 +278,7 @@ const HomeDashboardScreen = () => {
             <TouchableOpacity
               key={event.id}
               style={styles.eventCard}
-              onPress={() => navigation.navigate("Events")}
+              onPress={() => navigation.navigate("RegisterEvent", { eventId: event.id })}
             >
               <View style={styles.eventStripe} />
               <View style={styles.eventText}>

@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useNavigation, useFocusEffect, CompositeNavigationProp } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import firebaseEventService from "../services/firebaseEventService";
 import {
@@ -25,10 +25,11 @@ import {
   limit,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "../config/firebaseConfig";
-import { auth } from "../config/firebaseConfig";
+import { db, auth } from "../config/firebaseConfig";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { HomeStackParamList } from "../navigation/HomeStack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { HomeStackParamList, SettingsStackParamList, RootTabParamList } from "../navigation/AppNavigator";
+import HeroBox from "../components/HeroBox";
 
 interface EventData {
   id: string;
@@ -46,8 +47,48 @@ interface ProcessedEventData {
   date: string;
 }
 
+type HomeDashboardScreenNavigationProp = CompositeNavigationProp<
+  StackNavigationProp<HomeStackParamList>,
+  CompositeNavigationProp<
+    BottomTabNavigationProp<RootTabParamList>,
+    StackNavigationProp<SettingsStackParamList>
+  >
+>;
+
+type DashboardButton = {
+  label: string;
+  color: string;
+  route: keyof HomeStackParamList;
+  icon: "people" | "book" | "calendar";
+  description: string;
+};
+
+const dashboardButtons: DashboardButton[] = [
+  {
+    label: "Manage Volunteering",
+    color: "#1B6B63",
+    route: "VolunteerScreen",
+    icon: "people",
+    description: "Access volunteer opportunities"
+  },
+  { 
+    label: "Journal",
+    color: "#1B6B63",
+    route: "JournalScreen",
+    icon: "book",
+    description: "Write and manage entries"
+  },
+  { 
+    label: "Manage Events",
+    color: "#1B6B63",
+    route: "Events",
+    icon: "calendar",
+    description: "View upcoming events"
+  }
+];
+
 const HomeDashboardScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<HomeDashboardScreenNavigationProp>();
   const { user } = useAuth();
   const [events, setEvents] = useState<ProcessedEventData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +183,13 @@ const HomeDashboardScreen = () => {
   };
 
   const handleProfilePress = () => {
+    // @ts-ignore - Ignoring type check for cross-stack navigation
     navigation.navigate("Settings", { screen: "Profile" });
+  };
+
+  const handleNavigation = (route: keyof HomeStackParamList) => {
+    // Using a more specific type assertion for the navigation object
+    (navigation as unknown as { navigate: (screen: string) => void }).navigate(route);
   };
 
   // Helper function to chunk array
@@ -166,131 +213,168 @@ const HomeDashboardScreen = () => {
     };
   }, [fetchRegisteredEvents]);
 
-  const dashboardButtons = [
-    {
-      label: "Manage Volunteering",
-      color: "#008080",
-      route: "VolunteerScreen",
-    },
-    { label: "Journal", color: "#008080", route: "JournalScreen" },
-    { label: "SOS Dial", color: "#008080", route: "Emergency" },
-    { label: "Manage Events", color: "#008080", route: "Events" },
-  ];
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.heroBox}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Home Dashboard</Text>
-            <View style={styles.headerIcons}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Announcements")}
-              >
-                <Ionicons
-                  name="notifications-outline"
-                  size={24}
-                  color="#C44536"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.sosWrapper}
-                onPress={() => navigation.navigate("Emergency")}
-              >
-                <Text style={styles.sosText}>SOS</Text>
-              </TouchableOpacity>
+        <HeroBox title="Home Dashboard" />
+
+        {/* Profile Section */}
+        <TouchableOpacity onPress={handleProfilePress} style={styles.profileCard}>
+          <View style={styles.profileContent}>
+            <View style={styles.profileInfo}>
+              <Text style={styles.welcomeText}>Welcome back,</Text>
+              <Text style={styles.userName}>{userName}</Text>
             </View>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <Ionicons name="person-outline" size={24} color="rgba(255, 255, 255, 0.8)" />
+              </View>
+            )}
           </View>
-          <TouchableOpacity
-            style={styles.avatarContainer}
-            onPress={handleProfilePress}
-          >
-            <Image
-              source={
-                profileImage
-                  ? { uri: profileImage }
-                  : require("../assets/image.png")
-              }
-              style={styles.avatarImage}
-            />
-            <Text style={styles.avatarLabel}>{userName}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.separatorWrapper}>
-          <View style={styles.circle} />
-          <View style={styles.lineFixed} />
-          <View style={styles.circle} />
-        </View>
-
-        <View style={styles.descriptionSection}>
-          <Text style={styles.descriptionText}>
-            We're here to help you connect with events, resources, and
-            volunteers dedicated to mental health and addiction recovery.
-          </Text>
-        </View>
-
-        <View style={styles.buttonGrid}>
-          {dashboardButtons.map((item, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.gridButton, { backgroundColor: item.color }]}
-              onPress={() => navigation.navigate(item.route)}
-            >
-              <Text style={styles.gridButtonText}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => navigation.navigate("Events")}
-        >
-          <Ionicons name="calendar-outline" size={20} color="black" />
-          <Text style={styles.sectionTitle}> Upcoming Events</Text>
         </TouchableOpacity>
 
-        {events.length === 0 ? (
-          <View style={styles.noEventsContainer}>
-            <View style={styles.noEventsIconContainer}>
-              <Ionicons name="calendar" size={40} color="#1B6B63" />
-            </View>
-            <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
-            <Text style={styles.noEventsSubtext}>
-              Join our supportive community events and connect with others on
-              their journey to wellness.
-            </Text>
-            <TouchableOpacity
-              style={styles.joinEventButton}
-              onPress={() => navigation.navigate("Events")}
-            >
-              <Text style={styles.joinEventButtonText}>Explore Events</Text>
-              <Ionicons
-                name="arrow-forward"
-                size={16}
-                color="#FFFFFF"
-                style={styles.buttonIcon}
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          events.map((event) => (
-            <TouchableOpacity
-              key={event.id}
-              style={styles.eventCard}
-              onPress={() => navigation.navigate("RegisterEvent", { eventId: event.id })}
-            >
-              <View style={styles.eventStripe} />
-              <View style={styles.eventText}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
-                <Text style={styles.eventTime}>{event.time}</Text>
-                <Text style={styles.eventDate}>{event.date}</Text>
+        {/* Quick Access Section */}
+        <View style={[styles.quickAccessContainer, { overflow: 'visible' }]}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <View style={styles.sectionIconContainer}>
+                <Ionicons name="grid" size={18} color="#1B6B63" />
               </View>
-            </TouchableOpacity>
-          ))
-        )}
+              <View>
+                <Text style={styles.sectionTitle}>Quick Access</Text>
+                <View style={styles.titleUnderline} />
+              </View>
+            </View>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.quickAccessScroll}
+            decelerationRate={0.85}
+            snapToInterval={196} // panel width (180) + margin right (16)
+            snapToAlignment="center"
+            disableIntervalMomentum={true}
+            bounces={false}
+            overScrollMode="never"
+            style={{ overflow: 'visible' }}
+          >
+            {dashboardButtons.map((button, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.quickAccessPanel,
+                  index === dashboardButtons.length - 1 && { marginRight: 20 } // Add extra margin to last panel
+                ]}
+                onPress={() => handleNavigation(button.route)}
+              >
+                <View style={styles.quickAccessContent}>
+                  <View style={styles.iconContainer}>
+                    <Ionicons name={button.icon} size={24} color="#1B6B63" />
+                  </View>
+                  <View style={styles.textContainer}>
+                    <Text style={styles.quickAccessTitle}>{button.label}</Text>
+                    <Text style={styles.quickAccessDescription}>{button.description}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
+        {/* SOS Button */}
+        <TouchableOpacity
+          style={styles.sosButton}
+          onPress={() => handleNavigation("Emergency")}
+        >
+          <View style={styles.sosContent}>
+            <View style={styles.sosIconContainer}>
+              <Ionicons name="alert-circle" size={32} color="#FFFFFF" />
+            </View>
+            <View style={styles.sosTextContainer}>
+              <Text style={styles.sosButtonText}>SOS Emergency</Text>
+              <Text style={styles.sosDescription}>Get immediate help</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#FFFFFF" style={styles.sosArrow} />
+          </View>
+        </TouchableOpacity>
+
+        {/* Events Section */}
+        <View style={styles.eventsContainer}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <View style={styles.sectionIconContainer}>
+                <Ionicons name="calendar" size={18} color="#1B6B63" />
+              </View>
+              <View>
+                <Text style={styles.sectionTitle}>Upcoming Events</Text>
+                <View style={styles.titleUnderline} />
+              </View>
+            </View>
+          </View>
+
+          {events.length === 0 ? (
+            <View style={styles.noEventsContainer}>
+              <View style={styles.noEventsIconContainer}>
+                <Ionicons name="calendar" size={40} color="#1B6B63" />
+              </View>
+              <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
+              <Text style={styles.noEventsSubtext}>
+                Join our supportive community events and connect with others on
+                their journey to wellness.
+              </Text>
+              <TouchableOpacity
+                style={styles.joinEventButton}
+                onPress={() => handleNavigation("Events")}
+              >
+                <Text style={styles.joinEventButtonText}>Explore Events</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={16}
+                  color="#FFFFFF"
+                  style={styles.buttonIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.eventsList}>
+              {events.map((event) => (
+                <TouchableOpacity
+                  key={event.id}
+                  style={styles.eventCard}
+                  onPress={() => handleNavigation("Events")}
+                >
+                  <View style={styles.eventText}>
+                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                    <Text style={styles.eventTime}>{event.time}</Text>
+                    <Text style={styles.eventDate}>{event.date}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Description Section with Modern Divider */}
+        <View style={styles.descriptionContainer}>
+          <View style={styles.modernDivider}>
+            <View style={styles.dividerLine} />
+            <View style={styles.dividerIcon}>
+              <Ionicons name="heart" size={20} color="#F6A800" />
+            </View>
+            <View style={styles.dividerLine} />
+          </View>
+          <View style={styles.descriptionCard}>
+            <Text style={styles.descriptionText}>
+              We're here to help you connect with events, resources, and
+              volunteers dedicated to mental health and addiction recovery.
+            </Text>
+          </View>
+        </View>
+
+        {/* Support Box */}
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
@@ -300,24 +384,6 @@ const HomeDashboardScreen = () => {
           </Text>
         </View>
       </ScrollView>
-
-      <View style={styles.curvedNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home" size={24} color="#3A7D44" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate("Events")}
-        >
-          <Ionicons name="calendar-outline" size={24} color="#666" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="person-outline" size={24} color="#666" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="settings-outline" size={24} color="#666" />
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -327,165 +393,174 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FDF6EC",
   },
-  noEventsContainer: {
-    backgroundColor: "#FDF6EC",
-    borderRadius: 30,
-    padding: 24,
-    marginHorizontal: 20,
-    marginVertical: 10,
-    alignItems: "center",
-  },
-  noEventsIconContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 50,
-    width: 80,
-    height: 80,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  noEventsTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#1B6B63",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  noEventsSubtext: {
-    fontSize: 14,
-    color: "#333333",
-    marginBottom: 20,
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: 10,
-  },
-  joinEventButton: {
-    backgroundColor: "#008080",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  joinEventButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 15,
-    marginRight: 8,
-  },
-  buttonIcon: {
-    marginLeft: 4,
-  },
   container: {
-    paddingBottom: 120,
-  },
-  heroBox: {
+    paddingBottom: 100,
     backgroundColor: "#FDF6EC",
-    paddingTop: 40,
-    paddingBottom: 18,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+  },
+  profileCard: {
+    backgroundColor: '#1B6B63',
+    marginHorizontal: 20,
+    marginTop: 8,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 3,
   },
-  header: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 10,
+  profileContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#1B6B63",
-  },
-  headerIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  sosWrapper: {
-    backgroundColor: "#C44536",
-    borderRadius: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 10,
-  },
-  sosText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 12,
-  },
-  avatarContainer: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  avatarImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#E0E0E0",
-  },
-  avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#E0E0E0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarLabel: {
-    marginTop: 8,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  separatorWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  circle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#F6A800", // amber
-  },
-  lineFixed: {
+  profileInfo: {
     flex: 1,
-    height: 2,
-    backgroundColor: "#F6A800",
-    marginHorizontal: 4,
   },
-  descriptionSection: {
+  welcomeText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white
+    marginBottom: 4,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF', // White text
+  },
+  profileImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white border
+  },
+  profileImagePlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white border
+  },
+  quickAccessContainer: {
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  quickAccessScroll: {
+    paddingLeft: 20,
+    paddingVertical: 4,
+  },
+  quickAccessPanel: {
+    width: 180,
+    height: 180,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    marginRight: 16,
     padding: 20,
-    paddingTop: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  quickAccessContent: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(27, 107, 99, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textContainer: {
+    flex: 1,
+    marginTop: 12,
+  },
+  quickAccessTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#2E2E2E',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  quickAccessDescription: {
+    fontSize: 13,
+    color: '#666666',
+    lineHeight: 18,
+    letterSpacing: -0.2,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000000", // Changed from #1B6B63 to black
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  titleUnderline: {
+    height: 2,
+    width: '40%',
+    backgroundColor: '#000000',
+    borderRadius: 2,
+    opacity: 0.7,
+  },
+  descriptionContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  modernDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(246, 168, 0, 0.3)', // Lighter orange
+    maxWidth: '30%',
+  },
+  dividerIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(246, 168, 0, 0.1)', // Very light orange
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 12,
+  },
+  descriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F6A800',
   },
   descriptionText: {
-    color: "#333",
-    fontSize: 14,
-    textAlign: "center",
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#2E2E2E',
+    textAlign: 'left',
+    fontWeight: '500',
   },
   buttonGrid: {
     flexDirection: "row",
@@ -510,66 +585,146 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
     paddingHorizontal: 20,
+    marginBottom: 20,
+    justifyContent: 'space-between',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(27, 107, 99, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noEventsContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  noEventsIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  noEventsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  noEventsSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  joinEventButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1B6B63',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+  },
+  joinEventButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginLeft: 4,
   },
   eventCard: {
-    flexDirection: "row",
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginBottom: 12,
-    marginHorizontal: 20,
+    borderRadius: 16,
     overflow: "hidden",
-    borderLeftWidth: 6,
-    borderLeftColor: "#F6A800", // amber stripe
-    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 12,
   },
   eventStripe: {
     width: 0, // hidden
   },
   eventText: {
-    flex: 1,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#F6A800",
   },
   eventTitle: {
-    fontWeight: "bold",
-    fontSize: 15,
-    color: "#1F6F55", // dark green
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1B6B63",
+    marginBottom: 4,
   },
   eventSubtitle: {
-    fontSize: 13,
-    color: "#555",
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 8,
   },
   eventTime: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#333",
-    marginTop: 4,
+    fontWeight: "500",
   },
   eventDate: {
     fontSize: 13,
     color: "#999",
+    marginTop: 2,
   },
   supportBox: {
-    marginTop: 10,
+    backgroundColor: '#FFF0F0',
     marginHorizontal: 20,
-    backgroundColor: "#FFF0F0",
-    padding: 15,
-    borderRadius: 10,
+    marginTop: 20,
+    marginBottom: 24,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   supportTitle: {
-    fontWeight: "bold",
     fontSize: 16,
-    color: "#EA4335", // red
-    marginBottom: 5,
+    fontWeight: "700",
+    color: "#C44536",
+    marginBottom: 8,
   },
   supportText: {
-    fontSize: 13,
-    color: "#333",
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
   },
   curvedNav: {
     position: "absolute",
@@ -588,6 +743,59 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  sosButton: {
+    backgroundColor: '#C44536',
+    marginHorizontal: 20,
+    marginVertical: 20,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  sosContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sosIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosTextContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  sosButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  sosDescription: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  sosArrow: {
+    marginLeft: 12,
+    opacity: 0.8,
+  },
+  eventsContainer: {
+    marginTop: 20,
+  },
+  eventsList: {
+    paddingHorizontal: 20,
+    gap: 12,
   },
 });
 

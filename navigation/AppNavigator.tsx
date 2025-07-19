@@ -42,7 +42,7 @@ enum TabRoutes {
 export type HomeStackParamList = {
   HomeDashboard: undefined;
   Events: { refresh?: boolean } | undefined;
-  EventsForm: undefined;
+  EventsForm: { selectedDate?: Date } | undefined;
   RegisterEvent: { eventId: string };
   JournalScreen: undefined;
   MyJournalsScreen: undefined;

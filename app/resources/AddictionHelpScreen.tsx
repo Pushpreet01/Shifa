@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,35 +9,43 @@ import {
   Animated,
   Linking,
   Alert,
+  ActivityIndicator,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Video } from "expo-av";
 import HeroBox from "../../components/HeroBox";
+import { getUserResources, UserResource } from "../../services/resourceService";
+import { Resource } from "../../services/adminResourceService";
 
 const AddictionHelpScreen = () => {
-  const topics = [
-    {
-      title: "Crisis Helplines",
-      description: "Access immediate support through Distress Centre (24/7) and 2-1-1 for mental health and community resources in Calgary.",
-      phoneNumber: "403-266-4357", // Distress Centre
-    },
-    {
-      title: "Domestic Violence Support",
-      description: "Find support through Nisa Homes, Nisa Helpline, and Calgary Communities Against Sexual Abuse for women and children.",
-      phoneNumber: "1-888-456-8043", // Nisa Homes
-    },
-    {
-      title: "Suicide Prevention",
-      description: "Get confidential support from Talk Suicide Canada and Kids Help Line, available 24/7.",
-      phoneNumber: "1-833-456-4566", // Talk Suicide Canada
-    },
-  ];
-
+  const [resources, setResources] = useState<UserResource[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
-  const [animations] = useState(
-    topics.map(() => new Animated.Value(0))
-  );
+  const [animations] = useState<Animated.Value[]>([]);
 
-  const toggleCard = (index) => {
+  useEffect(() => {
+    loadResources();
+  }, []);
+
+  const loadResources = async () => {
+    try {
+      setLoading(true);
+      const fetchedResources = await getUserResources("AddictionHelp");
+      setResources(fetchedResources);
+
+      // Initialize animations for each resource
+      const newAnimations = fetchedResources.map(() => new Animated.Value(0));
+      setAnimations(newAnimations);
+    } catch (error) {
+      console.error("Error loading addiction help resources:", error);
+      Alert.alert("Error", "Failed to load resources");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleCard = (index: number) => {
     const isExpanded = expandedIndices.includes(index);
     const newExpandedIndices = isExpanded
       ? expandedIndices.filter((i) => i !== index)
@@ -52,68 +60,154 @@ const AddictionHelpScreen = () => {
     }).start();
   };
 
-  const showTitle = (title) => {
-    Alert.alert("Resource", title, [{ text: "OK" }]);
+  const renderResourceContent = (resource: UserResource) => {
+    if (resource.contentType === "image" && resource.fileUrl) {
+      return (
+        <Image
+          source={{ uri: resource.fileUrl }}
+          style={styles.resourceImage}
+        />
+      );
+    }
+
+    if (resource.contentType === "video" && resource.fileUrl) {
+      return (
+        <Video
+          source={{ uri: resource.fileUrl }}
+          style={styles.resourceVideo}
+          useNativeControls
+          resizeMode="contain"
+        />
+      );
+    }
+
+    if (resource.contentType === "document" && resource.fileUrl) {
+      return (
+        <TouchableOpacity
+          style={styles.documentPreview}
+          onPress={() => Linking.openURL(resource.fileUrl!)}
+        >
+          <Ionicons name="document-outline" size={24} color="#1B6B63" />
+          <Text style={styles.documentName}>
+            {resource.fileName || "Download Document"}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return <Text style={styles.resourceContent}>{resource.content}</Text>;
   };
 
-  const renderDetails = (topic, index) => {
-    const height = animations[index].interpolate({
+  const renderDetails = (resource: UserResource, index: number) => {
+    const height = animations[index]?.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 40],
+      outputRange: [0, 100],
     });
 
     return (
       <Animated.View style={[styles.detailsContainer, { height }]}>
-        <TouchableOpacity onPress={() => Linking.openURL(`tel:${topic.phoneNumber}`)}>
-          <Text style={[styles.buttonSubText, styles.resourceText]}>
-            Call for Support
-          </Text>
-        </TouchableOpacity>
+        {renderResourceContent(resource)}
+
+        {resource.tags && resource.tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {resource.tags.map((tag, tagIndex) => (
+              <View key={tagIndex} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Animated.View>
     );
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <HeroBox
+          title="Addiction Help"
+          showBackButton
+          customBackRoute="Resources"
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1B6B63" />
+          <Text style={styles.loadingText}>Loading resources...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Addiction Help" showBackButton customBackRoute="Resources" />
+        <HeroBox
+          title="Addiction Help"
+          showBackButton
+          customBackRoute="Resources"
+        />
 
-        <View style={styles.cardSection}>
-          {topics.map((topic, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.card}
-              onPress={() => toggleCard(index)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardContent}>
-                <View style={styles.mainContent}>
-                  <TouchableOpacity onPress={() => showTitle(topic.title)}>
-                    <Ionicons name="person-outline" size={22} color="#FFFFFF" />
-                  </TouchableOpacity>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.cardTitle}>{topic.title}</Text>
-                    <Text style={styles.cardDescription}>{topic.description}</Text>
-                    {renderDetails(topic, index)}
-                  </View>
-                  {!expandedIndices.includes(index) && (
-                    <View style={styles.arrowButton}>
-                      <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+        {resources.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="heart-outline" size={48} color="#ccc" />
+            <Text style={styles.emptyText}>No resources available</Text>
+            <Text style={styles.emptySubtext}>
+              Check back later for helpful content
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.cardSection}>
+            {resources.map((resource, index) => (
+              <TouchableOpacity
+                key={resource.id}
+                style={styles.card}
+                onPress={() => toggleCard(index)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.cardContent}>
+                  <View style={styles.mainContent}>
+                    <TouchableOpacity
+                      onPress={() => Alert.alert("Resource", resource.title)}
+                    >
+                      <Ionicons
+                        name="heart-outline"
+                        size={22}
+                        color="#FFFFFF"
+                      />
+                    </TouchableOpacity>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.cardTitle}>{resource.title}</Text>
+                      <Text style={styles.cardDescription}>
+                        {resource.description}
+                      </Text>
+                      {renderDetails(resource, index)}
                     </View>
+                    {!expandedIndices.includes(index) && (
+                      <View style={styles.arrowButton}>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={22}
+                          color="#FFFFFF"
+                        />
+                      </View>
+                    )}
+                  </View>
+                  {expandedIndices.includes(index) && (
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => toggleCard(index)}
+                    >
+                      <Ionicons
+                        name="close-outline"
+                        size={22}
+                        color="#FFFFFF"
+                      />
+                    </TouchableOpacity>
                   )}
                 </View>
-                {expandedIndices.includes(index) && (
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => toggleCard(index)}
-                  >
-                    <Ionicons name="close-outline" size={22} color="#FFFFFF" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -127,6 +221,33 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingBottom: 120,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    color: "#666",
+    fontSize: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: "#666",
+    fontWeight: "600",
+  },
+  emptySubtext: {
+    marginTop: 8,
+    fontSize: 14,
+    color: "#999",
   },
   cardSection: {
     paddingHorizontal: 20,
@@ -161,7 +282,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontWeight: "bold",
     color: "#FFFFFF",
-    fontSize: 15, // Updated heading size
+    fontSize: 15,
     marginBottom: 6,
   },
   cardDescription: {
@@ -169,17 +290,57 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-  buttonSubText: {
-    fontSize: 14, // Updated subheading size
+  resourceContent: {
+    fontSize: 14,
     color: "#FFFFFF",
-    marginTop: 4,
+    marginTop: 8,
     lineHeight: 20,
     fontWeight: "500",
     textAlign: "left",
   },
-  resourceText: {
-    textDecorationLine: "underline",
-    fontWeight: "600",
+  resourceImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  resourceVideo: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  documentPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  documentName: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#FFFFFF",
+    fontWeight: "500",
+  },
+  tagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 8,
+  },
+  tag: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  tagText: {
+    fontSize: 12,
+    color: "#FFFFFF",
+    fontWeight: "500",
   },
   detailsContainer: {
     marginTop: 8,

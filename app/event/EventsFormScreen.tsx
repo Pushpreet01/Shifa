@@ -24,15 +24,28 @@ import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
-const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
+const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Use the selected date from route params if available, otherwise use today
+  const initialDate = route.params?.selectedDate
+    ? new Date(route.params.selectedDate)
+    : today;
+  // Ensure the date is valid and set to start of day
+  if (isNaN(initialDate.getTime())) {
+    initialDate.setTime(today.getTime());
+  }
+  initialDate.setHours(0, 0, 0, 0);
+
+  console.log("[EventsFormScreen] Route params:", route.params);
+  console.log("[EventsFormScreen] Initial date:", initialDate);
+
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(initialDate);
   const [name, setName] = useState("");
   const [dateString, setDateString] = useState(
-    today.toLocaleDateString("en-US", {
+    initialDate.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -217,22 +230,29 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         location: location,
         description: description,
         needsVolunteers,
-        approvalStatus: 'pending', // Require admin approval
+        approvalStatus: "pending", // Require admin approval
       };
 
-      console.log('[EventsFormScreen] About to call addEvent with data:', eventData);
+      console.log(
+        "[EventsFormScreen] About to call addEvent with data:",
+        eventData
+      );
       let eventId: string | null = null;
       try {
         eventId = await firebaseEventService.addEvent(eventData);
-        console.log('[EventsFormScreen] addEvent returned eventId:', eventId);
+        console.log("[EventsFormScreen] addEvent returned eventId:", eventId);
       } catch (eventError) {
-        console.error('[EventsFormScreen] Error in addEvent call:', eventError);
+        console.error("[EventsFormScreen] Error in addEvent call:", eventError);
         throw eventError;
       }
 
-      console.log('[EventsFormScreen] Checking if needsVolunteers and eventId:', needsVolunteers, eventId);
+      console.log(
+        "[EventsFormScreen] Checking if needsVolunteers and eventId:",
+        needsVolunteers,
+        eventId
+      );
       if (needsVolunteers && eventId) {
-        console.log('[EventsFormScreen] Creating volunteer opportunity...');
+        console.log("[EventsFormScreen] Creating volunteer opportunity...");
         const opportunityId = doc(collection(db, "opportunities")).id;
         const opportunityData = {
           opportunityId,
@@ -244,18 +264,26 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           location: location,
           rewards: rewards.trim() || null,
           refreshments: refreshments.trim() || null,
-          approvalStatus: 'pending', // Require admin approval
+          approvalStatus: "pending", // Require admin approval
         };
-        console.log('[EventsFormScreen] Creating opportunity with:', opportunityData);
+        console.log(
+          "[EventsFormScreen] Creating opportunity with:",
+          opportunityData
+        );
         try {
           await firebaseOpportunityService.createOpportunity(opportunityData);
-          console.log('[EventsFormScreen] Opportunity created successfully');
+          console.log("[EventsFormScreen] Opportunity created successfully");
         } catch (err) {
-          console.log('[EventsFormScreen] Error creating opportunity:', err);
+          console.log("[EventsFormScreen] Error creating opportunity:", err);
           throw err;
         }
       } else {
-        console.log('[EventsFormScreen] Skipping opportunity creation - needsVolunteers:', needsVolunteers, 'eventId:', eventId);
+        console.log(
+          "[EventsFormScreen] Skipping opportunity creation - needsVolunteers:",
+          needsVolunteers,
+          "eventId:",
+          eventId
+        );
       }
 
       if (eventId) {

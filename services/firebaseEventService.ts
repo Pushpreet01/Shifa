@@ -82,37 +82,74 @@ class FirebaseEventService {
         ...eventData,
         createdBy: currentUser.uid,
         createdAt: new Date(),
+        approvalStatus: "pending", // Set initial status as pending
       });
       console.log("[addEvent] Event document created with ID:", eventRef.id);
 
-      try {
-        console.log("[addEvent] Creating announcement...");
-        // Create a global announcement for the new event
-        const announcement = {
-          type: "new_event",
-          message: `A new event has been posted: ${eventData.title}`,
-          timestamp: new Date(),
-          eventId: eventRef.id,
-        };
-        await addDoc(collection(db, "announcements"), announcement);
-        console.log("[addEvent] Announcement created successfully");
-      } catch (announcementError) {
-        console.error("[addEvent] Error creating announcement:", announcementError);
-        // Don't throw here - continue with event creation
+      console.log(
+        "[addEvent] Event creation completed successfully, returning ID:",
+        eventRef.id
+      );
+      return eventRef.id;
+    } catch (error) {
+      console.error("[addEvent] Error adding event:", error);
+      throw error;
+    }
+  }
+
+  async broadcastEventApproval(eventId: string): Promise<void> {
+    try {
+      console.log(
+        "[broadcastEventApproval] Starting broadcast for event:",
+        eventId
+      );
+
+      // Get event details
+      const eventDoc = await getDoc(doc(db, "events", eventId));
+      if (!eventDoc.exists()) {
+        throw new Error("Event not found");
       }
 
+      const eventData = eventDoc.data();
+      console.log("[broadcastEventApproval] Event data:", eventData);
+
+      // Create announcement
       try {
-        console.log("[addEvent] Starting push notification process...");
-        // Send push notifications
+        console.log("[broadcastEventApproval] Creating announcement...");
+        const announcement = {
+          type: "new_event",
+          message: `A new event has been approved: ${eventData.title}`,
+          timestamp: new Date(),
+          eventId: eventId,
+        };
+        await addDoc(collection(db, "announcements"), announcement);
+        console.log(
+          "[broadcastEventApproval] Announcement created successfully"
+        );
+      } catch (announcementError) {
+        console.error(
+          "[broadcastEventApproval] Error creating announcement:",
+          announcementError
+        );
+        // Don't throw here - continue with notifications
+      }
+
+      // Send push notifications
+      try {
+        console.log(
+          "[broadcastEventApproval] Starting push notification process..."
+        );
         const usersQuery = query(
           collection(db, "users"),
           where("pushToken", "!=", null)
         );
         const usersSnapshot = await getDocs(usersQuery);
-        console.log(`[addEvent] Found ${usersSnapshot.size} users with push tokens.`);
+        console.log(
+          `[broadcastEventApproval] Found ${usersSnapshot.size} users with push tokens.`
+        );
 
-        // Separate creator notification from others
-        const creatorId = currentUser.uid;
+        // Send notifications to all users except the event creator
+        const creatorId = eventData.createdBy;
         let creatorToken: string | null = null;
 
         usersSnapshot.forEach((userDoc) => {
@@ -122,12 +159,14 @@ class FirebaseEventService {
               creatorToken = userData.pushToken;
             } else {
               // Send to all other users
-              console.log(`[addEvent] Sending notification to token: ${userData.pushToken}`);
+              console.log(
+                `[broadcastEventApproval] Sending notification to token: ${userData.pushToken}`
+              );
               NotificationService.sendPushNotification(
                 userData.pushToken,
                 "New Event Announcement",
-                `A new event has been posted: ${eventData.title}`,
-                { eventId: eventRef.id }
+                `A new event has been approved: ${eventData.title}`,
+                { eventId: eventId }
               );
             }
           }
@@ -135,24 +174,33 @@ class FirebaseEventService {
 
         // Send a separate notification to the event creator
         if (creatorToken) {
-          console.log(`[addEvent] Sending creator notification to token: ${creatorToken}`);
+          console.log(
+            `[broadcastEventApproval] Sending creator notification to token: ${creatorToken}`
+          );
           NotificationService.sendPushNotification(
             creatorToken,
-            "Event Created Successfully",
-            `Your event "${eventData.title}" has been created.`,
-            { eventId: eventRef.id }
+            "Event Approved",
+            `Your event "${eventData.title}" has been approved and is now live.`,
+            { eventId: eventId }
           );
         }
-        console.log("[addEvent] Push notifications sent successfully");
+        console.log(
+          "[broadcastEventApproval] Push notifications sent successfully"
+        );
       } catch (notificationError) {
-        console.error("[addEvent] Error sending push notifications:", notificationError);
-        // Don't throw here - continue with event creation
+        console.error(
+          "[broadcastEventApproval] Error sending push notifications:",
+          notificationError
+        );
+        // Don't throw here - announcement was already created
       }
 
-      console.log("[addEvent] Event creation completed successfully, returning ID:", eventRef.id);
-      return eventRef.id;
+      console.log("[broadcastEventApproval] Broadcast completed successfully");
     } catch (error) {
-      console.error("[addEvent] Error adding event:", error);
+      console.error(
+        "[broadcastEventApproval] Error broadcasting event approval:",
+        error
+      );
       throw error;
     }
   }

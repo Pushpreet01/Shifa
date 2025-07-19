@@ -11,7 +11,7 @@ export type HomeStackParamList = {
   JournalScreen: undefined;
   NewJournalEntryScreen: undefined;
   Events: { refresh?: number } | undefined;
-  EventsForm: undefined;
+  EventsForm: { selectedDate?: Date } | undefined;
   RegisterEvent: { eventId: string };
   Announcements: undefined;
   MyJournalsScreen: undefined;
@@ -49,7 +49,7 @@ export type RootStackParamList = {
   JournalScreen: undefined;
   NewJournalEntryScreen: undefined;
   Events: { refresh?: number } | undefined;
-  EventsForm: undefined;
+  EventsForm: { selectedDate?: Date } | undefined;
   RegisterEvent: { eventId: string };
   Announcements: undefined;
   MyJournalsScreen: undefined;

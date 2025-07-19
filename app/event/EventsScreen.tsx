@@ -40,7 +40,7 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // Handle refresh from route params
   useEffect(() => {
-    if (route.params && 'refresh' in route.params && route.params.refresh) {
+    if (route.params && "refresh" in route.params && route.params.refresh) {
       setRefreshKey((prev) => prev + 1);
     }
   }, [route.params]);
@@ -68,18 +68,33 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             (reg: { eventId: string }) => reg.eventId
           );
 
-          console.log(`[EventsScreen] Fetched ${fetchedEvents.length} total events`);
-          console.log(`[EventsScreen] Events with approval status:`, fetchedEvents.map(e => ({ id: e.id, title: e.title, approvalStatus: e.approvalStatus })));
+          console.log(
+            `[EventsScreen] Fetched ${fetchedEvents.length} total events`
+          );
+          console.log(
+            `[EventsScreen] Events with approval status:`,
+            fetchedEvents.map((e) => ({
+              id: e.id,
+              title: e.title,
+              approvalStatus: e.approvalStatus,
+            }))
+          );
 
           // Filter out past events, only show approved, and mark registered ones
           const validEvents = fetchedEvents
-            .filter((event) => isDateValidForEvent(event.date) && event.approvalStatus === 'approved')
+            .filter(
+              (event) =>
+                isDateValidForEvent(event.date) &&
+                event.approvalStatus === "approved"
+            )
             .map((event) => ({
               ...event,
               registered: registeredEventIds.includes(event.id),
             }));
 
-          console.log(`[EventsScreen] After filtering, ${validEvents.length} approved events remain`);
+          console.log(
+            `[EventsScreen] After filtering, ${validEvents.length} approved events remain`
+          );
           setEvents(validEvents);
         } catch (error) {
           console.error("Error fetching events:", error);
@@ -154,7 +169,8 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleAddEvent = () => {
-    navigation.navigate("EventsForm");
+    console.log("[EventsScreen] Navigating to EventsForm with selectedDate:", selectedDate);
+    navigation.navigate("EventsForm", { selectedDate });
   };
 
   const filteredEvents = events.filter(
@@ -207,11 +223,11 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}`
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}`
               : "Select date"}
           </Text>
         </View>

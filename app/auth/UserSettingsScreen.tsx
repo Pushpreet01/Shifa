@@ -157,24 +157,54 @@ const UserSettingsScreen = () => {
   const handleComplete = async () => {
     setLoading(true);
     try {
+      // Validate required fields
+      if (!fullName.trim()) {
+        throw new Error("Full name is required");
+      }
+      if (!email.trim()) {
+        throw new Error("Email is required");
+      }
+      if (!role) {
+        throw new Error("Role is required");
+      }
+      if (!phoneNumber.trim()) {
+        throw new Error("Phone number is required");
+      }
+
       // 1. Create the Firebase Auth user
+      console.log("[UserSettings] Creating Firebase Auth user...");
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log("[UserSettings] Firebase Auth user created:", user.uid);
+
       // 2. Add user data to Firestore with emailVerified: false, using UID
       const cleanedPhoneNumber = phoneNumber.replace(/\D/g, "");
+      // Set approvalStatus based on role
+      let approvalStatus;
+      if (role === "Support Seeker") {
+        approvalStatus = { status: "Approved" };
+      } else {
+        approvalStatus = { status: "Pending" };
+      }
       const userData = {
-        fullName,
-        email,
+        fullName: fullName.trim(),
+        email: email.trim(),
         phoneNumber: cleanedPhoneNumber,
         role,
         profileImage,
         notifications,
         emergencyContacts,
-        approved: true,
+        approvalStatus, // <-- new field
         createdAt: new Date().toISOString(),
         emailVerified: false,
       };
+
+      console.log("[UserSettings] User data to store:", userData);
+      console.log("[UserSettings] Storing user data in Firestore...");
+
       await setDoc(doc(db, "users", user.uid), userData);
+      console.log("[UserSettings] User data stored successfully in Firestore");
+
       setLoading(false);
       navigation.navigate("EmailVerification", {
         email,
@@ -186,9 +216,26 @@ const UserSettingsScreen = () => {
         notifications,
         emergencyContacts,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("[UserSettings] Error in handleComplete:", error);
+      console.error("[UserSettings] Error code:", error.code);
+      console.error("[UserSettings] Error message:", error.message);
       setLoading(false);
-      Alert.alert("Error", "Failed to save user data. Please try again.");
+
+      let errorMessage = "Failed to save user data. Please try again.";
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "An account with this email already exists.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak. Please choose a stronger password.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address.";
+      } else if (error.code === "permission-denied") {
+        errorMessage = "Permission denied. Please check your Firestore rules.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Error", errorMessage);
     }
   };
 

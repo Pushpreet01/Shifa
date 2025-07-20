@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  TextInput,
+  Modal,
+  Image,
 } from "react-native";
 import {
   Swipeable,
@@ -15,143 +18,81 @@ import {
 } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import AdminHeroBox from "../../components/AdminHeroBox";
-import { db } from "../../config/firebaseConfig";
-import {
-  collection,
-  getDocs,
-  updateDoc,
-  doc,
-  query,
-  where,
-} from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
-import FirebaseOpportunityService from "../../services/FirebaseOpportunityService";
-import FirebaseEventService from "../../services/firebaseEventService";
+import { fetchApprovals, approveItem, denyItem, ApprovalType, ApprovalItem } from "../../services/adminApprovalService";
 
 const ApprovalManagementScreen = () => {
-  const [activeTab, setActiveTab] = useState<
-    "event" | "volunteer" | "organizer"
-  >("event");
-  const [approvals, setApprovals] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<ApprovalType>("event");
+  const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const navigation = useNavigation<any>();
+  const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [pendingDenyId, setPendingDenyId] = useState<string | null>(null);
 
-  // Fetch pending approvals from Firestore
+  // Fetch pending approvals using the service
   useEffect(() => {
-    const fetchApprovals = async () => {
+    const loadApprovals = async () => {
       setLoading(true);
-      let q;
-      if (activeTab === "event") {
-        q = query(
-          collection(db, "events"),
-          where("approvalStatus", "==", "pending")
-        );
-      } else if (activeTab === "volunteer") {
-        q = query(
-          collection(db, "opportunities"),
-          where("approvalStatus", "==", "pending")
-        );
-      } else {
-        q = query(
-          collection(db, "organizerRequests"),
-          where("approvalStatus", "==", "pending")
-        );
+      try {
+        const approvalsData = await fetchApprovals(activeTab);
+        setApprovals(approvalsData);
+      } catch (error) {
+        console.error(`[ApprovalManagement] Error loading ${activeTab} approvals:`, error);
+        Alert.alert("Error", "Failed to load approvals. Please try again.");
+        setApprovals([]);
+      } finally {
+        setLoading(false);
       }
-      const snapshot = await getDocs(q);
-      setApprovals(
-        snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
-      );
-      setLoading(false);
     };
-    fetchApprovals();
+
+    loadApprovals();
   }, [activeTab]);
 
   const handleApprove = async (id: string) => {
     setActionLoading(true);
-    let col =
-      activeTab === "event"
-        ? "events"
-        : activeTab === "volunteer"
-        ? "opportunities"
-        : "organizerRequests";
     try {
-      await updateDoc(doc(db, col, id), { approvalStatus: "approved" });
-
-      // If approving an event, broadcast the approval and approve associated opportunity (if any)
-      if (activeTab === "event") {
-        // Broadcast the event approval (announcements and notifications)
-        try {
-          await FirebaseEventService.broadcastEventApproval(id);
-        } catch (broadcastError) {
-          console.log("Error broadcasting event approval:", broadcastError);
-          // Don't fail the approval if broadcast fails
-        }
-
-        // Approve associated opportunity (if any)
-        const q = query(
-          collection(db, "opportunities"),
-          where("eventId", "==", id)
-        );
-        const oppSnap = await getDocs(q);
-        if (!oppSnap.empty) {
-          for (const oppDoc of oppSnap.docs) {
-            await FirebaseOpportunityService.updateOpportunity(oppDoc.id, {
-              approvalStatus: "approved",
-            });
-          }
-        }
-      }
-
+      await approveItem(id, activeTab);
       setApprovals(approvals.filter((item) => item.id !== id));
-      Alert.alert("Approved", "Item has been approved.");
-    } catch (err) {
-      console.log("Error approving item:", err);
-      Alert.alert("Error", "Failed to approve item.");
+      Alert.alert("Approved", "User has been approved.");
+    } catch (error) {
+      console.error("Error approving item:", error);
+      Alert.alert("Error", "Failed to approve user.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleDeny = async (id: string) => {
+  const handleDeny = (id: string) => {
+    setPendingDenyId(id);
+    setRejectionReason("");
+    setRejectionModalVisible(true);
+  };
+
+  const confirmDeny = async () => {
+    if (!pendingDenyId) return;
     setActionLoading(true);
-    let col =
-      activeTab === "event"
-        ? "events"
-        : activeTab === "volunteer"
-        ? "opportunities"
-        : "organizerRequests";
     try {
-      await updateDoc(doc(db, col, id), { approvalStatus: "rejected" });
-      // If denying an event, also reject associated opportunity (if any)
-      if (activeTab === "event") {
-        const q = query(
-          collection(db, "opportunities"),
-          where("eventId", "==", id)
-        );
-        const oppSnap = await getDocs(q);
-        if (!oppSnap.empty) {
-          for (const oppDoc of oppSnap.docs) {
-            await FirebaseOpportunityService.updateOpportunity(oppDoc.id, {
-              approvalStatus: "rejected",
-            });
-          }
-        }
-      }
-      setApprovals(approvals.filter((item) => item.id !== id));
-      Alert.alert("Denied", "Item has been denied.");
-    } catch (err) {
-      console.log("Error denying item:", err);
-      Alert.alert("Error", "Failed to deny item.");
+      await denyItem(pendingDenyId, activeTab, rejectionReason);
+      setApprovals(approvals.filter((item) => item.id !== pendingDenyId));
+      setRejectionModalVisible(false);
+      setPendingDenyId(null);
+      setRejectionReason("");
+      Alert.alert("Denied", "User has been denied.");
+    } catch (error) {
+      console.error("Error denying item:", error);
+      Alert.alert("Error", "Failed to deny user.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleCardPress = (item: any) => {
+  const handleCardPress = (item: ApprovalItem) => {
     navigation.navigate("ApprovalDetails", {
       id: item.id,
       type: activeTab, // 'event', 'volunteer', or 'organizer'
+      userData: activeTab !== "event" ? item : undefined, // Pass user data for non-event items
     });
   };
 
@@ -192,6 +133,35 @@ const ApprovalManagementScreen = () => {
             <ActivityIndicator size="large" color="#1B6B63" />
           </View>
         )}
+        {/* Rejection Reason Modal */}
+        <Modal
+          visible={rejectionModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRejectionModalVisible(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)", justifyContent: "center", alignItems: "center" }}>
+            <View style={{ backgroundColor: "#fff", padding: 24, borderRadius: 12, width: 320 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 18, color: "#C44536", marginBottom: 12 }}>Rejection Reason</Text>
+              <TextInput
+                style={{ borderWidth: 1, borderColor: "#C44536", borderRadius: 8, padding: 10, minHeight: 60, color: "#333", marginBottom: 16 }}
+                placeholder="Enter reason for rejection..."
+                placeholderTextColor="#888"
+                value={rejectionReason}
+                onChangeText={setRejectionReason}
+                multiline
+              />
+              <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12 }}>
+                <TouchableOpacity onPress={() => setRejectionModalVisible(false)} style={{ padding: 8 }}>
+                  <Text style={{ color: "#888", fontWeight: "bold" }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={confirmDeny} style={{ backgroundColor: "#C44536", padding: 8, borderRadius: 6 }}>
+                  <Text style={{ color: "#fff", fontWeight: "bold" }}>Reject</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <AdminHeroBox
           title="Approvals"
           showBackButton
@@ -203,7 +173,7 @@ const ApprovalManagementScreen = () => {
             <TouchableOpacity
               key={type}
               style={[styles.tab, activeTab === type && styles.activeTab]}
-              onPress={() => setActiveTab(type as any)}
+              onPress={() => setActiveTab(type as ApprovalType)}
             >
               <Text
                 style={[
@@ -214,8 +184,8 @@ const ApprovalManagementScreen = () => {
                 {type === "event"
                   ? "Events"
                   : type === "volunteer"
-                  ? "Volunteers"
-                  : "Event Organizers"}
+                    ? "Volunteers"
+                    : "Event Organizers"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -239,29 +209,62 @@ const ApprovalManagementScreen = () => {
                   style={styles.approvalCard}
                   disabled={actionLoading}
                 >
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}>
-                      {item.title || item.name || "No Title"}
-                    </Text>
-                  </View>
-                  <Text style={styles.cardDesc}>{item.description || ""}</Text>
-                  <Text style={styles.cardDetail}>
-                    {item.date
-                      ? `Date: ${
-                          item.date.seconds
+                  {activeTab === "event" ? (
+                    <>
+                      <View style={styles.cardHeader}>
+                        <Text style={styles.cardTitle}>
+                          {item.title || item.name || "No Title"}
+                        </Text>
+                      </View>
+                      <Text style={styles.cardDesc}>{item.description || ""}</Text>
+                      <Text style={styles.cardDetail}>
+                        {item.date
+                          ? `Date: ${item.date.seconds
                             ? new Date(
-                                item.date.seconds * 1000
-                              ).toLocaleDateString()
+                              item.date.seconds * 1000
+                            ).toLocaleDateString()
                             : new Date(item.date).toLocaleDateString()
-                        }`
-                      : ""}
-                  </Text>
-                  <Text style={styles.cardDetail}>
-                    Location: {item.location || "N/A"}
-                  </Text>
-                  <Text style={styles.cardDetail}>
-                    Needs Volunteers: {item.needsVolunteers ? "Yes" : "No"}
-                  </Text>
+                          }`
+                          : ""}
+                      </Text>
+                      <Text style={styles.cardDetail}>
+                        Location: {item.location || "N/A"}
+                      </Text>
+                      <Text style={styles.cardDetail}>
+                        Needs Volunteers: {item.needsVolunteers ? "Yes" : "No"}
+                      </Text>
+                    </>
+                  ) : (
+                    <View style={styles.userCardLayout}>
+                      <View style={styles.profileImageContainer}>
+                        <Image
+                          source={item.profileImage ? { uri: item.profileImage } : require('../../assets/aiplaceholder.png')}
+                          style={styles.profileImage}
+                          resizeMode="cover"
+                        />
+                      </View>
+                      <View style={styles.userDetailsContainer}>
+                        <Text style={styles.cardTitle}>
+                          {item.fullName || item.displayName || "No Name"}
+                        </Text>
+                        <Text style={styles.cardDesc}>
+                          Role: {item.role || "Unknown"}
+                        </Text>
+                        <Text style={styles.cardDetail}>
+                          Email: {item.email || "N/A"}
+                        </Text>
+                        <Text style={styles.cardDetail}>
+                          Phone: {item.phone || "N/A"}
+                        </Text>
+                        <Text style={styles.cardDetail}>
+                          Registration Date: {item.createdAt
+                            ? new Date(item.createdAt).toLocaleDateString()
+                            : "N/A"
+                          }
+                        </Text>
+                      </View>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </Swipeable>
             ))
@@ -371,6 +374,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#1B6B63",
     marginTop: 2,
+  },
+  userCardLayout: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 4,
+  },
+  profileImageContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginRight: 12,
+    backgroundColor: '#eee',
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
+  },
+  userDetailsContainer: {
+    flex: 1,
   },
 });
 

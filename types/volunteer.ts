@@ -1,6 +1,9 @@
 // src/types/volunteer.ts
 
-export type ApprovalStatus = "pending" | "approved" | "rejected";
+export type ApprovalStatus = {
+  status: "Approved" | "Pending" | "Rejected";
+  reason?: string;
+};
 export type ApplicationStatus = "pending" | "approved" | "rejected";
 
 export interface VolunteerOpportunity {

@@ -29,7 +29,7 @@ type User = {
   phone?: string;
   profileImage?: string;
   role: 'Support Seeker' | 'Volunteer' | 'Event Organizer' | 'Admin';
-  approved: boolean; // Use approved instead of banned
+  approvalStatus: { status: 'Approved' | 'Pending' | 'Rejected'; reason?: string };
 };
 
 const roles: User['role'][] = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
@@ -50,18 +50,16 @@ const UserManagementScreen = () => {
     setError(null);
     try {
       const data = await fetchUsers(role);
-      // Commented out: Only include users with all required fields
-      // const validUsers = (Array.isArray(data) ? data : []).filter(
-      //   (user: any): user is User =>
-      //     typeof user.name === 'string' &&
-      //     typeof user.email === 'string' &&
-      //     typeof user.role === 'string' &&
-      //     typeof user.approved === 'boolean'
-      // );
-      // console.log('Valid users after filtering:', validUsers);
-      // setUsers(validUsers);
-      // For now, set all fetched users directly (no type guard)
-      setUsers(Array.isArray(data) ? data : []);
+      // Only include users with all required fields
+      const validUsers = (Array.isArray(data) ? data : []).filter(
+        (user: any): user is User =>
+          typeof user.fullName === 'string' &&
+          typeof user.email === 'string' &&
+          typeof user.role === 'string' &&
+          typeof user.approvalStatus === 'object' &&
+          typeof user.approvalStatus.status === 'string'
+      );
+      setUsers(validUsers);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError('Failed to load users.');
@@ -80,8 +78,8 @@ const UserManagementScreen = () => {
   const handleBanUnban = async (user: User) => {
     try {
       setLoading(true);
-      // Use approved field: ban = set approved to false, unban = set approved to true
-      await banUser(user.id, !user.approved);
+      // Use approvalStatus: ban = set status to Rejected, unban = set status to Approved
+      await banUser(user.id, user.approvalStatus.status !== 'Approved');
       loadUsers(activeRole);
     } catch (err) {
       Alert.alert('Error', 'Failed to update user status.');
@@ -191,9 +189,14 @@ const UserManagementScreen = () => {
               >
                 <Ionicons name="close-circle-outline" size={18} color="#fff" />
                 <Text style={{ color: '#fff', marginLeft: 6, fontSize: 12 }}>
-                  {user.approved ? 'Ban' : 'Unban'}
+                  {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
                 </Text>
               </TouchableOpacity>
+              {user.approvalStatus.status === 'Rejected' && user.approvalStatus.reason && (
+                <Text style={{ color: '#C44536', fontSize: 12, marginTop: 4 }}>
+                  Rejected: {user.approvalStatus.reason}
+                </Text>
+              )}
             </View>
           </View>
         ))}

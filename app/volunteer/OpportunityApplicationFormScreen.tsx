@@ -17,6 +17,7 @@ import { auth, db } from "../../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { FirebaseVolunteerApplicationService } from "../../services/FirebaseVolunteerApplicationService";
 import ProfanityFilterService from "../../services/profanityFilterService";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<
   HomeStackParamList,
@@ -148,35 +149,7 @@ const OpportunityApplicationFormScreen: React.FC<Props> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Application</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="Application" showBackButton={true} />
       <ScrollView style={styles.content}>
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>

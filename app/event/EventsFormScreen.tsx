@@ -24,6 +24,16 @@ import ProfanityFilterService from "../../services/profanityFilterService";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
+const MAX_WORD_LIMITS = {
+  title: 10,
+  location: 10,
+  description: 250,
+  volunteerDescription: 250,
+  timings: 20,
+  rewards: 20,
+  refreshments: 20,
+};
+
 const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -70,6 +80,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const [timings, setTimings] = useState("");
   const [rewards, setRewards] = useState("");
   const [refreshments, setRefreshments] = useState("");
+
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
@@ -152,11 +166,31 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
       Alert.alert("Error", "Event title is required");
       return false;
     }
+    if (countWords(title) > MAX_WORD_LIMITS.title) {
+      Alert.alert(
+        "Error",
+        `Event title exceeds word limit of ${MAX_WORD_LIMITS.title} words`
+      );
+      return false;
+    }
     if (!location.trim()) {
       Alert.alert("Error", "Event location is required");
       return false;
     }
-
+    if (countWords(location) > MAX_WORD_LIMITS.location) {
+      Alert.alert(
+        "Error",
+        `Event location exceeds word limit of ${MAX_WORD_LIMITS.location} words`
+      );
+      return false;
+    }
+    if (countWords(description) > MAX_WORD_LIMITS.description) {
+      Alert.alert(
+        "Error",
+        `Event description exceeds word limit of ${MAX_WORD_LIMITS.description} words`
+      );
+      return false;
+    }
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
@@ -179,8 +213,36 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
         Alert.alert("Error", "Volunteer task description is required");
         return false;
       }
+      if (countWords(volunteerDescription) > MAX_WORD_LIMITS.volunteerDescription) {
+        Alert.alert(
+          "Error",
+          `Volunteer task description exceeds word limit of ${MAX_WORD_LIMITS.volunteerDescription} words`
+        );
+        return false;
+      }
       if (!timings.trim()) {
         Alert.alert("Error", "Volunteer timings are required");
+        return false;
+      }
+      if (countWords(timings) > MAX_WORD_LIMITS.timings) {
+        Alert.alert(
+          "Error",
+          `Volunteer timings exceed word limit of ${MAX_WORD_LIMITS.timings} words`
+        );
+        return false;
+      }
+      if (countWords(rewards) > MAX_WORD_LIMITS.rewards) {
+        Alert.alert(
+          "Error",
+          `Rewards exceed word limit of ${MAX_WORD_LIMITS.rewards} words`
+        );
+        return false;
+      }
+      if (countWords(refreshments) > MAX_WORD_LIMITS.refreshments) {
+        Alert.alert(
+          "Error",
+          `Refreshments exceed word limit of ${MAX_WORD_LIMITS.refreshments} words`
+        );
         return false;
       }
     }
@@ -197,11 +259,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
         { name: "title", value: title },
         { name: "location", value: location },
         { name: "description", value: description },
-        {
-          name: "volunteerDescription",
-          value: volunteerDescription,
-          check: needsVolunteers,
-        },
+{
+  name: "volunteerDescription",
+  value: volunteerDescription,
+  check: needsVolunteers,
+},
         { name: "rewards", value: rewards, check: needsVolunteers },
         { name: "refreshments", value: refreshments, check: needsVolunteers },
       ];
@@ -356,6 +418,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             placeholder="Enter event title"
             placeholderTextColor="#999"
           />
+          <Text style={styles.wordCount}>
+            {countWords(title)} / {MAX_WORD_LIMITS.title} words
+          </Text>
 
           <Text style={styles.label}>Event Date</Text>
           <TouchableOpacity
@@ -425,6 +490,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             placeholder="Enter event location"
             placeholderTextColor="#999"
           />
+          <Text style={styles.wordCount}>
+            {countWords(location)} / {MAX_WORD_LIMITS.location} words
+          </Text>
 
           <Text style={styles.label}>Description</Text>
           <TextInput
@@ -436,6 +504,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             multiline
             numberOfLines={4}
           />
+          <Text style={styles.wordCount}>
+            {countWords(description)} / {MAX_WORD_LIMITS.description} words
+          </Text>
 
           <Text style={[styles.label, { marginTop: 25 }]}>
             Volunteers Needed
@@ -481,6 +552,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 multiline
                 numberOfLines={3}
               />
+              <Text style={styles.wordCount}>
+                {countWords(volunteerDescription)} / {MAX_WORD_LIMITS.volunteerDescription} words
+              </Text>
               <Text style={styles.label}>Volunteer Timings</Text>
               <TextInput
                 style={styles.input}
@@ -489,6 +563,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
                 placeholderTextColor="#999"
               />
+              <Text style={styles.wordCount}>
+                {countWords(timings)} / {MAX_WORD_LIMITS.timings} words
+              </Text>
               <Text style={styles.label}>Rewards (Optional)</Text>
               <TextInput
                 style={styles.input}
@@ -497,6 +574,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
                 placeholderTextColor="#999"
               />
+              <Text style={styles.wordCount}>
+                {countWords(rewards)} / {MAX_WORD_LIMITS.rewards} words
+              </Text>
               <Text style={styles.label}>Refreshments (Optional)</Text>
               <TextInput
                 style={styles.input}
@@ -505,6 +585,9 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 placeholder="Enter refreshments provided (e.g., snacks, water)"
                 placeholderTextColor="#999"
               />
+              <Text style={styles.wordCount}>
+                {countWords(refreshments)} / {MAX_WORD_LIMITS.refreshments} words
+              </Text>
             </>
           )}
 
@@ -577,25 +660,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   formContainer: {
-    padding: 18,
+    padding: 20,
     paddingBottom: 100,
-    marginBottom: 100,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#2E2E2E",
-    marginBottom: 5,
-    marginTop: 15,
+    marginTop: 16,
+    marginBottom: 6,
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "600",
   },
   input: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
     fontSize: 16,
     color: "#2E2E2E",
+  },
+  wordCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#1B6B63",
+    marginBottom: 10,
   },
   helperText: {
     fontSize: 12,
@@ -604,14 +692,14 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   textArea: {
-    height: 80,
+    height: 120,
     textAlignVertical: "top",
   },
   dateSelector: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
     marginBottom: 5,
   },
@@ -629,9 +717,9 @@ const styles = StyleSheet.create({
   },
   timeSelector: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
   },
   timeText: {
@@ -655,22 +743,22 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
   },
   submitButton: {
-    backgroundColor: "#F4A941",
-    borderRadius: 20,
-    paddingVertical: 12,
+    backgroundColor: "#1B6B63",
+    borderRadius: 14,
+    paddingVertical: 14,
     paddingHorizontal: 18,
     alignItems: "center",
     marginTop: 30,
     marginBottom: 30,
   },
   disabledButton: {
-    backgroundColor: "#F4A941",
+    backgroundColor: "#1B6B63",
     opacity: 0.7,
   },
   submitButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

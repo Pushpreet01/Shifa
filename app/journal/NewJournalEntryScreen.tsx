@@ -19,6 +19,11 @@ import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 // 📦 Accepting entry from params
 type ScreenRouteProp = RouteProp<HomeStackParamList, "NewJournalEntryScreen">;
 
+const MAX_WORD_LIMITS = {
+  title: 20,
+  body: 250,
+};
+
 const NewJournalEntryScreen = () => {
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
   const route = useRoute<ScreenRouteProp>();
@@ -28,9 +33,29 @@ const NewJournalEntryScreen = () => {
   const [title, setTitle] = useState(entry?.title || "");
   const [body, setBody] = useState(entry?.body || "");
 
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+
   const handleSave = async () => {
     if (!title.trim() || !body.trim()) {
       Alert.alert("Error", "Please fill in both title and content.");
+      return;
+    }
+
+    if (countWords(title) > MAX_WORD_LIMITS.title) {
+      Alert.alert(
+        "Error",
+        `Title exceeds word limit of ${MAX_WORD_LIMITS.title} words`
+      );
+      return;
+    }
+
+    if (countWords(body) > MAX_WORD_LIMITS.body) {
+      Alert.alert(
+        "Error",
+        `Content exceeds word limit of ${MAX_WORD_LIMITS.body} words`
+      );
       return;
     }
 
@@ -96,6 +121,9 @@ const NewJournalEntryScreen = () => {
               style={styles.input}
               placeholderTextColor="#999999"
             />
+            <Text style={styles.wordCount}>
+              {countWords(title)} / {MAX_WORD_LIMITS.title} words
+            </Text>
           </View>
 
           <View style={styles.inputContainer}>
@@ -109,6 +137,9 @@ const NewJournalEntryScreen = () => {
               textAlignVertical="top"
               placeholderTextColor="#999999"
             />
+            <Text style={styles.wordCount}>
+              {countWords(body)} / {MAX_WORD_LIMITS.body} words
+            </Text>
           </View>
 
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -122,7 +153,7 @@ const NewJournalEntryScreen = () => {
   );
 };
 
-// ⏬ Keep your same styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -209,6 +240,13 @@ const styles = StyleSheet.create({
   textArea: {
     height: 220,
     textAlignVertical: "top",
+  },
+  wordCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#1B6B63", // Teal color to match EventsFormScreen
+    marginTop: 4,
+    marginBottom: 10,
   },
   saveButton: {
     backgroundColor: "#1B6B63",

@@ -87,6 +87,8 @@ export type SettingsStackParamList = {
   Profile: undefined;
   Feedback: undefined;
   AboutUs: undefined;
+  Announcements: undefined;
+  Emergency: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -96,6 +98,8 @@ export type ResourcesStackParamList = {
   Counselling: undefined;
   Awareness: undefined;
   SupportSystem: undefined;
+  Announcements: undefined;
+  Emergency: undefined;
 };
 
 export type RootTabParamList = {
@@ -169,6 +173,8 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
     <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
+     <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <SettingsStack.Screen name="Emergency" component={EmergencyScreen} />
   </SettingsStack.Navigator>
 );
 
@@ -185,9 +191,13 @@ const ResourcesStackScreen = () => (
     />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
+     <ResourcesStack.Screen name="Announcements" component={AnnouncementsScreen} />
+     <ResourcesStack.Screen name="Emergency" component={EmergencyScreen} />
+
     <ResourcesStack.Screen
       name="SupportSystem"
       component={SupportSystemScreen}
+      
     />
   </ResourcesStack.Navigator>
 );

@@ -206,8 +206,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FDF6EC",
   },
   container: {
-    paddingBottom: 100,
+    paddingBottom: 140,
     alignItems: "center",
+    
   },
   imageWrapper: {
     backgroundColor: "#ffffff",

@@ -253,12 +253,9 @@ const HomeDashboardScreen = () => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <View style={styles.sectionIconContainer}>
-                <Ionicons name="grid" size={18} color="#1B6B63" />
+                <Ionicons name="grid" size={18} color="#F4A941" />
               </View>
-              <View>
-                <Text style={styles.sectionTitle}>Quick Access</Text>
-                <View style={styles.titleUnderline} />
-              </View>
+              <Text style={styles.sectionTitle}>Quick Access</Text>
             </View>
           </View>
           <ScrollView 
@@ -330,12 +327,9 @@ const HomeDashboardScreen = () => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <View style={styles.sectionIconContainer}>
-                <Ionicons name="calendar" size={18} color="#1B6B63" />
+                <Ionicons name="calendar" size={18} color="#F4A941" />
               </View>
-              <View>
-                <Text style={styles.sectionTitle}>Upcoming Events</Text>
-                <View style={styles.titleUnderline} />
-              </View>
+              <Text style={styles.sectionTitle}>Upcoming Events</Text>
             </View>
           </View>
 
@@ -528,17 +522,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#000000", // Changed from #1B6B63 to black
+    fontWeight: "600",
+    color: "#4A4A4A", // Changed to a dark grey for better readability
     letterSpacing: -0.3,
-    marginBottom: 4,
   },
   titleUnderline: {
-    height: 2,
-    width: '40%',
-    backgroundColor: '#000000',
-    borderRadius: 2,
-    opacity: 0.7,
+    display: 'none', // Remove the underline
   },
   descriptionContainer: {
     marginVertical: 20,
@@ -611,19 +600,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginBottom: 20,
-    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   sectionIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(27, 107, 99, 0.1)',
+    backgroundColor: 'rgba(244, 169, 65, 0.1)', // Changed to match new color scheme
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -845,7 +833,7 @@ const styles = StyleSheet.create({
   customHeaderTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#000000",
+    color: "#1B6B63", // Changed back to teal
   },
   headerIcons: {
     flexDirection: "row",

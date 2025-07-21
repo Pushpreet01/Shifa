@@ -25,6 +25,7 @@ import {
 } from "firebase/storage";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 import ProfanityFilterService from "../../services/profanityFilterService";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
@@ -189,7 +190,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               );
               try {
                 await deleteObject(storageRef);
-              } catch (error) {
+              } catch (error: any) { // Type the error as any to handle Firebase error
                 // if file does not exist, we can ignore the error
                 if (error.code !== "storage/object-not-found") {
                   throw error;
@@ -266,34 +267,11 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Edit Profile</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <HeroBox 
+        title="Edit Profile" 
+        showBackButton 
+        customBackRoute="Settings"
+      />
 
       <KeyboardAwareWrapper>
         <View style={styles.content}>

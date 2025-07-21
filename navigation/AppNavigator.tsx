@@ -87,8 +87,8 @@ export type SettingsStackParamList = {
   Profile: undefined;
   Feedback: undefined;
   AboutUs: undefined;
-  Announcements: undefined;
   Emergency: undefined;
+  Announcements: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -173,8 +173,8 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
     <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
-     <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <SettingsStack.Screen name="Emergency" component={EmergencyScreen} />
+    <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
   </SettingsStack.Navigator>
 );
 
@@ -213,21 +213,21 @@ const TabNavigator = () => (
       name={TabRoutes.Resources}
       component={ResourcesStackScreen}
       options={{
-        unmountOnBlur: true, // This will reset the Resources stack when switching tabs
+        unmountOnBlur: true,
       }}
     />
     <Tab.Screen
       name={TabRoutes.Home}
       component={HomeStackScreen}
       options={{
-        unmountOnBlur: false, // Keep Home stack mounted to preserve state
+        unmountOnBlur: false,
       }}
     />
     <Tab.Screen
       name={TabRoutes.Settings}
       component={SettingsStackScreen}
       options={{
-        unmountOnBlur: true, // This will reset the Settings stack when switching tabs
+        unmountOnBlur: true,
       }}
     />
   </Tab.Navigator>

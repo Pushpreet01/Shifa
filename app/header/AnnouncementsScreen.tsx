@@ -17,6 +17,7 @@ import notificationService, {
   NotificationItem,
   AnnouncementItem,
 } from "../../services/notificationService";
+import HeroBox from "../../components/HeroBox";
 
 type CombinedItem = NotificationItem | AnnouncementItem;
 
@@ -113,27 +114,7 @@ const AnnouncementsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Announcements</Text>
-          <View style={styles.headerIcons}>
-            <Ionicons name="notifications-outline" size={24} color="#C44536" />
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="Announcements" showBackButton={true} />
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1B6B63" />

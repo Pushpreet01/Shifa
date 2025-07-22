@@ -19,6 +19,7 @@ import FirebaseVolunteerApplicationService from "../../services/FirebaseVoluntee
 import { auth, db } from "../../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { VolunteerOpportunity, VolunteerApplication } from "../../types/volunteer";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "OpportunityDetails">;
 
@@ -241,29 +242,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Opportunity Details</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="Opportunity Details" showBackButton={true} />
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.eventInfoContainer}>
           <Text style={styles.eventTitle}>{opportunityDetails.title}</Text>

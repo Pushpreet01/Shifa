@@ -28,6 +28,9 @@ import VolunteerRewardsScreen from "../app/volunteer/VolunteerRewardsScreen";
 import ProfileScreen from "../app/settings/ProfileScreen";
 import FeedbackScreen from "../app/settings/FeedbackScreen";
 import AboutUsScreen from "../app/settings/AboutUsScreen";
+import MyApplicationsScreen from "../app/volunteer/MyApplicationsScreen";
+import MyEventsScreen from "../app/event/MyEventsScreen";
+import AdminEditEventScreen from '../app/admin/AdminEditEventScreen';
 
 
 // Custom Tab Bar
@@ -80,6 +83,8 @@ export type HomeStackParamList = {
   VolunteerLearnings: undefined;
   Emergency: undefined;
   VolunteerRewards: undefined;
+  MyApplications: undefined;
+  MyEvents: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -164,6 +169,9 @@ const HomeStackScreen = () => (
       name="VolunteerRewards"
       component={VolunteerRewardsScreen}
     />
+    <HomeStack.Screen name="MyApplications" component={MyApplicationsScreen} />
+    <HomeStack.Screen name="MyEvents" component={MyEventsScreen} />
+    <HomeStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
   </HomeStack.Navigator>
 );
 
@@ -173,7 +181,7 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
     <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
-     <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <SettingsStack.Screen name="Emergency" component={EmergencyScreen} />
   </SettingsStack.Navigator>
 );
@@ -191,13 +199,13 @@ const ResourcesStackScreen = () => (
     />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
-     <ResourcesStack.Screen name="Announcements" component={AnnouncementsScreen} />
-     <ResourcesStack.Screen name="Emergency" component={EmergencyScreen} />
+    <ResourcesStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <ResourcesStack.Screen name="Emergency" component={EmergencyScreen} />
 
     <ResourcesStack.Screen
       name="SupportSystem"
       component={SupportSystemScreen}
-      
+
     />
   </ResourcesStack.Navigator>
 );

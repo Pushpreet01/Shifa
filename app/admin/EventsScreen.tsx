@@ -16,12 +16,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AdminHeroBox from '../../components/AdminHeroBox';
 import Calendar from '../../components/Calendar';
+import * as adminEventService from '../../services/adminEventService';
 
 type Event = {
   id: string;
   title: string;
   date: Date;
   location: string;
+  approvalStatus?: string | { status: string;[key: string]: any };
+  needsVolunteers?: boolean;
 };
 
 const EventsScreen = () => {
@@ -30,27 +33,37 @@ const EventsScreen = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: '1',
-      title: 'Mental Health Awareness Drive',
-      date: new Date('2025-07-15'), // Updated to future dates
-      location: 'Calgary Community Center',
-    },
-    {
-      id: '2',
-      title: 'Substance Abuse Prevention Seminar',
-      date: new Date('2025-07-20'),
-      location: 'SAIT Wellness Hall',
-    },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [formData, setFormData] = useState({ id: '', title: '', date: '', location: '' });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [scaleAnims] = useState(events.map(() => new Animated.Value(1)));
+  const [scaleAnims, setScaleAnims] = useState<Animated.Value[]>([]);
 
   const navigation = useNavigation<any>();
+
+  // Fetch events from backend
+  const fetchAndSetEvents = useCallback(async () => {
+    setLoading(true);
+    try {
+      const allEvents = await adminEventService.fetchEvents();
+      // Convert Firestore Timestamp to JS Date
+      const mapped = allEvents.map((ev: any) => ({
+        ...ev,
+        date: ev.date && ev.date.toDate ? ev.date.toDate() : new Date(ev.date),
+      }));
+      setEvents(mapped);
+      setScaleAnims(mapped.map(() => new Animated.Value(1)));
+    } catch (err) {
+      Alert.alert('Error', 'Failed to fetch events.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAndSetEvents();
+  }, [fetchAndSetEvents, currentMonth, selectedDate]);
 
   // Ensure currentMonth is not in the past
   useEffect(() => {
@@ -83,7 +96,7 @@ const EventsScreen = () => {
   const handleDateSelect = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (date >= today) {
+    if (true/*date >= today*/) {
       setSelectedDate(date);
     } else {
       Alert.alert('Invalid Date', 'You can only view events for today and future dates.');
@@ -106,7 +119,7 @@ const EventsScreen = () => {
     setModalVisible(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title || !formData.date || !formData.location) {
       Alert.alert('Error', 'Please fill all fields.');
       return;
@@ -127,29 +140,45 @@ const EventsScreen = () => {
     }
 
     setLoading(true);
-    if (editingEventId) {
-      setEvents((prev) =>
-        prev.map((ev) =>
-          ev.id === editingEventId
-            ? { ...formData, date: eventDate }
-            : ev
-        )
-      );
-    } else {
-      setEvents((prev) => [
-        ...prev,
-        { ...formData, id: Date.now().toString(), date: eventDate },
-      ]);
-      scaleAnims.push(new Animated.Value(1));
+    try {
+      if (editingEventId) {
+        await adminEventService.updateEvent(editingEventId, {
+          title: formData.title,
+          date: eventDate,
+          location: formData.location,
+        });
+      } else {
+        await adminEventService.createEvent({
+          title: formData.title,
+          date: eventDate,
+          location: formData.location,
+        });
+      }
+      await fetchAndSetEvents();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save event.');
+    } finally {
+      setLoading(false);
+      setModalVisible(false);
     }
-    setLoading(false);
-    setModalVisible(false);
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert('Delete Event', 'Are you sure?', [
+    Alert.alert('Delete Event', 'Are you sure? This will also delete all associated volunteers, applications, and registrations.', [
       { text: 'Cancel' },
-      { text: 'Delete', onPress: () => setEvents((prev) => prev.filter((e) => e.id !== id)) },
+      {
+        text: 'Delete', onPress: async () => {
+          setLoading(true);
+          try {
+            await adminEventService.deleteEventCascade(id);
+            await fetchAndSetEvents();
+          } catch (err) {
+            Alert.alert('Error', 'Failed to delete event.');
+          } finally {
+            setLoading(false);
+          }
+        }
+      },
     ]);
   };
 
@@ -171,7 +200,9 @@ const EventsScreen = () => {
     (event) =>
       event.date.getDate() === selectedDate.getDate() &&
       event.date.getMonth() === selectedDate.getMonth() &&
-      event.date.getFullYear() === selectedDate.getFullYear()
+      event.date.getFullYear() === selectedDate.getFullYear() &&
+      ((typeof event.approvalStatus === 'object' && event.approvalStatus.status === 'Approved') ||
+        (typeof event.approvalStatus === 'string' && event.approvalStatus === 'approved'))
   );
 
   return (
@@ -183,11 +214,11 @@ const EventsScreen = () => {
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}`
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}`
               : 'Select date'}
           </Text>
         </View>
@@ -220,35 +251,39 @@ const EventsScreen = () => {
                 <Text style={styles.eventDetail}>📍 {event.location}</Text>
               </View>
               <View style={styles.actionsRow}>
+                {event.needsVolunteers && (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                      onPress={() => navigation.navigate('AttendanceReport', { eventId: event.id })}
+                      onPressIn={() => handlePressIn(index)}
+                      onPressOut={() => handlePressOut(index)}
+                      accessibilityLabel="View attendance report"
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="clipboard-outline" size={16} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
+                      onPress={() => navigation.navigate('AssignVolunteers', { eventId: event.id })}
+                      onPressIn={() => handlePressIn(index)}
+                      onPressOut={() => handlePressOut(index)}
+                      accessibilityLabel="Assign volunteers"
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="people-outline" size={16} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                )}
                 <TouchableOpacity
                   style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
-                  onPress={() => navigation.navigate('AttendanceReport', { eventId: event.id })}
-                  onPressIn={() => handlePressIn(index)}
-                  onPressOut={() => handlePressOut(index)}
-                  accessibilityLabel="View attendance report"
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="clipboard-outline" size={16} color="#fff" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
-                  onPress={() => navigation.navigate('AssignVolunteers', { eventId: event.id })}
-                  onPressIn={() => handlePressIn(index)}
-                  onPressOut={() => handlePressOut(index)}
-                  accessibilityLabel="Assign volunteers"
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="people-outline" size={16} color="#fff" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
-                  onPress={() => openModal(event)}
+                  onPress={() => navigation.navigate('AdminEditEvent', { eventId: event.id })}
                   onPressIn={() => handlePressIn(index)}
                   onPressOut={() => handlePressOut(index)}
                   accessibilityLabel="Edit event"
                   accessibilityRole="button"
                 >
-                  <Ionicons name="create-outline" size= {16} color="#fff" />
+                  <Ionicons name="create-outline" size={16} color="#fff" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
@@ -357,7 +392,9 @@ const styles = StyleSheet.create({
   },
   eventsListContainer: {
     flex: 1,
+    marginBottom: 50,
     padding: 20,
+    paddingBottom: 150,
   },
   card: {
     backgroundColor: '#FFFFFF',

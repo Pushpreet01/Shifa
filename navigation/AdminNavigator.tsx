@@ -17,6 +17,7 @@ import UserManagementScreen from '../app/admin/UserManagementScreen';
 import UserDetailsScreen from '../app/admin/UserDetailsScreen';
 import AssignUserRoleScreen from '../app/admin/AssignUserRoleScreen';
 import AdminEmailScreen from '../app/admin/AdminEmailScreen';
+import AdminEditEventScreen from '../app/admin/AdminEditEventScreen';
 
 // Settings Screens
 import SettingsScreen from '../app/admin/SettingsScreen';
@@ -45,6 +46,7 @@ export type AdminStackParamList = {
   UserDetails: { userId: string };
   AssignUserRole: { user: UserType };
   AdminEmail: undefined;
+  AdminEditEvent: { eventId: string };
 };
 
 // Compose stack now includes AdminEmail
@@ -75,6 +77,7 @@ const AdminHomeStackScreen = () => (
     <AdminStack.Screen name="UserDetails" component={UserDetailsScreen} />
     <AdminStack.Screen name="AssignUserRole" component={AssignUserRoleScreen} />
     <AdminStack.Screen name="AdminEmail" component={AdminEmailScreen} />
+    <AdminStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
   </AdminStack.Navigator>
 );
 

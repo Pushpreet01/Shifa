@@ -259,11 +259,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
         { name: "title", value: title },
         { name: "location", value: location },
         { name: "description", value: description },
-{
-  name: "volunteerDescription",
-  value: volunteerDescription,
-  check: needsVolunteers,
-},
+        {
+          name: "volunteerDescription",
+          value: volunteerDescription,
+          check: needsVolunteers,
+        },
         { name: "rewards", value: rewards, check: needsVolunteers },
         { name: "refreshments", value: refreshments, check: needsVolunteers },
       ];

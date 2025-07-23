@@ -28,6 +28,14 @@ class FirebaseEventService {
       const events: CalendarEvent[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
+        let approvalStatusObj = data.approvalStatus;
+        if (typeof approvalStatusObj === "string") {
+          approvalStatusObj = {
+            status:
+              approvalStatusObj.charAt(0).toUpperCase() +
+              approvalStatusObj.slice(1),
+          };
+        }
         events.push({
           id: doc.id,
           title: data.title,
@@ -38,7 +46,7 @@ class FirebaseEventService {
           description: data.description || "",
           registered: false,
           source: "firebase",
-          approvalStatus: data.approvalStatus || "pending", // Include approval status
+          approvalStatus: approvalStatusObj,
           needsVolunteers: data.needsVolunteers,
         });
       });
@@ -310,7 +318,10 @@ class FirebaseEventService {
   async getEventsByCreator(userId: string): Promise<CalendarEvent[]> {
     try {
       const eventsCollection = collection(db, "events");
-      const eventsQuery = query(eventsCollection, where("createdBy", "==", userId));
+      const eventsQuery = query(
+        eventsCollection,
+        where("createdBy", "==", userId)
+      );
       const querySnapshot = await getDocs(eventsQuery);
       const events: CalendarEvent[] = [];
       querySnapshot.forEach((doc) => {

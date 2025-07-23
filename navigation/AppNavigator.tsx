@@ -185,7 +185,6 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
     <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
     <SettingsStack.Screen name="Emergency" component={EmergencyScreen} />
-    <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
   </SettingsStack.Navigator>
 );
 

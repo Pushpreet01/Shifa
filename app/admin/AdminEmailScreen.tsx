@@ -10,35 +10,20 @@ import {
   Modal,
   Animated,
   Easing,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AdminHeroBox from '../../components/AdminHeroBox';
+import * as MailComposer from 'expo-mail-composer';
 
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 const MAX_WORD_LIMIT = 250;
 
-// Placeholder email data for each role
 const placeholderEmails = {
-  Admin: [
-    'admin1@example.com',
-    'admin2@example.com',
-    'admin3@example.com',
-  ],
-  'Support Seeker': [
-    'support1@example.com',
-    'support2@example.com',
-    'support3@example.com',
-  ],
-  Volunteer: [
-    'volunteer1@example.com',
-    'volunteer2@example.com',
-    'volunteer3@example.com',
-    'volunteer4@example.com',
-  ],
-  'Event Organizer': [
-    'organizer1@example.com',
-    'organizer2@example.com',
-  ],
+  Admin: ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'],
+  'Support Seeker': ['support1@example.com', 'support2@example.com', 'support3@example.com'],
+  Volunteer: ['volunteer1@example.com', 'volunteer2@example.com', 'volunteer3@example.com', 'volunteer4@example.com'],
+  'Event Organizer': ['organizer1@example.com', 'organizer2@example.com'],
 };
 
 const AdminEmailScreen = () => {
@@ -47,7 +32,6 @@ const AdminEmailScreen = () => {
   const [userEmail, setUserEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showUserRoleDropdown, setShowUserRoleDropdown] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -55,7 +39,7 @@ const AdminEmailScreen = () => {
 
   const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (selectedRole === 'Particular User') {
       if (!specificUserRole || !userEmail || !subject || !message.trim()) {
         alert('Please fill all fields for specific user.');
@@ -73,7 +57,18 @@ const AdminEmailScreen = () => {
       return;
     }
 
-    // Reset form and show success modal
+    const isAvailable = await MailComposer.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert('Error', 'No email app is available on this device');
+      return;
+    }
+
+    await MailComposer.composeAsync({
+      recipients: [userEmail],
+      subject: subject,
+      body: message,
+    });
+
     setSelectedRole('');
     setSpecificUserRole('');
     setUserEmail('');
@@ -136,7 +131,6 @@ const AdminEmailScreen = () => {
           )}
         </View>
 
-        {/* Email List for Role-Based Recipients */}
         {selectedRole && selectedRole !== 'Particular User' && (
           <View style={styles.emailListContainer}>
             <Text style={styles.label}>Users in {selectedRole}:</Text>
@@ -153,7 +147,6 @@ const AdminEmailScreen = () => {
           </View>
         )}
 
-        {/* Secondary Role Dropdown and Email Input if "Particular User" selected */}
         {selectedRole === 'Particular User' && (
           <>
             <Text style={styles.label}>User Role:</Text>
@@ -195,6 +188,8 @@ const AdminEmailScreen = () => {
               onChangeText={setUserEmail}
               style={styles.input}
               keyboardType="email-address"
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </>
         )}
@@ -205,13 +200,15 @@ const AdminEmailScreen = () => {
           value={subject}
           onChangeText={setSubject}
           style={styles.input}
+          autoCorrect={false}
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Message:</Text>
         <TextInput
           multiline
           placeholder="Type your message here..."
-          style={[styles.input, styles.messageInput]}
+          style={[styles.input, { height: 120, textAlignVertical: 'top' }]}
           value={message}
           onChangeText={setMessage}
         />
@@ -222,7 +219,6 @@ const AdminEmailScreen = () => {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Confirmation Popup */}
       <Modal transparent visible={showSuccessModal} animationType="none">
         <View style={styles.modalOverlay}>
           <Animated.View style={[styles.successPopup, { opacity: fadeAnim }]}>
@@ -245,9 +241,7 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "600",
   },
-  dropdownContainer: {
-    marginBottom: 10,
-  },
+  dropdownContainer: { marginBottom: 10 },
   dropdown: {
     backgroundColor: '#fff',
     borderColor: '#DDD',
@@ -259,21 +253,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  dropdownText: {
-    color: '#1B6B63',
-    fontWeight: 'bold',
-  },
+  dropdownText: { color: '#1B6B63', fontWeight: 'bold' },
   dropdownList: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 10,
     elevation: 2,
   },
-  dropdownItem: {
-    paddingVertical: 6,
-    fontSize: 15,
-    color: '#2E2E2E',
-  },
+  dropdownItem: { paddingVertical: 6, fontSize: 15, color: '#2E2E2E' },
   emailListContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
@@ -287,19 +274,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
   },
-  emailIcon: {
-    marginRight: 8,
-  },
-  emailText: {
-    fontSize: 14,
-    color: '#2E2E2E',
-  },
-  noEmailsText: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
-    paddingVertical: 10,
-  },
+  emailIcon: { marginRight: 8 },
+  emailText: { fontSize: 14, color: '#2E2E2E' },
+  noEmailsText: { fontSize: 14, color: '#888', textAlign: 'center', paddingVertical: 10 },
   input: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -307,10 +284,6 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     marginBottom: 10,
-  },
-  messageInput: {
-    height: 120,
-    textAlignVertical: "top",
   },
   wordCount: {
     alignSelf: 'flex-end',

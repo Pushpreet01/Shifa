@@ -16,7 +16,7 @@ const AdminDashboardScreen = () => {
 
   const dashboardItems = [
     { title: "Users", count: 120, icon: "person-outline", route: "UserManagement" },
-    { title: "Approvals", count: 45, icon: "people-outline", route: "Approvals" },
+    { title: "Approvals", count: 45, icon: "people-outline", route: "ApprovalManagement" },
     { title: "Events", count: 8, icon: "calendar-outline", route: "Events" },
     { title: "Resources", count: 30, icon: "book-outline", route: "ResourceManagement" },
   ];

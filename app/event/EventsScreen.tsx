@@ -233,13 +233,13 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
               style={styles.myEventsButton}
               onPress={() => navigation.navigate("MyEvents")}
             >
+              <Text style={styles.myEventsButtonText}>My Events</Text>
               <Ionicons
                 name="list-outline"
                 size={20}
-                color="#1B6B63"
-                style={{ marginRight: 4 }}
+                color="#FFFFFF"
+                style={{ marginLeft: 4 }}
               />
-              <Text style={styles.myEventsButtonText}>My Events</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -419,15 +419,15 @@ const styles = StyleSheet.create({
     borderLeftColor: "#F4A941",
   },
   myEventsButton: {
+    flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#C44536",
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    marginLeft: 16,
+    backgroundColor: "#1B6B63",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
   },
   myEventsButtonText: {
-    color: "#1B6B63",
+    color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 15,
   },

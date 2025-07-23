@@ -41,20 +41,14 @@ export class FirebaseOpportunityService {
     }
   }
 
-  async getOpportunity(opportunityId: string, eventId: string): Promise<VolunteerOpportunity | null> {
-    console.log("[getOpportunity] Fetching opportunity with opportunityId:", opportunityId, "eventId:", eventId);
+  async getOpportunity(opportunityId: string): Promise<VolunteerOpportunity | null> {
+    console.log("[getOpportunity] Fetching opportunity with opportunityId:", opportunityId);
     const docRef = doc(db, "opportunities", opportunityId);
     try {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() as VolunteerOpportunity;
-        if (data.approvalStatus === "approved" && data.eventId === eventId) {
-          console.log("[getOpportunity] Document data found:", docSnap.id);
-          return data;
-        } else {
-          console.log("[getOpportunity] Document exists but not approved or eventId mismatch");
-          return null;
-        }
+        return data;
       } else {
         console.log("[getOpportunity] No document found");
         return null;
@@ -105,6 +99,20 @@ export class FirebaseOpportunityService {
     } catch (error) {
       console.error("[deleteOpportunity] Error deleting document:", error);
       throw error;
+    }
+  }
+
+  async getOpportunityByEventId(eventId: string): Promise<VolunteerOpportunity | null> {
+    try {
+      const q = query(collection(db, "opportunities"), where("eventId", "==", eventId));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        return snapshot.docs[0].data() as VolunteerOpportunity;
+      }
+      return null;
+    } catch (error) {
+      console.error("[getOpportunityByEventId] Error fetching opportunity by eventId:", error);
+      return null;
     }
   }
 }

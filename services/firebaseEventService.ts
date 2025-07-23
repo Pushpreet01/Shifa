@@ -39,6 +39,7 @@ class FirebaseEventService {
           registered: false,
           source: "firebase",
           approvalStatus: data.approvalStatus || "pending", // Include approval status
+          needsVolunteers: data.needsVolunteers,
         });
       });
 
@@ -303,6 +304,35 @@ class FirebaseEventService {
     } catch (error) {
       console.error("Error checking registration:", error);
       return false;
+    }
+  }
+
+  async getEventsByCreator(userId: string): Promise<CalendarEvent[]> {
+    try {
+      const eventsCollection = collection(db, "events");
+      const eventsQuery = query(eventsCollection, where("createdBy", "==", userId));
+      const querySnapshot = await getDocs(eventsQuery);
+      const events: CalendarEvent[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        events.push({
+          id: doc.id,
+          title: data.title,
+          date: data.date.toDate(),
+          startTime: data.startTime,
+          endTime: data.endTime,
+          location: data.location,
+          description: data.description || "",
+          registered: false,
+          source: "firebase",
+          approvalStatus: data.approvalStatus || "pending",
+          createdBy: data.createdBy,
+        });
+      });
+      return events;
+    } catch (error) {
+      console.error("Error fetching events by creator:", error);
+      return [];
     }
   }
 

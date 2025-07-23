@@ -71,14 +71,14 @@ const dashboardButtons: DashboardButton[] = [
     icon: "people",
     description: "Access volunteer opportunities"
   },
-  { 
+  {
     label: "Journal",
     color: "#1B6B63",
     route: "JournalScreen",
     icon: "pencil",
     description: "Write and manage entries"
   },
-  { 
+  {
     label: "Manage Events",
     color: "#1B6B63",
     route: "Events",
@@ -258,8 +258,8 @@ const HomeDashboardScreen = () => {
               <Text style={styles.sectionTitle}>Quick Access</Text>
             </View>
           </View>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.quickAccessScroll}
             decelerationRate="fast"
@@ -271,26 +271,36 @@ const HomeDashboardScreen = () => {
               setActiveIndex(newIndex);
             }}
           >
-            {dashboardButtons.map((button, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.quickAccessPanel,
-                  index === dashboardButtons.length - 1 && { marginRight: 20 }
-                ]}
-                onPress={() => handleNavigation(button.route)}
-              >
-                <View style={styles.quickAccessContent}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name={button.icon} size={24} color="#1B6B63" />
+            {dashboardButtons
+              .filter((button) => {
+                if (button.label === 'Manage Volunteering') {
+                  return user?.role === 'Volunteer';
+                }
+                if (button.label === 'Manage Events') {
+                  return user?.role === 'Event Organizer' || user?.role === 'Support Seeker';
+                }
+                return true;
+              })
+              .map((button, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.quickAccessPanel,
+                    index === dashboardButtons.length - 1 && { marginRight: 20 }
+                  ]}
+                  onPress={() => handleNavigation(button.route)}
+                >
+                  <View style={styles.quickAccessContent}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons name={button.icon} size={24} color="#1B6B63" />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.quickAccessTitle}>{button.label}</Text>
+                      <Text style={styles.quickAccessDescription}>{button.description}</Text>
+                    </View>
                   </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.quickAccessTitle}>{button.label}</Text>
-                    <Text style={styles.quickAccessDescription}>{button.description}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
           </ScrollView>
           <View style={styles.paginationDots}>
             {[0, 1].map((index) => (
@@ -322,59 +332,60 @@ const HomeDashboardScreen = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Events Section */}
-        <View style={styles.eventsContainer}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <View style={styles.sectionIconContainer}>
-                <Ionicons name="calendar" size={18} color="#F4A941" />
+        {(user?.role === 'Support Seeker' || user?.role === 'Event Organizer') && (
+          <View style={styles.eventsContainer}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <View style={styles.sectionIconContainer}>
+                  <Ionicons name="calendar" size={18} color="#F4A941" />
+                </View>
+                <Text style={styles.sectionTitle}>Upcoming Events</Text>
               </View>
-              <Text style={styles.sectionTitle}>Upcoming Events</Text>
             </View>
-          </View>
 
-          {events.length === 0 ? (
-            <View style={styles.noEventsContainer}>
-              <View style={styles.noEventsIconContainer}>
-                <Ionicons name="calendar" size={40} color="#1B6B63" />
-              </View>
-              <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
-              <Text style={styles.noEventsSubtext}>
-                Join our supportive community events and connect with others on
-                their journey to wellness.
-              </Text>
-              <TouchableOpacity
-                style={styles.joinEventButton}
-                onPress={() => handleNavigation("Events")}
-              >
-                <Text style={styles.joinEventButtonText}>Explore Events</Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={16}
-                  color="#FFFFFF"
-                  style={styles.buttonIcon}
-                />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.eventsList}>
-              {events.map((event) => (
+            {events.length === 0 ? (
+              <View style={styles.noEventsContainer}>
+                <View style={styles.noEventsIconContainer}>
+                  <Ionicons name="calendar" size={40} color="#1B6B63" />
+                </View>
+                <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
+                <Text style={styles.noEventsSubtext}>
+                  Join our supportive community events and connect with others on
+                  their journey to wellness.
+                </Text>
                 <TouchableOpacity
-                  key={event.id}
-                  style={styles.eventCard}
+                  style={styles.joinEventButton}
                   onPress={() => handleNavigation("Events")}
                 >
-                  <View style={styles.eventText}>
-                    <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
-                    <Text style={styles.eventTime}>{event.time}</Text>
-                    <Text style={styles.eventDate}>{event.date}</Text>
-                  </View>
+                  <Text style={styles.joinEventButtonText}>Explore Events</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={16}
+                    color="#FFFFFF"
+                    style={styles.buttonIcon}
+                  />
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
+              </View>
+            ) : (
+              <View style={styles.eventsList}>
+                {events.map((event) => (
+                  <TouchableOpacity
+                    key={event.id}
+                    style={styles.eventCard}
+                    onPress={() => handleNavigation("Events")}
+                  >
+                    <View style={styles.eventText}>
+                      <Text style={styles.eventTitle}>{event.title}</Text>
+                      <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                      <Text style={styles.eventTime}>{event.time}</Text>
+                      <Text style={styles.eventDate}>{event.date}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Description Section with Modern Divider */}
         <View style={styles.descriptionContainer}>

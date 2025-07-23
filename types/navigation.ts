@@ -59,3 +59,11 @@ export type RootStackParamList = {
   AboutUs: undefined;
   Resources: undefined;
 };
+
+// Super Admin navigation stack
+export type SuperAdminStackParamList = {
+  SuperAdminDashboard: undefined;
+  AdminDetails: { adminId: string };
+  CreateAdmin: undefined;
+  EditAdmin: { adminId: string };
+};

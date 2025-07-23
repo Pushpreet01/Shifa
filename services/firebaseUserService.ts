@@ -1,6 +1,8 @@
 import { doc, getDoc, updateDoc, setDoc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "../config/firebaseConfig";
 import { deleteUser } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, deleteUser as deleteAuthUser } from "firebase/auth";
 
 export interface UserProfile {
   userId: string;
@@ -141,6 +143,56 @@ export const signOut = async (): Promise<void> => {
     await auth.signOut();
   } catch (error) {
     console.error("Error signing out:", error);
+    throw error;
+  }
+};
+
+// Fetch all users with role 'Admin'
+export const getAllAdmins = async () => {
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "Admin"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    throw error;
+  }
+};
+
+// Create a new admin user (for Super Admin)
+export const createAdminUser = async ({ fullName, email, phoneNumber, password }: { fullName: string; email: string; phoneNumber: string; password: string; }) => {
+  try {
+    // 1. Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userId = userCredential.user.uid;
+
+    // 2. Create user document in Firestore
+    await setDoc(doc(db, "users", userId), {
+      fullName,
+      email,
+      phoneNumber,
+      role: "Admin",
+      approvalStatus: { status: "Approved" },
+      createdAt: new Date().toISOString(),
+      emailVerified: true,
+    });
+    return userId;
+  } catch (error: any) {
+    // If user was created in Auth but Firestore failed, consider deleting the Auth user
+    throw error;
+  }
+};
+
+// Delete an admin user (for Super Admin)
+export const deleteAdminUser = async (userId: string) => {
+  try {
+    // Delete user document from Firestore
+    await deleteDoc(doc(db, "users", userId));
+    // Optionally, delete the user from Firebase Auth (requires admin privileges on backend)
+    // If running in client, you cannot delete another user from Auth directly
+    // This will only delete the Firestore document
+    return true;
+  } catch (error) {
     throw error;
   }
 };

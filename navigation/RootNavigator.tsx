@@ -6,6 +6,8 @@ import { useAuth, Role } from "../context/AuthContext";
 import AuthNavigator from "./AuthNavigator";
 import AdminNavigator from "./AdminNavigator";
 import AppNavigator from "./AppNavigator";
+// Import SuperAdminNavigator (to be created)
+import SuperAdminNavigator from "./SuperAdminNavigator";
 
 const RootNavigator = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -27,7 +29,9 @@ const RootNavigator = () => {
   // Determine which navigator to render
   let navigatorToRender = "AuthNavigator";
   if (isAuthenticated) {
-    if (user?.role === "Admin") {
+    if (user?.role === "Super Admin") {
+      navigatorToRender = "SuperAdminNavigator";
+    } else if (user?.role === "Admin") {
       navigatorToRender = "AdminNavigator";
     } else if (user?.role && generalUserRoles.includes(user.role)) {
       navigatorToRender = "AppNavigator";
@@ -38,22 +42,17 @@ const RootNavigator = () => {
 
   console.log("[RootNavigator] Rendering:", navigatorToRender);
 
-  return (
-    <NavigationContainer>
-      {isAuthenticated ? (
-        user?.role === "Admin" ? (
-          <AdminNavigator />
-        ) : user?.role && generalUserRoles.includes(user.role) ? (
-          <AppNavigator />
-        ) : (
-          // If role is missing or invalid, fall back to AuthNavigator (with error message)
-          <AuthNavigator />
-        )
-      ) : (
-        <AuthNavigator />
-      )}
-    </NavigationContainer>
-  );
+  // Render the selected navigator
+  switch (navigatorToRender) {
+    case "SuperAdminNavigator":
+      return <SuperAdminNavigator />;
+    case "AdminNavigator":
+      return <AdminNavigator />;
+    case "AppNavigator":
+      return <AppNavigator />;
+    default:
+      return <AuthNavigator />;
+  }
 };
 
 export default RootNavigator;

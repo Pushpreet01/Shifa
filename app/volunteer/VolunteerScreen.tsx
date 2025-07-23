@@ -112,26 +112,38 @@ const VolunteerScreen: React.FC<
     <SafeAreaView style={styles.container}>
       <HeroBox title="Volunteer" showBackButton={true} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity
-          style={styles.mainButton}
-          onPress={() => navigation.navigate("Opportunities")}
-        >
-          <Text style={styles.mainButtonText}>
-            Browse Upcoming Opportunities
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.mainButton}
-          onPress={() => navigation.navigate("VolunteerLearnings")}
-        >
-          <Text style={styles.mainButtonText}>My Learnings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.mainButton}
-          onPress={() => navigation.navigate("VolunteerRewards")}
-        >
-          <Text style={styles.mainButtonText}>Volunteer Rewards</Text>
-        </TouchableOpacity>
+        <View style={styles.gridRow}>
+          <TouchableOpacity
+            style={styles.gridButton}
+            onPress={() => navigation.navigate("Opportunities")}
+          >
+            <Ionicons name="search-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
+            <Text style={styles.gridButtonText}>Browse</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.gridButton}
+            onPress={() => navigation.navigate("VolunteerLearnings")}
+          >
+            <Ionicons name="school-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
+            <Text style={styles.gridButtonText}>My Learnings</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.gridRow}>
+          <TouchableOpacity
+            style={styles.gridButton}
+            onPress={() => navigation.navigate("VolunteerRewards")}
+          >
+            <Ionicons name="trophy-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
+            <Text style={styles.gridButtonText}>Rewards</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.gridButton}
+            onPress={() => navigation.navigate("MyApplications")}
+          >
+            <Ionicons name="clipboard-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
+            <Text style={styles.gridButtonText}>My Applications</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.sectionHeader}>
           <Ionicons name="calendar-outline" size={20} color="black" />
@@ -158,8 +170,8 @@ const VolunteerScreen: React.FC<
               opportunity.createdAt instanceof Date
                 ? opportunity.createdAt
                 : typeof opportunity.createdAt?.toDate === "function"
-                ? opportunity.createdAt.toDate()
-                : new Date();
+                  ? opportunity.createdAt.toDate()
+                  : new Date();
 
             return (
               <View key={opportunity.opportunityId} style={styles.card}>
@@ -266,23 +278,33 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  mainButton: {
-    backgroundColor: "#1B6B63",
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+  },
+  gridButton: {
+    flex: 1,
+    backgroundColor: '#1B6B63',
     borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+    paddingVertical: 24,
+    elevation: 2,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
-    elevation: 2,
   },
-  mainButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 17,
-    textAlign: "center",
+  gridIcon: {
+    marginBottom: 8,
+  },
+  gridButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 20,

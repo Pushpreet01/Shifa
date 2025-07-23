@@ -7,6 +7,7 @@ import { db } from "../config/firebaseConfig";
 import { signOut as firebaseSignOut } from "../services/firebaseUserService";
 
 export type Role =
+  | "Super Admin"
   | "Admin"
   | "Support Seeker"
   | "Event Organizer"
@@ -83,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             const emailVerified = userData?.emailVerified === true;
             const approvalStatus = userData?.approvalStatus;
             const validRoles: Role[] = [
+              "Super Admin",
               "Admin",
               "Support Seeker",
               "Event Organizer",

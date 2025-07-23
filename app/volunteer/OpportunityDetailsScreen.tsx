@@ -65,7 +65,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const fetchOpportunityDetails = async () => {
     try {
       setLoadingOpportunity(true);
-      const opportunity = await FirebaseOpportunityService.getOpportunity(opportunityId, eventId);
+      const opportunity = await FirebaseOpportunityService.getOpportunity(opportunityId);
       if (opportunity) {
         setOpportunityDetails(opportunity);
       } else {

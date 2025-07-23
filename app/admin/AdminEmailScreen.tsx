@@ -10,20 +10,20 @@ import {
   Modal,
   Animated,
   Easing,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AdminHeroBox from '../../components/AdminHeroBox';
-import { sendEmail } from '../../services/emailService'; 
+import * as MailComposer from 'expo-mail-composer';
 
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 const MAX_WORD_LIMIT = 250;
 
-// Placeholder email data
 const placeholderEmails = {
-  Admin: ['admin1@example.com', 'admin2@example.com'],
-  'Support Seeker': ['support1@example.com', 'support2@example.com'],
-  Volunteer: ['volunteer1@example.com', 'volunteer2@example.com'],
-  'Event Organizer': ['organizer1@example.com'],
+  Admin: ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'],
+  'Support Seeker': ['support1@example.com', 'support2@example.com', 'support3@example.com'],
+  Volunteer: ['volunteer1@example.com', 'volunteer2@example.com', 'volunteer3@example.com', 'volunteer4@example.com'],
+  'Event Organizer': ['organizer1@example.com', 'organizer2@example.com'],
 };
 
 const AdminEmailScreen = () => {
@@ -57,46 +57,47 @@ const AdminEmailScreen = () => {
       return;
     }
 
-    try {
-      if (selectedRole === 'Particular User') {
-        await sendEmail({ email: userEmail, subject, message });
-      } else {
-        const emails = placeholderEmails[selectedRole] || [];
-        for (const email of emails) {
-          await sendEmail({ email, subject, message });
-        }
-      }
-
-      // Reset + success popup
-      setSelectedRole('');
-      setSpecificUserRole('');
-      setUserEmail('');
-      setSubject('');
-      setMessage('');
-      setShowSuccessModal(true);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start(() => {
-        setTimeout(() => {
-          Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }).start(() => setShowSuccessModal(false));
-        }, 1800);
-      });
-    } catch (err) {
-      alert('Failed to send email. Check console.');
-      console.log('Error:', err);
+    const isAvailable = await MailComposer.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert('Error', 'No email app is available on this device');
+      return;
     }
+
+    await MailComposer.composeAsync({
+      recipients: [userEmail],
+      subject: subject,
+      body: message,
+    });
+
+    setSelectedRole('');
+    setSpecificUserRole('');
+    setUserEmail('');
+    setSubject('');
+    setMessage('');
+    setShowSuccessModal(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start(() => setShowSuccessModal(false));
+      }, 1800);
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeroBox title="Send Email" showBackButton customBackRoute="AdminDashboard" />
+      <AdminHeroBox
+        title="Send Email"
+        showBackButton
+        customBackRoute="AdminDashboard"
+      />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Select Recipient:</Text>
         <View style={styles.dropdownContainer}>
@@ -134,8 +135,8 @@ const AdminEmailScreen = () => {
           <View style={styles.emailListContainer}>
             <Text style={styles.label}>Users in {selectedRole}:</Text>
             {placeholderEmails[selectedRole]?.length > 0 ? (
-              placeholderEmails[selectedRole].map((email, i) => (
-                <View key={i} style={styles.emailItem}>
+              placeholderEmails[selectedRole].map((email, index) => (
+                <View key={index} style={styles.emailItem}>
                   <Ionicons name="mail-outline" size={16} color="#1B6B63" style={styles.emailIcon} />
                   <Text style={styles.emailText}>{email}</Text>
                 </View>
@@ -187,6 +188,8 @@ const AdminEmailScreen = () => {
               onChangeText={setUserEmail}
               style={styles.input}
               keyboardType="email-address"
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </>
         )}
@@ -197,13 +200,15 @@ const AdminEmailScreen = () => {
           value={subject}
           onChangeText={setSubject}
           style={styles.input}
+          autoCorrect={false}
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Message:</Text>
         <TextInput
           multiline
           placeholder="Type your message here..."
-          style={[styles.input, styles.messageInput]}
+          style={[styles.input, { height: 120, textAlignVertical: 'top' }]}
           value={message}
           onChangeText={setMessage}
         />
@@ -255,11 +260,7 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 2,
   },
-  dropdownItem: {
-    paddingVertical: 6,
-    fontSize: 15,
-    color: '#2E2E2E',
-  },
+  dropdownItem: { paddingVertical: 6, fontSize: 15, color: '#2E2E2E' },
   emailListContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
@@ -275,12 +276,7 @@ const styles = StyleSheet.create({
   },
   emailIcon: { marginRight: 8 },
   emailText: { fontSize: 14, color: '#2E2E2E' },
-  noEmailsText: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
-    paddingVertical: 10,
-  },
+  noEmailsText: { fontSize: 14, color: '#888', textAlign: 'center', paddingVertical: 10 },
   input: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -289,7 +285,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 10,
   },
-  messageInput: { height: 120, textAlignVertical: "top" },
   wordCount: {
     alignSelf: 'flex-end',
     fontSize: 12,
@@ -302,7 +297,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
   },
-  sendButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  sendButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',

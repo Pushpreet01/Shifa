@@ -86,7 +86,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             .filter(
               (event) =>
                 isDateValidForEvent(event.date) &&
-                event.approvalStatus === "approved"
+                event.approvalStatus &&
+                typeof event.approvalStatus === "object" &&
+                event.approvalStatus.status &&
+                event.approvalStatus.status.toLowerCase() === "approved"
             )
             .map((event) => ({
               ...event,
@@ -196,15 +199,22 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <HeroBox title="Events" showBackButton={true} />
       <View style={styles.dateSelectionContainer}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', marginBottom: 15 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            marginBottom: 15,
+          }}
+        >
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}`
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}`
               : "Select date"}
           </Text>
         </View>
@@ -217,13 +227,18 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           onNextMonth={goToNextMonth}
           onPrevMonth={goToPreviousMonth}
         />
-        <View style={{ alignItems: 'flex-end', marginTop: 10 }}>
-          {user?.role === 'Event Organizer' && (
+        <View style={{ alignItems: "flex-end", marginTop: 10 }}>
+          {user?.role === "Event Organizer" && (
             <TouchableOpacity
               style={styles.myEventsButton}
-              onPress={() => navigation.navigate('MyEvents')}
+              onPress={() => navigation.navigate("MyEvents")}
             >
-              <Ionicons name="list-outline" size={20} color="#1B6B63" style={{ marginRight: 4 }} />
+              <Ionicons
+                name="list-outline"
+                size={20}
+                color="#1B6B63"
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.myEventsButtonText}>My Events</Text>
             </TouchableOpacity>
           )}
@@ -263,7 +278,7 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
         ) : (
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
-            {user?.role === 'Event Organizer' && (
+            {user?.role === "Event Organizer" && (
               <TouchableOpacity
                 style={styles.addEventSmallButton}
                 onPress={handleAddEvent}
@@ -404,16 +419,16 @@ const styles = StyleSheet.create({
     borderLeftColor: "#F4A941",
   },
   myEventsButton: {
-    alignItems: 'center',
-    backgroundColor: '#C44536',
+    alignItems: "center",
+    backgroundColor: "#C44536",
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 14,
     marginLeft: 16,
   },
   myEventsButtonText: {
-    color: '#1B6B63',
-    fontWeight: 'bold',
+    color: "#1B6B63",
+    fontWeight: "bold",
     fontSize: 15,
   },
 });

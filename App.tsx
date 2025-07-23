@@ -7,10 +7,15 @@ import NetworkStatus from "./components/NetworkStatus";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 import NotificationService from "./services/notificationService";
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer } from "@react-navigation/native";
+import { LogBox } from "react-native";
 
 // Import or define your WebWrapper here
 import WebWrapper from "./components/WebWrapper";
+
+LogBox.ignoreLogs([
+  "expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go",
+]);
 
 export default function App() {
   useEffect(() => {

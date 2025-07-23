@@ -108,7 +108,19 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         setUploading(true);
 
         try {
-          const base64Data = result.assets[0].base64;
+          const asset = result.assets[0];
+
+          // Add a user-friendly file size check upfront
+          if (asset.fileSize && asset.fileSize > 750 * 1024) {
+            Alert.alert(
+              "Image Too Large",
+              "Please select an image smaller than 750KB."
+            );
+            setUploading(false);
+            return;
+          }
+
+          const base64Data = asset.base64;
 
           if (!base64Data) {
             throw new Error("Failed to get image data");

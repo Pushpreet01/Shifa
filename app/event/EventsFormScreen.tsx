@@ -390,9 +390,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             onChangeText={setTitle}
             placeholder="Enter event title"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.title}
           />
           <Text style={styles.wordCount}>
-            {countChars(title)} / {MAX_CHAR_LIMITS.title} characters
+            {countChars(title)}/{MAX_CHAR_LIMITS.title}
           </Text>
 
           <Text style={styles.label}>Event Date</Text>
@@ -462,9 +463,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             onChangeText={setLocation}
             placeholder="Enter event location"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.location}
           />
           <Text style={styles.wordCount}>
-            {countChars(location)} / {MAX_CHAR_LIMITS.location} characters
+            {countChars(location)}/{MAX_CHAR_LIMITS.location}
           </Text>
 
           <Text style={styles.label}>Description</Text>
@@ -476,9 +478,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
+            maxLength={MAX_CHAR_LIMITS.description}
           />
           <Text style={styles.wordCount}>
-            {countChars(description)} / {MAX_CHAR_LIMITS.description} characters
+            {countChars(description)}/{MAX_CHAR_LIMITS.description}
           </Text>
 
           <Text style={[styles.label, { marginTop: 25 }]}>
@@ -524,9 +527,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={3}
+                maxLength={MAX_CHAR_LIMITS.volunteerDescription}
               />
               <Text style={styles.wordCount}>
-                {countChars(volunteerDescription)} / {MAX_CHAR_LIMITS.volunteerDescription} characters
+                {countChars(volunteerDescription)}/{MAX_CHAR_LIMITS.volunteerDescription}
               </Text>
               <Text style={styles.label}>Volunteer Timings</Text>
               <TextInput
@@ -535,9 +539,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setTimings}
                 placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.timings}
               />
               <Text style={styles.wordCount}>
-                {countChars(timings)} / {MAX_CHAR_LIMITS.timings} characters
+                {countChars(timings)}/{MAX_CHAR_LIMITS.timings}
               </Text>
               <Text style={styles.label}>Rewards (Optional)</Text>
               <TextInput
@@ -546,9 +551,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setRewards}
                 placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.rewards}
               />
               <Text style={styles.wordCount}>
-                {countChars(rewards)} / {MAX_CHAR_LIMITS.rewards} characters
+                {countChars(rewards)}/{MAX_CHAR_LIMITS.rewards}
               </Text>
               <Text style={styles.label}>Refreshments (Optional)</Text>
               <TextInput
@@ -557,9 +563,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setRefreshments}
                 placeholder="Enter refreshments provided (e.g., snacks, water)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.refreshments}
               />
               <Text style={styles.wordCount}>
-                {countChars(refreshments)} / {MAX_CHAR_LIMITS.refreshments} characters
+                {countChars(refreshments)}/{MAX_CHAR_LIMITS.refreshments}
               </Text>
             </>
           )}

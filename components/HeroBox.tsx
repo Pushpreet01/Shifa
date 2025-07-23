@@ -24,6 +24,14 @@ const HeroBox: React.FC<HeroBoxProps> = ({
     }
   };
 
+  const handleNotification = () => {
+    navigation.navigate("Announcements");
+  };
+
+  const handleEmergency = () => {
+    navigation.navigate("Emergency");
+  };
+
   return (
     <View style={styles.heroBox}>
       <View style={styles.header}>
@@ -37,12 +45,12 @@ const HeroBox: React.FC<HeroBoxProps> = ({
         </View>
 
         <View style={styles.rightSection}>
-          <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
+          <TouchableOpacity onPress={handleNotification}>
             <Ionicons name="notifications-outline" size={24} color="#C44536" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sosWrapper}
-            onPress={() => navigation.navigate("Emergency")}
+            onPress={handleEmergency}
           >
             <Text style={styles.sosText}>SOS</Text>
           </TouchableOpacity>

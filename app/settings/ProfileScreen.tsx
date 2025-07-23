@@ -114,6 +114,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
           // Add a user-friendly file size check upfront
           if (asset.fileSize && asset.fileSize > 750 * 1024) {
+            // 750KB limit
             Alert.alert(
               "Image Too Large",
               "Please select an image smaller than 750KB."
@@ -162,7 +163,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             profileImageUpdated: new Date().toISOString(),
           });
 
-          Alert.alert("Success", "Profile picture updated successfully!");
+          Alert.alert("Success", "Profile picture updated successfully!", [
+            { text: "OK", onPress: () => navigation.goBack() },
+          ]);
         } catch (error) {
           console.error("Error saving image:", error);
 
@@ -221,7 +224,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               // Update local state
               setProfileImage(null);
 
-              Alert.alert("Success", "Profile picture removed successfully!");
+              Alert.alert("Success", "Profile picture removed successfully!", [
+                { text: "OK", onPress: () => navigation.goBack() },
+              ]);
             } catch (error) {
               console.error("Error removing profile image:", error);
               Alert.alert("Error", "Failed to remove profile picture");

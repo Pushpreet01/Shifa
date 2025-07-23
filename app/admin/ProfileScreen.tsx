@@ -160,7 +160,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             profileImageUpdated: new Date().toISOString(),
           });
 
-          Alert.alert("Success", "Profile picture updated successfully!");
+          Alert.alert("Success", "Profile picture updated successfully!", [
+            { text: "OK", onPress: () => navigation.goBack() },
+          ]);
         } catch (error) {
           console.error("Error saving image:", error);
 
@@ -219,7 +221,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               // Update local state
               setProfileImage(null);
 
-              Alert.alert("Success", "Profile picture removed successfully!");
+              Alert.alert("Success", "Profile picture removed successfully!", [
+                { text: "OK", onPress: () => navigation.goBack() },
+              ]);
             } catch (error) {
               console.error("Error removing profile image:", error);
               Alert.alert("Error", "Failed to remove profile picture");

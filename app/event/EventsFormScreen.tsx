@@ -25,9 +25,9 @@ import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
-const MAX_WORD_LIMITS = {
-  title: 10,
-  location: 10,
+const MAX_CHAR_LIMITS = {
+  title: 20,
+  location: 20,
   description: 250,
   volunteerDescription: 250,
   timings: 20,
@@ -82,8 +82,8 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const [rewards, setRewards] = useState("");
   const [refreshments, setRefreshments] = useState("");
 
-  const countWords = (text: string) => {
-    return text.trim().split(/\s+/).filter(Boolean).length;
+  const countChars = (text: string) => {
+    return text.length;
   };
 
   const formatTime = (date: Date) => {
@@ -167,10 +167,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
       Alert.alert("Error", "Event title is required");
       return false;
     }
-    if (countWords(title) > MAX_WORD_LIMITS.title) {
+    if (countChars(title) > MAX_CHAR_LIMITS.title) {
       Alert.alert(
         "Error",
-        `Event title exceeds word limit of ${MAX_WORD_LIMITS.title} words`
+        `Event title exceeds character limit of ${MAX_CHAR_LIMITS.title} characters`
       );
       return false;
     }
@@ -178,17 +178,17 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
       Alert.alert("Error", "Event location is required");
       return false;
     }
-    if (countWords(location) > MAX_WORD_LIMITS.location) {
+    if (countChars(location) > MAX_CHAR_LIMITS.location) {
       Alert.alert(
         "Error",
-        `Event location exceeds word limit of ${MAX_WORD_LIMITS.location} words`
+        `Event location exceeds character limit of ${MAX_CHAR_LIMITS.location} characters`
       );
       return false;
     }
-    if (countWords(description) > MAX_WORD_LIMITS.description) {
+    if (countChars(description) > MAX_CHAR_LIMITS.description) {
       Alert.alert(
         "Error",
-        `Event description exceeds word limit of ${MAX_WORD_LIMITS.description} words`
+        `Event description exceeds character limit of ${MAX_CHAR_LIMITS.description} characters`
       );
       return false;
     }
@@ -214,10 +214,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
         Alert.alert("Error", "Volunteer task description is required");
         return false;
       }
-      if (countWords(volunteerDescription) > MAX_WORD_LIMITS.volunteerDescription) {
+      if (countChars(volunteerDescription) > MAX_CHAR_LIMITS.volunteerDescription) {
         Alert.alert(
           "Error",
-          `Volunteer task description exceeds word limit of ${MAX_WORD_LIMITS.volunteerDescription} words`
+          `Volunteer task description exceeds character limit of ${MAX_CHAR_LIMITS.volunteerDescription} characters`
         );
         return false;
       }
@@ -225,24 +225,24 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
         Alert.alert("Error", "Volunteer timings are required");
         return false;
       }
-      if (countWords(timings) > MAX_WORD_LIMITS.timings) {
+      if (countChars(timings) > MAX_CHAR_LIMITS.timings) {
         Alert.alert(
           "Error",
-          `Volunteer timings exceed word limit of ${MAX_WORD_LIMITS.timings} words`
+          `Volunteer timings exceed character limit of ${MAX_CHAR_LIMITS.timings} characters`
         );
         return false;
       }
-      if (countWords(rewards) > MAX_WORD_LIMITS.rewards) {
+      if (countChars(rewards) > MAX_CHAR_LIMITS.rewards) {
         Alert.alert(
           "Error",
-          `Rewards exceed word limit of ${MAX_WORD_LIMITS.rewards} words`
+          `Rewards exceed character limit of ${MAX_CHAR_LIMITS.rewards} characters`
         );
         return false;
       }
-      if (countWords(refreshments) > MAX_WORD_LIMITS.refreshments) {
+      if (countChars(refreshments) > MAX_CHAR_LIMITS.refreshments) {
         Alert.alert(
           "Error",
-          `Refreshments exceed word limit of ${MAX_WORD_LIMITS.refreshments} words`
+          `Refreshments exceed character limit of ${MAX_CHAR_LIMITS.refreshments} characters`
         );
         return false;
       }
@@ -390,9 +390,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             onChangeText={setTitle}
             placeholder="Enter event title"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.title}
           />
           <Text style={styles.wordCount}>
-            {countWords(title)} / {MAX_WORD_LIMITS.title} words
+            {countChars(title)}/{MAX_CHAR_LIMITS.title}
           </Text>
 
           <Text style={styles.label}>Event Date</Text>
@@ -462,9 +463,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             onChangeText={setLocation}
             placeholder="Enter event location"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.location}
           />
           <Text style={styles.wordCount}>
-            {countWords(location)} / {MAX_WORD_LIMITS.location} words
+            {countChars(location)}/{MAX_CHAR_LIMITS.location}
           </Text>
 
           <Text style={styles.label}>Description</Text>
@@ -476,9 +478,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
+            maxLength={MAX_CHAR_LIMITS.description}
           />
           <Text style={styles.wordCount}>
-            {countWords(description)} / {MAX_WORD_LIMITS.description} words
+            {countChars(description)}/{MAX_CHAR_LIMITS.description}
           </Text>
 
           <Text style={[styles.label, { marginTop: 25 }]}>
@@ -524,9 +527,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={3}
+                maxLength={MAX_CHAR_LIMITS.volunteerDescription}
               />
               <Text style={styles.wordCount}>
-                {countWords(volunteerDescription)} / {MAX_WORD_LIMITS.volunteerDescription} words
+                {countChars(volunteerDescription)}/{MAX_CHAR_LIMITS.volunteerDescription}
               </Text>
               <Text style={styles.label}>Volunteer Timings</Text>
               <TextInput
@@ -535,9 +539,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setTimings}
                 placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.timings}
               />
               <Text style={styles.wordCount}>
-                {countWords(timings)} / {MAX_WORD_LIMITS.timings} words
+                {countChars(timings)}/{MAX_CHAR_LIMITS.timings}
               </Text>
               <Text style={styles.label}>Rewards (Optional)</Text>
               <TextInput
@@ -546,9 +551,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setRewards}
                 placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.rewards}
               />
               <Text style={styles.wordCount}>
-                {countWords(rewards)} / {MAX_WORD_LIMITS.rewards} words
+                {countChars(rewards)}/{MAX_CHAR_LIMITS.rewards}
               </Text>
               <Text style={styles.label}>Refreshments (Optional)</Text>
               <TextInput
@@ -557,9 +563,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={setRefreshments}
                 placeholder="Enter refreshments provided (e.g., snacks, water)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.refreshments}
               />
               <Text style={styles.wordCount}>
-                {countWords(refreshments)} / {MAX_WORD_LIMITS.refreshments} words
+                {countChars(refreshments)}/{MAX_CHAR_LIMITS.refreshments}
               </Text>
             </>
           )}

@@ -172,6 +172,8 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="MyApplications" component={MyApplicationsScreen} />
     <HomeStack.Screen name="MyEvents" component={MyEventsScreen} />
     <HomeStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
+    <HomeStack.Screen name="Settings" component={SettingsScreen} />
+    
   </HomeStack.Navigator>
 );
 

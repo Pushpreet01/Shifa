@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   deleteButton: {
-    backgroundColor: "#333333",
+    backgroundColor: "#C44536",
     padding: 15,
     borderRadius: 14,
     flexDirection: "row",

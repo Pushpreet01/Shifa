@@ -17,12 +17,11 @@ import { saveJournalEntry, updateJournalEntry } from "../../services/firebaseJou
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 import HeroBox from "../../components/HeroBox";
 
-// 📦 Accepting entry from params
 type ScreenRouteProp = RouteProp<HomeStackParamList, "NewJournalEntryScreen">;
 
-const MAX_WORD_LIMITS = {
-  title: 20,
-  body: 250,
+const MAX_CHAR_LIMITS = {
+  title: 20, // Changed to characters
+  body: 500, // Already in characters
 };
 
 const NewJournalEntryScreen = () => {
@@ -30,12 +29,11 @@ const NewJournalEntryScreen = () => {
   const route = useRoute<ScreenRouteProp>();
   const entry = route.params?.entry;
 
-  // 📝 Prefill if editing
   const [title, setTitle] = useState(entry?.title || "");
   const [body, setBody] = useState(entry?.body || "");
 
-  const countWords = (text: string) => {
-    return text.trim().split(/\s+/).filter(Boolean).length;
+  const countChars = (text: string) => {
+    return text.length; // Count individual characters
   };
 
   const handleSave = async () => {
@@ -44,18 +42,18 @@ const NewJournalEntryScreen = () => {
       return;
     }
 
-    if (countWords(title) > MAX_WORD_LIMITS.title) {
+    if (countChars(title) > MAX_CHAR_LIMITS.title) {
       Alert.alert(
         "Error",
-        `Title exceeds word limit of ${MAX_WORD_LIMITS.title} words`
+        `Title exceeds character limit of ${MAX_CHAR_LIMITS.title}`
       );
       return;
     }
 
-    if (countWords(body) > MAX_WORD_LIMITS.body) {
+    if (countChars(body) > MAX_CHAR_LIMITS.body) {
       Alert.alert(
         "Error",
-        `Content exceeds word limit of ${MAX_WORD_LIMITS.body} words`
+        `Content exceeds character limit of ${MAX_CHAR_LIMITS.body}`
       );
       return;
     }
@@ -95,9 +93,10 @@ const NewJournalEntryScreen = () => {
               onChangeText={setTitle}
               style={styles.input}
               placeholderTextColor="#999999"
+              maxLength={MAX_CHAR_LIMITS.title} 
             />
             <Text style={styles.wordCount}>
-              {countWords(title)} / {MAX_WORD_LIMITS.title} words
+              {countChars(title)}/{MAX_CHAR_LIMITS.title} words
             </Text>
           </View>
 
@@ -111,9 +110,10 @@ const NewJournalEntryScreen = () => {
               style={[styles.input, styles.textArea]}
               textAlignVertical="top"
               placeholderTextColor="#999999"
+              maxLength={MAX_CHAR_LIMITS.body}
             />
             <Text style={styles.wordCount}>
-              {countWords(body)} / {MAX_WORD_LIMITS.body} words
+              {countChars(body)}/{MAX_CHAR_LIMITS.body} words
             </Text>
           </View>
 
@@ -127,7 +127,6 @@ const NewJournalEntryScreen = () => {
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -219,7 +218,7 @@ const styles = StyleSheet.create({
   wordCount: {
     alignSelf: "flex-end",
     fontSize: 12,
-    color: "#1B6B63", // Teal color to match EventsFormScreen
+    color: "#1B6B63",
     marginTop: 4,
     marginBottom: 10,
   },

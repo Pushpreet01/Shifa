@@ -37,6 +37,7 @@ export type AdminStackParamList = {
   AdminTabs: undefined;
   AdminDashboard: undefined;
   Approvals: undefined;
+  ApprovalManagement: undefined;
   ApprovalDetails: { id: string; type: 'event' | 'volunteer' | 'organizer' };
   ResourceManagement: undefined;
   Events: undefined;
@@ -67,7 +68,7 @@ const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 const AdminHomeStackScreen = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
-    <AdminStack.Screen name="Approvals" component={ApprovalManagementScreen} />
+    <AdminStack.Screen name="ApprovalManagement" component={ApprovalManagementScreen} />
     <AdminStack.Screen name="ApprovalDetails" component={ApprovalDetailsScreen} />
     <AdminStack.Screen name="ResourceManagement" component={ResourceManagementScreen} />
     <AdminStack.Screen name="Events" component={EventsScreen} />

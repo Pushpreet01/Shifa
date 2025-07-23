@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AdminHeroBox from '../../components/AdminHeroBox';
+import KeyboardAwareWrapper from '../../components/KeyboardAwareWrapper';
 
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
-const MAX_WORD_LIMIT = 250;
+const MAX_CHAR_LIMITS = {
+  subject: 30,
+  message: 500,
+};
 
 // Placeholder email data for each role
 const placeholderEmails = {
@@ -47,17 +51,39 @@ const AdminEmailScreen = () => {
   const [userEmail, setUserEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
-  const [showUserRoleDropdown, setShowUserRoleDropdown] = useState(false);
+  const [showEmailDropdown, setShowEmailDropdown] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
 
-  const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
+  const countChars = (text: string) => {
+    return text.length; // Count individual characters
+  };
+
+  // Simulate fetching user role from database based on email
+  const fetchUserRole = (email: string) => {
+    // Mock database lookup using placeholderEmails
+    for (const role of roles) {
+      if (placeholderEmails[role].includes(email)) {
+        return role;
+      }
+    }
+    return ''; // Return empty if email not found
+  };
+
+  // Update user role when email changes
+  useEffect(() => {
+    if (selectedRole === 'Particular User' && userEmail) {
+      const role = fetchUserRole(userEmail);
+      setSpecificUserRole(role);
+    } else {
+      setSpecificUserRole('');
+    }
+  }, [userEmail, selectedRole]);
 
   const handleSend = () => {
     if (selectedRole === 'Particular User') {
-      if (!specificUserRole || !userEmail || !subject || !message.trim()) {
+      if (!userEmail || !specificUserRole || !subject || !message.trim()) {
         alert('Please fill all fields for specific user.');
         return;
       }
@@ -68,8 +94,13 @@ const AdminEmailScreen = () => {
       }
     }
 
-    if (wordCount > MAX_WORD_LIMIT) {
-      alert(`Message too long. Max ${MAX_WORD_LIMIT} words allowed.`);
+    if (countChars(subject) > MAX_CHAR_LIMITS.subject) {
+      alert(`Subject exceeds character limit of ${MAX_CHAR_LIMITS.subject}.`);
+      return;
+    }
+
+    if (countChars(message) > MAX_CHAR_LIMITS.message) {
+      alert(`Message exceeds character limit of ${MAX_CHAR_LIMITS.message}.`);
       return;
     }
 
@@ -103,124 +134,129 @@ const AdminEmailScreen = () => {
         showBackButton
         customBackRoute="AdminDashboard"
       />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.label}>Select Recipient:</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity
-            onPress={() => setShowRoleDropdown(!showRoleDropdown)}
-            style={styles.dropdown}
-          >
-            <Text style={styles.dropdownText}>
-              {selectedRole || 'Choose a Role'}
-            </Text>
-            <Ionicons
-              name={showRoleDropdown ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color="#1B6B63"
-            />
-          </TouchableOpacity>
-          {showRoleDropdown && (
-            <View style={styles.dropdownList}>
-              {['Particular User', ...roles].map((role) => (
-                <TouchableOpacity
-                  key={role}
-                  onPress={() => {
-                    setSelectedRole(role);
-                    setShowRoleDropdown(false);
-                  }}
-                >
-                  <Text style={styles.dropdownItem}>{role}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Email List for Role-Based Recipients */}
-        {selectedRole && selectedRole !== 'Particular User' && (
-          <View style={styles.emailListContainer}>
-            <Text style={styles.label}>Users in {selectedRole}:</Text>
-            {placeholderEmails[selectedRole]?.length > 0 ? (
-              placeholderEmails[selectedRole].map((email, index) => (
-                <View key={index} style={styles.emailItem}>
-                  <Ionicons name="mail-outline" size={16} color="#1B6B63" style={styles.emailIcon} />
-                  <Text style={styles.emailText}>{email}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noEmailsText}>No users found for this role.</Text>
+      <KeyboardAwareWrapper>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.label}>Select Recipient:</Text>
+          <View style={styles.dropdownContainer}>
+            <TouchableOpacity
+              onPress={() => setShowRoleDropdown(!showRoleDropdown)}
+              style={styles.dropdown}
+            >
+              <Text style={styles.dropdownText}>
+                {selectedRole || 'Choose a Role'}
+              </Text>
+              <Ionicons
+                name={showRoleDropdown ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color="#1B6B63"
+              />
+            </TouchableOpacity>
+            {showRoleDropdown && (
+              <View style={styles.dropdownList}>
+                {['Particular User', ...roles].map((role) => (
+                  <TouchableOpacity
+                    key={role}
+                    onPress={() => {
+                      setSelectedRole(role);
+                      setShowRoleDropdown(false);
+                      setShowEmailDropdown(false); // Reset email dropdown when role changes
+                    }}
+                  >
+                    <Text style={styles.dropdownItem}>{role}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
           </View>
-        )}
 
-        {/* Secondary Role Dropdown and Email Input if "Particular User" selected */}
-        {selectedRole === 'Particular User' && (
-          <>
-            <Text style={styles.label}>User Role:</Text>
+          {/* Email Dropdown for Role-Based Recipients */}
+          {selectedRole && selectedRole !== 'Particular User' && (
             <View style={styles.dropdownContainer}>
+              <Text style={styles.label}>Users in {selectedRole}:</Text>
               <TouchableOpacity
-                onPress={() => setShowUserRoleDropdown(!showUserRoleDropdown)}
+                onPress={() => setShowEmailDropdown(!showEmailDropdown)}
                 style={styles.dropdown}
               >
                 <Text style={styles.dropdownText}>
-                  {specificUserRole || 'Select User Role'}
+                  {placeholderEmails[selectedRole]?.length > 0
+                    ? `${placeholderEmails[selectedRole].length} User${placeholderEmails[selectedRole].length > 1 ? 's' : ''}`
+                    : 'No users found'}
                 </Text>
                 <Ionicons
-                  name={showUserRoleDropdown ? 'chevron-up' : 'chevron-down'}
+                  name={showEmailDropdown ? 'chevron-up' : 'chevron-down'}
                   size={18}
                   color="#1B6B63"
                 />
               </TouchableOpacity>
-              {showUserRoleDropdown && (
+              {showEmailDropdown && (
                 <View style={styles.dropdownList}>
-                  {roles.map((role) => (
-                    <TouchableOpacity
-                      key={role}
-                      onPress={() => {
-                        setSpecificUserRole(role);
-                        setShowUserRoleDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItem}>{role}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  {placeholderEmails[selectedRole]?.length > 0 ? (
+                    placeholderEmails[selectedRole].map((email) => (
+                      <Text key={email} style={styles.dropdownItem}>
+                        {email}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.dropdownItem}>No users found for this role.</Text>
+                  )}
                 </View>
               )}
             </View>
+          )}
 
-            <Text style={styles.label}>User Email:</Text>
-            <TextInput
-              placeholder="Enter email address"
-              value={userEmail}
-              onChangeText={setUserEmail}
-              style={styles.input}
-              keyboardType="email-address"
-            />
-          </>
-        )}
+          {/* User Email and User Role Input for Particular User */}
+          {selectedRole === 'Particular User' && (
+            <>
+              <Text style={styles.label}>User Email:</Text>
+              <TextInput
+                placeholder="Enter email address"
+                value={userEmail}
+                onChangeText={setUserEmail}
+                style={styles.input}
+                keyboardType="email-address"
+              />
 
-        <Text style={styles.label}>Subject:</Text>
-        <TextInput
-          placeholder="Enter email subject"
-          value={subject}
-          onChangeText={setSubject}
-          style={styles.input}
-        />
+              <Text style={styles.label}>User Role:</Text>
+              <TextInput
+                placeholder="Role will be fetched automatically"
+                value={specificUserRole}
+                editable={false}
+                style={[styles.input, { backgroundColor: '#f0f0f0' }]}
+                placeholderTextColor="#999"
+              />
+            </>
+          )}
 
-        <Text style={styles.label}>Message:</Text>
-        <TextInput
-          multiline
-          placeholder="Type your message here..."
-          style={[styles.input, styles.messageInput]}
-          value={message}
-          onChangeText={setMessage}
-        />
-        <Text style={styles.wordCount}>{wordCount} / {MAX_WORD_LIMIT} words</Text>
+          <Text style={styles.label}>Subject:</Text>
+          <TextInput
+            placeholder="Enter email subject"
+            value={subject}
+            onChangeText={setSubject}
+            style={styles.input}
+            maxLength={MAX_CHAR_LIMITS.subject}
+          />
+          <Text style={styles.charCount}>
+            {countChars(subject)}/{MAX_CHAR_LIMITS.subject}
+          </Text>
 
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Text style={styles.sendButtonText}>Send Email</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <Text style={styles.label}>Message:</Text>
+          <TextInput
+            multiline
+            placeholder="Type your message here..."
+            style={[styles.input, styles.messageInput]}
+            value={message}
+            onChangeText={setMessage}
+            maxLength={MAX_CHAR_LIMITS.message}
+          />
+          <Text style={styles.charCount}>
+            {countChars(message)}/{MAX_CHAR_LIMITS.message}
+          </Text>
+
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Text style={styles.sendButtonText}>Send Email</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAwareWrapper>
 
       {/* Confirmation Popup */}
       <Modal transparent visible={showSuccessModal} animationType="none">
@@ -237,7 +273,10 @@ const AdminEmailScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FDF6EC" },
-  content: { padding: 20 },
+  content: {
+    padding: 20,
+    paddingBottom: 40, // Increased padding for better scrolling
+  },
   label: {
     marginTop: 16,
     marginBottom: 6,
@@ -274,32 +313,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2E2E2E',
   },
-  emailListContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#DDD',
-  },
-  emailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  emailIcon: {
-    marginRight: 8,
-  },
-  emailText: {
-    fontSize: 14,
-    color: '#2E2E2E',
-  },
-  noEmailsText: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
-    paddingVertical: 10,
-  },
   input: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -312,10 +325,10 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: "top",
   },
-  wordCount: {
+  charCount: {
     alignSelf: 'flex-end',
     fontSize: 12,
-    color: '#888',
+    color: '#1B6B63',
     marginBottom: 20,
   },
   sendButton: {

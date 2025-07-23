@@ -205,7 +205,8 @@ const UserManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FDF6EC' },
+  container: { flex: 1, backgroundColor: '#FDF6EC',
+   },
   searchBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',

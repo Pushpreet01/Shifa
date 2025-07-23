@@ -120,6 +120,17 @@ export class FirebaseVolunteerApplicationService {
       return null;
     }
   }
+
+  async updateAttendance(applicationId: string, attendance: 'Present' | 'Absent'): Promise<void> {
+    try {
+      const applicationRef = doc(db, 'volunteerApplications', applicationId);
+      await updateDoc(applicationRef, { attendance });
+      console.log(`[updateAttendance] Updated attendance for ${applicationId} to ${attendance}`);
+    } catch (error) {
+      console.error('[updateAttendance] Error updating attendance:', error);
+      throw error;
+    }
+  }
 }
 
 export default new FirebaseVolunteerApplicationService();

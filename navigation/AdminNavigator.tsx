@@ -8,6 +8,7 @@ import CustomTabBar from './CustomTabBar';
 // Home Screens
 import AdminDashboardScreen from '../app/admin/AdminDashboardScreen';
 import ApprovalManagementScreen from '../app/admin/ApprovalManagementScreen';
+import ApprovalDetailsScreen from '../app/admin/ApprovalDetailsScreen';
 import ResourceManagementScreen from '../app/admin/ResourceManagementScreen';
 import EventsScreen from '../app/admin/EventsScreen';
 import AssignVolunteersScreen from '../app/admin/AssignVolunteersScreen';
@@ -16,6 +17,7 @@ import UserManagementScreen from '../app/admin/UserManagementScreen';
 import UserDetailsScreen from '../app/admin/UserDetailsScreen';
 import AssignUserRoleScreen from '../app/admin/AssignUserRoleScreen';
 import AdminEmailScreen from '../app/admin/AdminEmailScreen';
+import AdminEditEventScreen from '../app/admin/AdminEditEventScreen';
 
 // Settings Screens
 import SettingsScreen from '../app/admin/SettingsScreen';
@@ -35,6 +37,8 @@ export type AdminStackParamList = {
   AdminTabs: undefined;
   AdminDashboard: undefined;
   Approvals: undefined;
+  ApprovalManagement: undefined;
+  ApprovalDetails: { id: string; type: 'event' | 'volunteer' | 'organizer' };
   ResourceManagement: undefined;
   Events: undefined;
   AssignVolunteers: undefined;
@@ -43,6 +47,7 @@ export type AdminStackParamList = {
   UserDetails: { userId: string };
   AssignUserRole: { user: UserType };
   AdminEmail: undefined;
+  AdminEditEvent: { eventId: string };
 };
 
 // Compose stack now includes AdminEmail
@@ -63,7 +68,8 @@ const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 const AdminHomeStackScreen = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
-    <AdminStack.Screen name="Approvals" component={ApprovalManagementScreen} />
+    <AdminStack.Screen name="ApprovalManagement" component={ApprovalManagementScreen} />
+    <AdminStack.Screen name="ApprovalDetails" component={ApprovalDetailsScreen} />
     <AdminStack.Screen name="ResourceManagement" component={ResourceManagementScreen} />
     <AdminStack.Screen name="Events" component={EventsScreen} />
     <AdminStack.Screen name="AssignVolunteers" component={AssignVolunteersScreen} />
@@ -72,6 +78,7 @@ const AdminHomeStackScreen = () => (
     <AdminStack.Screen name="UserDetails" component={UserDetailsScreen} />
     <AdminStack.Screen name="AssignUserRole" component={AssignUserRoleScreen} />
     <AdminStack.Screen name="AdminEmail" component={AdminEmailScreen} />
+    <AdminStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
   </AdminStack.Navigator>
 );
 

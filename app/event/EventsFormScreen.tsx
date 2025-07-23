@@ -21,18 +21,42 @@ import { Ionicons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 import ProfanityFilterService from "../../services/profanityFilterService";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
-const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
+const MAX_CHAR_LIMITS = {
+  title: 20,
+  location: 20,
+  description: 250,
+  volunteerDescription: 250,
+  timings: 20,
+  rewards: 20,
+  refreshments: 20,
+};
+
+const EventsFormScreen: React.FC<Props> = ({ navigation, route }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Use the selected date from route params if available, otherwise use today
+  const initialDate = route.params?.selectedDate
+    ? new Date(route.params.selectedDate)
+    : today;
+  // Ensure the date is valid and set to start of day
+  if (isNaN(initialDate.getTime())) {
+    initialDate.setTime(today.getTime());
+  }
+  initialDate.setHours(0, 0, 0, 0);
+
+  console.log("[EventsFormScreen] Route params:", route.params);
+  console.log("[EventsFormScreen] Initial date:", initialDate);
+
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(initialDate);
   const [name, setName] = useState("");
   const [dateString, setDateString] = useState(
-    today.toLocaleDateString("en-US", {
+    initialDate.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -57,6 +81,10 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
   const [timings, setTimings] = useState("");
   const [rewards, setRewards] = useState("");
   const [refreshments, setRefreshments] = useState("");
+
+  const countChars = (text: string) => {
+    return text.length;
+  };
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
@@ -139,11 +167,31 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert("Error", "Event title is required");
       return false;
     }
+    if (countChars(title) > MAX_CHAR_LIMITS.title) {
+      Alert.alert(
+        "Error",
+        `Event title exceeds character limit of ${MAX_CHAR_LIMITS.title} characters`
+      );
+      return false;
+    }
     if (!location.trim()) {
       Alert.alert("Error", "Event location is required");
       return false;
     }
-
+    if (countChars(location) > MAX_CHAR_LIMITS.location) {
+      Alert.alert(
+        "Error",
+        `Event location exceeds character limit of ${MAX_CHAR_LIMITS.location} characters`
+      );
+      return false;
+    }
+    if (countChars(description) > MAX_CHAR_LIMITS.description) {
+      Alert.alert(
+        "Error",
+        `Event description exceeds character limit of ${MAX_CHAR_LIMITS.description} characters`
+      );
+      return false;
+    }
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
@@ -166,8 +214,36 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         Alert.alert("Error", "Volunteer task description is required");
         return false;
       }
+      if (countChars(volunteerDescription) > MAX_CHAR_LIMITS.volunteerDescription) {
+        Alert.alert(
+          "Error",
+          `Volunteer task description exceeds character limit of ${MAX_CHAR_LIMITS.volunteerDescription} characters`
+        );
+        return false;
+      }
       if (!timings.trim()) {
         Alert.alert("Error", "Volunteer timings are required");
+        return false;
+      }
+      if (countChars(timings) > MAX_CHAR_LIMITS.timings) {
+        Alert.alert(
+          "Error",
+          `Volunteer timings exceed character limit of ${MAX_CHAR_LIMITS.timings} characters`
+        );
+        return false;
+      }
+      if (countChars(rewards) > MAX_CHAR_LIMITS.rewards) {
+        Alert.alert(
+          "Error",
+          `Rewards exceed character limit of ${MAX_CHAR_LIMITS.rewards} characters`
+        );
+        return false;
+      }
+      if (countChars(refreshments) > MAX_CHAR_LIMITS.refreshments) {
+        Alert.alert(
+          "Error",
+          `Refreshments exceed character limit of ${MAX_CHAR_LIMITS.refreshments} characters`
+        );
         return false;
       }
     }
@@ -217,11 +293,29 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
         location: location,
         description: description,
         needsVolunteers,
+        approvalStatus: "pending", // Require admin approval
       };
 
-      const eventId = await firebaseEventService.addEvent(eventData);
+      console.log(
+        "[EventsFormScreen] About to call addEvent with data:",
+        eventData
+      );
+      let eventId: string | null = null;
+      try {
+        eventId = await firebaseEventService.addEvent(eventData);
+        console.log("[EventsFormScreen] addEvent returned eventId:", eventId);
+      } catch (eventError) {
+        console.error("[EventsFormScreen] Error in addEvent call:", eventError);
+        throw eventError;
+      }
 
+      console.log(
+        "[EventsFormScreen] Checking if needsVolunteers and eventId:",
+        needsVolunteers,
+        eventId
+      );
       if (needsVolunteers && eventId) {
+        console.log("[EventsFormScreen] Creating volunteer opportunity...");
         const opportunityId = doc(collection(db, "opportunities")).id;
         const opportunityData = {
           opportunityId,
@@ -231,11 +325,28 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
           description: volunteerDescription.trim(),
           timings: timings.trim(),
           location: location,
-          rewards: rewards.trim() || undefined,
-          refreshments: refreshments.trim() || undefined,
+          rewards: rewards.trim() || null,
+          refreshments: refreshments.trim() || null,
+          approvalStatus: "pending", // Require admin approval
         };
-
-        await firebaseOpportunityService.createOpportunity(opportunityData);
+        console.log(
+          "[EventsFormScreen] Creating opportunity with:",
+          opportunityData
+        );
+        try {
+          await firebaseOpportunityService.createOpportunity(opportunityData);
+          console.log("[EventsFormScreen] Opportunity created successfully");
+        } catch (err) {
+          console.log("[EventsFormScreen] Error creating opportunity:", err);
+          throw err;
+        }
+      } else {
+        console.log(
+          "[EventsFormScreen] Skipping opportunity creation - needsVolunteers:",
+          needsVolunteers,
+          "eventId:",
+          eventId
+        );
       }
 
       if (eventId) {
@@ -258,35 +369,7 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Create Event</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="Create Event" showBackButton={true} />
       <KeyboardAwareWrapper>
         <ScrollView
           style={styles.formContainer}
@@ -307,7 +390,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setTitle}
             placeholder="Enter event title"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.title}
           />
+          <Text style={styles.wordCount}>
+            {countChars(title)}/{MAX_CHAR_LIMITS.title}
+          </Text>
 
           <Text style={styles.label}>Event Date</Text>
           <TouchableOpacity
@@ -376,7 +463,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setLocation}
             placeholder="Enter event location"
             placeholderTextColor="#999"
+            maxLength={MAX_CHAR_LIMITS.location}
           />
+          <Text style={styles.wordCount}>
+            {countChars(location)}/{MAX_CHAR_LIMITS.location}
+          </Text>
 
           <Text style={styles.label}>Description</Text>
           <TextInput
@@ -387,7 +478,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
+            maxLength={MAX_CHAR_LIMITS.description}
           />
+          <Text style={styles.wordCount}>
+            {countChars(description)}/{MAX_CHAR_LIMITS.description}
+          </Text>
 
           <Text style={[styles.label, { marginTop: 25 }]}>
             Volunteers Needed
@@ -432,7 +527,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={3}
+                maxLength={MAX_CHAR_LIMITS.volunteerDescription}
               />
+              <Text style={styles.wordCount}>
+                {countChars(volunteerDescription)}/{MAX_CHAR_LIMITS.volunteerDescription}
+              </Text>
               <Text style={styles.label}>Volunteer Timings</Text>
               <TextInput
                 style={styles.input}
@@ -440,7 +539,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
                 onChangeText={setTimings}
                 placeholder="Enter volunteer schedule (e.g., 9 AM - 12 PM)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.timings}
               />
+              <Text style={styles.wordCount}>
+                {countChars(timings)}/{MAX_CHAR_LIMITS.timings}
+              </Text>
               <Text style={styles.label}>Rewards (Optional)</Text>
               <TextInput
                 style={styles.input}
@@ -448,7 +551,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
                 onChangeText={setRewards}
                 placeholder="Enter rewards offered (e.g., certificates, t-shirts)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.rewards}
               />
+              <Text style={styles.wordCount}>
+                {countChars(rewards)}/{MAX_CHAR_LIMITS.rewards}
+              </Text>
               <Text style={styles.label}>Refreshments (Optional)</Text>
               <TextInput
                 style={styles.input}
@@ -456,7 +563,11 @@ const EventsFormScreen: React.FC<Props> = ({ navigation }) => {
                 onChangeText={setRefreshments}
                 placeholder="Enter refreshments provided (e.g., snacks, water)"
                 placeholderTextColor="#999"
+                maxLength={MAX_CHAR_LIMITS.refreshments}
               />
+              <Text style={styles.wordCount}>
+                {countChars(refreshments)}/{MAX_CHAR_LIMITS.refreshments}
+              </Text>
             </>
           )}
 
@@ -529,25 +640,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   formContainer: {
-    padding: 18,
+    padding: 20,
     paddingBottom: 100,
-    marginBottom: 100,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#2E2E2E",
-    marginBottom: 5,
-    marginTop: 15,
+    marginTop: 16,
+    marginBottom: 6,
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "600",
   },
   input: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
     fontSize: 16,
     color: "#2E2E2E",
+  },
+  wordCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#1B6B63",
+    marginBottom: 10,
   },
   helperText: {
     fontSize: 12,
@@ -556,14 +672,14 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   textArea: {
-    height: 80,
+    height: 120,
     textAlignVertical: "top",
   },
   dateSelector: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
     marginBottom: 5,
   },
@@ -581,9 +697,9 @@ const styles = StyleSheet.create({
   },
   timeSelector: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#DDD",
     padding: 12,
   },
   timeText: {
@@ -607,22 +723,22 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
   },
   submitButton: {
-    backgroundColor: "#F4A941",
-    borderRadius: 20,
-    paddingVertical: 12,
+    backgroundColor: "#1B6B63",
+    borderRadius: 14,
+    paddingVertical: 14,
     paddingHorizontal: 18,
     alignItems: "center",
     marginTop: 30,
     marginBottom: 30,
   },
   disabledButton: {
-    backgroundColor: "#F4A941",
+    backgroundColor: "#1B6B63",
     opacity: 0.7,
   },
   submitButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 

@@ -13,6 +13,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../config/firebaseConfig";
 import { useAuth } from "../../context/AuthContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
 
 import { AntDesign } from "@expo/vector-icons";
 import { useGoogleAuth } from "./googleAuth";
@@ -32,7 +34,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { setUser } = useAuth();
+  const { signOut } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +57,26 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
+      // Fetch approvalStatus from Firestore
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      const userData = userDoc.exists() ? userDoc.data() : null;
+      const approvalStatus = userData?.approvalStatus;
+      if (!approvalStatus || approvalStatus.status === "Pending") {
+        setErrors({ general: "Your account is pending admin approval. You can sign out and try with a different account while waiting." });
+        setLoading(false);
+        return;
+      } else if (approvalStatus.status === "Rejected") {
+        setErrors({ general: approvalStatus.reason ? `Account rejected: ${approvalStatus.reason}. You can sign out and try with a different account.` : "Your account was rejected by the admin. You can sign out and try with a different account." });
+        setLoading(false);
+        return;
+      } else if (approvalStatus.status === "Approved") {
+        // Don't set user here - let AuthContext handle it through onAuthStateChanged
+        // The AuthContext will automatically set the user with role when Firebase auth state changes
+      } else {
+        setErrors({ general: "Unknown approval status. Please contact support." });
+        setLoading(false);
+        return;
+      }
     } catch (error: any) {
       let errorMessage = "Login failed. Please try again.";
       if (error.code === "auth/invalid-email") {
@@ -72,10 +93,8 @@ const LoginScreen = () => {
   };
 
   const { promptAsync } = useGoogleAuth(() => {
-    const user = auth.currentUser;
-    if (user) {
-      setUser(user);
-    }
+    // Don't set user here - let AuthContext handle it through onAuthStateChanged
+    // The AuthContext will automatically set the user with role when Firebase auth state changes
   });
 
   return (
@@ -92,6 +111,23 @@ const LoginScreen = () => {
         <Text style={[styles.errorText, { marginBottom: 10 }]}>
           {errors.general}
         </Text>
+      )}
+
+      {/* Sign Out Button for Pending/Rejected Users */}
+      {(errors.general?.includes("pending admin approval") || errors.general?.includes("rejected")) && (
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={async () => {
+            try {
+              await signOut();
+              setErrors({});
+            } catch (error) {
+              console.error("Error signing out:", error);
+            }
+          }}
+        >
+          <Text style={styles.signOutButtonText}>Sign Out & Try Different Account</Text>
+        </TouchableOpacity>
       )}
 
       <View style={styles.inputContainer}>
@@ -252,6 +288,24 @@ const styles = StyleSheet.create({
     color: "#008080",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  signOutButton: {
+    backgroundColor: "#C44536",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  signOutButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   Text: {
     marginTop: 20,

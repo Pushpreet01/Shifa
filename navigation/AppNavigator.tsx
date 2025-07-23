@@ -27,6 +27,11 @@ import SupportSystemScreen from "../app/resources/SupportSystemScreen";
 import VolunteerRewardsScreen from "../app/volunteer/VolunteerRewardsScreen";
 import ProfileScreen from "../app/settings/ProfileScreen";
 import FeedbackScreen from "../app/settings/FeedbackScreen";
+import AboutUsScreen from "../app/settings/AboutUsScreen";
+import MyApplicationsScreen from "../app/volunteer/MyApplicationsScreen";
+import MyEventsScreen from "../app/event/MyEventsScreen";
+import AdminEditEventScreen from '../app/admin/AdminEditEventScreen';
+
 
 // Custom Tab Bar
 import CustomTabBar from "./CustomTabBar";
@@ -41,12 +46,19 @@ enum TabRoutes {
 // Stack Param Lists
 export type HomeStackParamList = {
   HomeDashboard: undefined;
-  Events: undefined;
-  EventsForm: undefined;
-  RegisterEvent: undefined;
+  Events: { refresh?: boolean } | undefined;
+  EventsForm: { selectedDate?: Date } | undefined;
+  RegisterEvent: { eventId: string };
   JournalScreen: undefined;
   MyJournalsScreen: undefined;
-  NewJournalEntryScreen: { entry?: any } | undefined;
+  NewJournalEntryScreen: {
+    entry?: {
+      id: string;
+      title: string;
+      body: string;
+    };
+  };
+
   Announcements: undefined;
   VolunteerScreen: undefined;
   Opportunities: undefined;
@@ -71,12 +83,17 @@ export type HomeStackParamList = {
   VolunteerLearnings: undefined;
   Emergency: undefined;
   VolunteerRewards: undefined;
+  MyApplications: undefined;
+  MyEvents: undefined;
 };
 
 export type SettingsStackParamList = {
   Settings: undefined;
   Profile: undefined;
   Feedback: undefined;
+  AboutUs: undefined;
+  Emergency: undefined;
+  Announcements: undefined;
 };
 
 export type ResourcesStackParamList = {
@@ -86,6 +103,8 @@ export type ResourcesStackParamList = {
   Counselling: undefined;
   Awareness: undefined;
   SupportSystem: undefined;
+  Announcements: undefined;
+  Emergency: undefined;
 };
 
 export type RootTabParamList = {
@@ -150,6 +169,11 @@ const HomeStackScreen = () => (
       name="VolunteerRewards"
       component={VolunteerRewardsScreen}
     />
+    <HomeStack.Screen name="MyApplications" component={MyApplicationsScreen} />
+    <HomeStack.Screen name="MyEvents" component={MyEventsScreen} />
+    <HomeStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
+    <HomeStack.Screen name="Settings" component={SettingsScreen} />
+    
   </HomeStack.Navigator>
 );
 
@@ -158,6 +182,9 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="Settings" component={SettingsScreen} />
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
     <SettingsStack.Screen name="Feedback" component={FeedbackScreen} />
+    <SettingsStack.Screen name="AboutUs" component={AboutUsScreen} />
+    <SettingsStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <SettingsStack.Screen name="Emergency" component={EmergencyScreen} />
   </SettingsStack.Navigator>
 );
 
@@ -174,9 +201,13 @@ const ResourcesStackScreen = () => (
     />
     <ResourcesStack.Screen name="Counselling" component={CounsellingScreen} />
     <ResourcesStack.Screen name="Awareness" component={AwarenessScreen} />
+    <ResourcesStack.Screen name="Announcements" component={AnnouncementsScreen} />
+    <ResourcesStack.Screen name="Emergency" component={EmergencyScreen} />
+
     <ResourcesStack.Screen
       name="SupportSystem"
       component={SupportSystemScreen}
+
     />
   </ResourcesStack.Navigator>
 );
@@ -192,21 +223,21 @@ const TabNavigator = () => (
       name={TabRoutes.Resources}
       component={ResourcesStackScreen}
       options={{
-        unmountOnBlur: true, // This will reset the Resources stack when switching tabs
+        unmountOnBlur: true,
       }}
     />
     <Tab.Screen
       name={TabRoutes.Home}
       component={HomeStackScreen}
       options={{
-        unmountOnBlur: false, // Keep Home stack mounted to preserve state
+        unmountOnBlur: false,
       }}
     />
     <Tab.Screen
       name={TabRoutes.Settings}
       component={SettingsStackScreen}
       options={{
-        unmountOnBlur: true, // This will reset the Settings stack when switching tabs
+        unmountOnBlur: true,
       }}
     />
   </Tab.Navigator>

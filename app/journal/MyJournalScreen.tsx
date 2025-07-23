@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { HomeStackParamList } from "../../navigation/AppNavigator";
+import HeroBox from "../../components/HeroBox";
 
 const MyJournalsScreen = () => {
   const [journals, setJournals] = useState<any[]>([]);
@@ -43,14 +44,18 @@ const MyJournalsScreen = () => {
         style: "destructive",
         onPress: async () => {
           await deleteJournalEntry(id);
-          fetchJournals(); // Refresh list
+          setJournals((prev) => prev.filter((entry) => entry.id !== id)); // local delete for faster UI
         },
       },
     ]);
   };
 
   const handleEdit = (entry: any) => {
-    navigation.navigate("NewJournalEntryScreen", { entry }); // pass journal entry
+    navigation.navigate("NewJournalEntryScreen", { entry }); // pass selected journal to edit
+  };
+
+  const handleNewEntry = () => {
+    navigation.navigate("NewJournalEntryScreen", { entry: undefined }); // fresh new entry
   };
 
   if (loading) {
@@ -63,23 +68,7 @@ const MyJournalsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Entries</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
-              <Ionicons name="notifications-outline" size={24} color="#C44536" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate("Emergency")}>
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="My Entries" showBackButton={true} />
       <View style={styles.content}>
         {journals.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -116,7 +105,7 @@ const MyJournalsScreen = () => {
 
       <TouchableOpacity
         style={styles.newEntryButton}
-        onPress={() => navigation.navigate("NewJounalEntryScreen", undefined )}
+        onPress={handleNewEntry}
       >
         <Text style={styles.newEntryButtonText}>New Entry</Text>
       </TouchableOpacity>

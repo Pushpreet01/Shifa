@@ -16,6 +16,7 @@ import { db, auth } from "../../config/firebaseConfig";
 import StarRating from "../../components/StarRating";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 import ProfanityFilterService from "../../services/profanityFilterService";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Feedback">;
 
@@ -23,6 +24,10 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -71,35 +76,7 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Feedback</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
+      <HeroBox title="Feedback" showBackButton={true} />
       <KeyboardAwareWrapper>
         <View style={styles.content}>
           <View style={styles.ratingContainer}>
@@ -131,6 +108,9 @@ const FeedbackScreen: React.FC<Props> = ({ navigation }) => {
               onChangeText={setComment}
               textAlignVertical="top"
             />
+            <Text style={styles.wordCount}>
+              {countWords(comment)} / 250 words
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -207,17 +187,21 @@ const styles = StyleSheet.create({
   ratingContainer: {
     alignItems: "center",
     marginVertical: 20,
+    width: '100%',
+    paddingHorizontal: 20,
   },
   ratingTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#2E2E2E",
-    marginBottom: 20,
+    marginBottom: 25,
+    textAlign: 'center',
   },
   ratingValue: {
     fontSize: 16,
     color: "#666",
-    marginTop: 10,
+    marginTop: 15,
+    textAlign: 'center',
   },
   commentContainer: {
     marginTop: 20,
@@ -253,6 +237,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  wordCount: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#1B6B63",
+    marginTop: 4,
   },
 });
 

@@ -15,6 +15,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/AppNavigator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import HeroBox from "../../components/HeroBox";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Emergency">;
 
@@ -147,34 +148,7 @@ const EmergencyScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </Modal>
 
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Emergency</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <HeroBox title="Emergency" showBackButton={true} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.iconContainer}>
           <Ionicons name="list" size={60} color="#1B6B63" />

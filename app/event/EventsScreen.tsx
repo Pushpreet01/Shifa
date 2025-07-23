@@ -19,6 +19,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext";
 import { isDateValidForEvent } from "../../utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
+import HeroBox from "../../components/HeroBox";
 
 const USE_FIREBASE_SERVICE = true;
 
@@ -40,10 +41,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // Handle refresh from route params
   useEffect(() => {
-    if (route.params?.refresh) {
+    if (route.params && "refresh" in route.params && route.params.refresh) {
       setRefreshKey((prev) => prev + 1);
     }
-  }, [route.params?.refresh]);
+  }, [route.params]);
 
   useFocusEffect(
     useCallback(() => {
@@ -68,14 +69,36 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             (reg: { eventId: string }) => reg.eventId
           );
 
-          // Filter out past events and mark registered ones
+          console.log(
+            `[EventsScreen] Fetched ${fetchedEvents.length} total events`
+          );
+          console.log(
+            `[EventsScreen] Events with approval status:`,
+            fetchedEvents.map((e) => ({
+              id: e.id,
+              title: e.title,
+              approvalStatus: e.approvalStatus,
+            }))
+          );
+
+          // Filter out past events, only show approved, and mark registered ones
           const validEvents = fetchedEvents
-            .filter((event) => isDateValidForEvent(event.date))
+            .filter(
+              (event) =>
+                isDateValidForEvent(event.date) &&
+                event.approvalStatus &&
+                typeof event.approvalStatus === "object" &&
+                event.approvalStatus.status &&
+                event.approvalStatus.status.toLowerCase() === "approved"
+            )
             .map((event) => ({
               ...event,
               registered: registeredEventIds.includes(event.id),
             }));
 
+          console.log(
+            `[EventsScreen] After filtering, ${validEvents.length} approved events remain`
+          );
           setEvents(validEvents);
         } catch (error) {
           console.error("Error fetching events:", error);
@@ -150,7 +173,11 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleAddEvent = () => {
-    navigation.navigate("EventsForm");
+    console.log(
+      "[EventsScreen] Navigating to EventsForm with selectedDate:",
+      selectedDate
+    );
+    navigation.navigate("EventsForm", { selectedDate });
   };
 
   const filteredEvents = events.filter(
@@ -170,36 +197,16 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.heroBox}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("HomeDashboard")}
-            style={styles.backButtonContainer}
-          >
-            <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Events</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Announcements")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#C44536"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.sosWrapper}
-              onPress={() => navigation.navigate("Emergency")}
-            >
-              <Text style={styles.sosText}>SOS</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <HeroBox title="Events" showBackButton={true} />
       <View style={styles.dateSelectionContainer}>
-        <View style={styles.selectedDateContainer}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            marginBottom: 15,
+          }}
+        >
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
@@ -220,6 +227,22 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           onNextMonth={goToNextMonth}
           onPrevMonth={goToPreviousMonth}
         />
+        <View style={{ alignItems: "flex-end", marginTop: 10 }}>
+          {user?.role === "Event Organizer" && (
+            <TouchableOpacity
+              style={styles.myEventsButton}
+              onPress={() => navigation.navigate("MyEvents")}
+            >
+              <Text style={styles.myEventsButtonText}>My Events</Text>
+              <Ionicons
+                name="list-outline"
+                size={20}
+                color="#FFFFFF"
+                style={{ marginLeft: 4 }}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView style={styles.eventsListContainer}>
@@ -229,28 +252,40 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => (
-            <EventCard
-              key={`${event.source}-${event.id}`}
-              event={event}
-              onRegister={handleRegister}
-              onPress={() => handleEventClick(event.id)}
-              style={
-                event.source === "local"
-                  ? styles.localEvent
-                  : styles.firebaseEvent
-              }
-            />
-          ))
+          filteredEvents.map((event) => {
+            console.log("[EventsScreen] Rendering event:", {
+              id: event.id,
+              title: event.title,
+              startTime: event.startTime,
+              endTime: event.endTime,
+              startTimeType: typeof event.startTime,
+              endTimeType: typeof event.endTime,
+            });
+            return (
+              <EventCard
+                key={`${event.source}-${event.id}`}
+                event={event}
+                onRegister={handleRegister}
+                onPress={() => handleEventClick(event.id)}
+                style={
+                  event.source === "local"
+                    ? styles.localEvent
+                    : styles.firebaseEvent
+                }
+              />
+            );
+          })
         ) : (
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
-            <TouchableOpacity
-              style={styles.addEventSmallButton}
-              onPress={handleAddEvent}
-            >
-              <Text style={styles.addEventSmallButtonText}>Add Event</Text>
-            </TouchableOpacity>
+            {user?.role === "Event Organizer" && (
+              <TouchableOpacity
+                style={styles.addEventSmallButton}
+                onPress={handleAddEvent}
+              >
+                <Text style={styles.addEventSmallButtonText}>Add Event</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>
@@ -382,6 +417,19 @@ const styles = StyleSheet.create({
     // backgroundColor: '#FDF6EC',
     borderLeftWidth: 4,
     borderLeftColor: "#F4A941",
+  },
+  myEventsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1B6B63",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  myEventsButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 15,
   },
 });
 

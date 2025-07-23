@@ -97,7 +97,14 @@ class NotificationService {
         ...doc.data(),
         timestamp: doc.data().timestamp.toDate(),
       })) as AnnouncementItem[];
-    } catch (error) {
+    } catch (error: any) {
+      // Suppress FirebaseError: Missing or insufficient permissions
+      if (error && error.code === "permission-denied") {
+        console.warn(
+          "Announcements: insufficient permissions, returning empty list."
+        );
+        return [];
+      }
       console.error("Error getting announcements:", error);
       return [];
     }

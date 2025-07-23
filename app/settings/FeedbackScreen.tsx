@@ -187,17 +187,21 @@ const styles = StyleSheet.create({
   ratingContainer: {
     alignItems: "center",
     marginVertical: 20,
+    width: '100%',
+    paddingHorizontal: 20,
   },
   ratingTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#2E2E2E",
-    marginBottom: 20,
+    marginBottom: 25,
+    textAlign: 'center',
   },
   ratingValue: {
     fontSize: 16,
     color: "#666",
-    marginTop: 10,
+    marginTop: 15,
+    textAlign: 'center',
   },
   commentContainer: {
     marginTop: 20,

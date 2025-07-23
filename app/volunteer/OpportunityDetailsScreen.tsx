@@ -20,6 +20,7 @@ import { auth, db } from "../../config/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { VolunteerOpportunity, VolunteerApplication } from "../../types/volunteer";
 import HeroBox from "../../components/HeroBox";
+import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "OpportunityDetails">;
 
@@ -243,125 +244,127 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <HeroBox title="Opportunity Details" showBackButton={true} />
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.eventInfoContainer}>
-          <Text style={styles.eventTitle}>{opportunityDetails.title}</Text>
+      <KeyboardAwareWrapper>
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.eventInfoContainer}>
+            <Text style={styles.eventTitle}>{opportunityDetails.title}</Text>
 
-          <View style={styles.eventDetailsBox}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Date:</Text>
-              <Text style={styles.detailText}>
-                {getFormattedDate(opportunityDetails.createdAt)}
-              </Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Time:</Text>
-              <Text style={styles.detailText}>{opportunityDetails.timings}</Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Location:</Text>
-              <Text style={styles.detailText}>
-                {opportunityDetails.location || "No location specified"}
-              </Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Volunteers:</Text>
-              <Text style={styles.detailText}>
-                {opportunityDetails.noVolunteersNeeded}
-              </Text>
-            </View>
-
-            <View style={styles.descriptionContainer}>
-              <Text style={styles.detailLabel}>Description:</Text>
-              <Text style={styles.descriptionText}>
-                {opportunityDetails.description || "No description available"}
-              </Text>
-            </View>
-
-            {opportunityDetails.rewards && (
-              <View style={styles.descriptionContainer}>
-                <Text style={styles.detailLabel}>Rewards:</Text>
-                <Text style={styles.descriptionText}>{opportunityDetails.rewards}</Text>
+            <View style={styles.eventDetailsBox}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Date:</Text>
+                <Text style={styles.detailText}>
+                  {getFormattedDate(opportunityDetails.createdAt)}
+                </Text>
               </View>
-            )}
 
-            {opportunityDetails.refreshments && (
-              <View style={styles.descriptionContainer}>
-                <Text style={styles.detailLabel}>Refreshments:</Text>
-                <Text style={styles.descriptionText}>{opportunityDetails.refreshments}</Text>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Time:</Text>
+                <Text style={styles.detailText}>{opportunityDetails.timings}</Text>
               </View>
-            )}
-          </View>
-        </View>
 
-        {checkingApplication ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2E2E2E" />
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Location:</Text>
+                <Text style={styles.detailText}>
+                  {opportunityDetails.location || "No location specified"}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Volunteers:</Text>
+                <Text style={styles.detailText}>
+                  {opportunityDetails.noVolunteersNeeded}
+                </Text>
+              </View>
+
+              <View style={styles.descriptionContainer}>
+                <Text style={styles.detailLabel}>Description:</Text>
+                <Text style={styles.descriptionText}>
+                  {opportunityDetails.description || "No description available"}
+                </Text>
+              </View>
+
+              {opportunityDetails.rewards && (
+                <View style={styles.descriptionContainer}>
+                  <Text style={styles.detailLabel}>Rewards:</Text>
+                  <Text style={styles.descriptionText}>{opportunityDetails.rewards}</Text>
+                </View>
+              )}
+
+              {opportunityDetails.refreshments && (
+                <View style={styles.descriptionContainer}>
+                  <Text style={styles.detailLabel}>Refreshments:</Text>
+                  <Text style={styles.descriptionText}>{opportunityDetails.refreshments}</Text>
+                </View>
+              )}
+            </View>
           </View>
-        ) : isApplied ? (
-          <View style={styles.registeredContainer}>
-            <Text style={styles.registeredText}>
-              Application Status: {applicationStatus}
-            </Text>
-            <TouchableOpacity
-              style={[styles.cancelButton, canceling && styles.disabledButton]}
-              onPress={handleCancel}
-              disabled={canceling}
-            >
-              <Text style={styles.buttonText}>
-                {canceling ? "Canceling..." : "Cancel Registration"}
+
+          {checkingApplication ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#2E2E2E" />
+            </View>
+          ) : isApplied ? (
+            <View style={styles.registeredContainer}>
+              <Text style={styles.registeredText}>
+                Application Status: {applicationStatus}
               </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>Apply for Opportunity</Text>
+              <TouchableOpacity
+                style={[styles.cancelButton, canceling && styles.disabledButton]}
+                onPress={handleCancel}
+                disabled={canceling}
+              >
+                <Text style={styles.buttonText}>
+                  {canceling ? "Canceling..." : "Cancel Registration"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.formContainer}>
+              <Text style={styles.formTitle}>Apply for Opportunity</Text>
 
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: "#f0f0f0" }]}
-              value={formData.fullName}
-              editable={false}
-              placeholder="Name not available"
-              placeholderTextColor="#999"
-            />
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+                value={formData.fullName}
+                editable={false}
+                placeholder="Name not available"
+                placeholderTextColor="#999"
+              />
 
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: "#f0f0f0" }]}
-              value={formData.email}
-              editable={false}
-              placeholder="Email not available"
-              placeholderTextColor="#999"
-            />
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+                value={formData.email}
+                editable={false}
+                placeholder="Email not available"
+                placeholderTextColor="#999"
+              />
 
-            <Text style={styles.label}>Tell us about Yourself</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Give us a short description about yourself."
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
-              value={formData.aboutYourself}
-              onChangeText={(text) => setFormData({ ...formData, aboutYourself: text })}
-              placeholderTextColor="#999"
-            />
+              <Text style={styles.label}>Tell us about Yourself</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Give us a short description about yourself."
+                multiline
+                numberOfLines={6}
+                textAlignVertical="top"
+                value={formData.aboutYourself}
+                onChangeText={(text) => setFormData({ ...formData, aboutYourself: text })}
+                placeholderTextColor="#999"
+              />
 
-            <TouchableOpacity
-              style={[styles.registerButton, submitting && styles.disabledButton]}
-              onPress={handleApply}
-              disabled={submitting}
-            >
-              <Text style={styles.buttonText}>
-                {submitting ? "Submitting..." : "Submit Application"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+              <TouchableOpacity
+                style={[styles.registerButton, submitting && styles.disabledButton]}
+                onPress={handleApply}
+                disabled={submitting}
+              >
+                <Text style={styles.buttonText}>
+                  {submitting ? "Submitting..." : "Submit Application"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAwareWrapper>
     </SafeAreaView>
   );
 };

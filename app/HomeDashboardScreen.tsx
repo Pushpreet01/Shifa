@@ -9,7 +9,11 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useNavigation, useFocusEffect, CompositeNavigationProp } from "@react-navigation/native";
+import {
+  useNavigation,
+  useFocusEffect,
+  CompositeNavigationProp,
+} from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import firebaseEventService from "../services/firebaseEventService";
 import {
@@ -28,7 +32,11 @@ import {
 import { db, auth } from "../config/firebaseConfig";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { HomeStackParamList, SettingsStackParamList, RootTabParamList } from "../navigation/AppNavigator";
+import {
+  HomeStackParamList,
+  SettingsStackParamList,
+  RootTabParamList,
+} from "../navigation/AppNavigator";
 import HeroBox from "../components/HeroBox";
 
 interface EventData {
@@ -69,22 +77,22 @@ const dashboardButtons: DashboardButton[] = [
     color: "#1B6B63",
     route: "VolunteerScreen",
     icon: "people",
-    description: "Access volunteer opportunities"
+    description: "Access volunteer opportunities",
   },
   {
     label: "Journal",
     color: "#1B6B63",
     route: "JournalScreen",
     icon: "pencil",
-    description: "Write and manage entries"
+    description: "Write and manage entries",
   },
   {
     label: "Manage Events",
     color: "#1B6B63",
     route: "Events",
     icon: "calendar",
-    description: "View upcoming events"
-  }
+    description: "View upcoming events",
+  },
 ];
 
 const HomeDashboardScreen = () => {
@@ -190,7 +198,9 @@ const HomeDashboardScreen = () => {
 
   const handleNavigation = (route: keyof HomeStackParamList) => {
     // Using a more specific type assertion for the navigation object
-    (navigation as unknown as { navigate: (screen: string) => void }).navigate(route);
+    (navigation as unknown as { navigate: (screen: string) => void }).navigate(
+      route
+    );
   };
 
   // Helper function to chunk array
@@ -221,10 +231,19 @@ const HomeDashboardScreen = () => {
           <View style={styles.customHeader}>
             <Text style={styles.customHeaderTitle}>Home Dashboard</Text>
             <View style={styles.headerIcons}>
-              <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
-                <Ionicons name="notifications-outline" size={24} color="#C44536" />
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Announcements")}
+              >
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color="#C44536"
+                />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate("Emergency")}>
+              <TouchableOpacity
+                style={styles.sosWrapper}
+                onPress={() => navigation.navigate("Emergency")}
+              >
                 <Text style={styles.sosText}>SOS</Text>
               </TouchableOpacity>
             </View>
@@ -232,24 +251,34 @@ const HomeDashboardScreen = () => {
         </View>
 
         {/* Profile Section */}
-        <TouchableOpacity onPress={handleProfilePress} style={styles.profileCard}>
+        <TouchableOpacity
+          onPress={handleProfilePress}
+          style={styles.profileCard}
+        >
           <View style={styles.profileContent}>
             <View style={styles.profileInfo}>
               <Text style={styles.welcomeText}>Welcome back,</Text>
               <Text style={styles.userName}>{userName}</Text>
             </View>
             {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
             ) : (
               <View style={styles.profileImagePlaceholder}>
-                <Ionicons name="person-outline" size={24} color="rgba(255, 255, 255, 0.8)" />
+                <Ionicons
+                  name="person-outline"
+                  size={24}
+                  color="rgba(255, 255, 255, 0.8)"
+                />
               </View>
             )}
           </View>
         </TouchableOpacity>
 
         {/* Quick Access Section */}
-        <View style={[styles.quickAccessContainer, { overflow: 'visible' }]}>
+        <View style={[styles.quickAccessContainer, { overflow: "visible" }]}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <View style={styles.sectionIconContainer}>
@@ -273,11 +302,14 @@ const HomeDashboardScreen = () => {
           >
             {dashboardButtons
               .filter((button) => {
-                if (button.label === 'Manage Volunteering') {
-                  return user?.role === 'Volunteer';
+                if (button.label === "Manage Volunteering") {
+                  return user?.role === "Volunteer";
                 }
-                if (button.label === 'Manage Events') {
-                  return user?.role === 'Event Organizer' || user?.role === 'Support Seeker';
+                if (button.label === "Manage Events") {
+                  return (
+                    user?.role === "Event Organizer" ||
+                    user?.role === "Support Seeker"
+                  );
                 }
                 return true;
               })
@@ -286,7 +318,9 @@ const HomeDashboardScreen = () => {
                   key={index}
                   style={[
                     styles.quickAccessPanel,
-                    index === dashboardButtons.length - 1 && { marginRight: 20 }
+                    index === dashboardButtons.length - 1 && {
+                      marginRight: 20,
+                    },
                   ]}
                   onPress={() => handleNavigation(button.route)}
                 >
@@ -295,8 +329,12 @@ const HomeDashboardScreen = () => {
                       <Ionicons name={button.icon} size={24} color="#1B6B63" />
                     </View>
                     <View style={styles.textContainer}>
-                      <Text style={styles.quickAccessTitle}>{button.label}</Text>
-                      <Text style={styles.quickAccessDescription}>{button.description}</Text>
+                      <Text style={styles.quickAccessTitle}>
+                        {button.label}
+                      </Text>
+                      <Text style={styles.quickAccessDescription}>
+                        {button.description}
+                      </Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -308,7 +346,7 @@ const HomeDashboardScreen = () => {
                 key={index}
                 style={[
                   styles.paginationDot,
-                  index === activeIndex && styles.paginationDotActive
+                  index === activeIndex && styles.paginationDotActive,
                 ]}
               />
             ))}
@@ -328,11 +366,17 @@ const HomeDashboardScreen = () => {
               <Text style={styles.sosButtonText}>SOS Emergency</Text>
               <Text style={styles.sosDescription}>Get immediate help</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#FFFFFF" style={styles.sosArrow} />
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#FFFFFF"
+              style={styles.sosArrow}
+            />
           </View>
         </TouchableOpacity>
 
-        {(user?.role === 'Support Seeker' || user?.role === 'Event Organizer') && (
+        {(user?.role === "Support Seeker" ||
+          user?.role === "Event Organizer") && (
           <View style={styles.eventsContainer}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleContainer}>
@@ -350,8 +394,8 @@ const HomeDashboardScreen = () => {
                 </View>
                 <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
                 <Text style={styles.noEventsSubtext}>
-                  Join our supportive community events and connect with others on
-                  their journey to wellness.
+                  Join our supportive community events and connect with others
+                  on their journey to wellness.
                 </Text>
                 <TouchableOpacity
                   style={styles.joinEventButton}
@@ -428,12 +472,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FDF6EC",
   },
   profileCard: {
-    backgroundColor: '#1B6B63',
+    backgroundColor: "#1B6B63",
     marginHorizontal: 20,
     marginTop: 8,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -443,56 +487,58 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   profileContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   profileInfo: {
     flex: 1,
   },
   welcomeText: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white
+    color: "rgba(255, 255, 255, 0.8)", // Semi-transparent white
     marginBottom: 4,
   },
   userName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF', // White text
+    fontWeight: "bold",
+    color: "#FFFFFF", // White text
   },
   profileImage: {
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white border
+    borderColor: "rgba(255, 255, 255, 0.2)", // Semi-transparent white border
   },
   profileImagePlaceholder: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(255, 255, 255, 0.1)", // Semi-transparent white
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white border
+    borderColor: "rgba(255, 255, 255, 0.2)", // Semi-transparent white border
   },
   quickAccessContainer: {
     marginTop: 16,
     marginBottom: 20,
   },
   quickAccessScroll: {
+    flexDirection: "row",
     paddingLeft: 20,
     paddingVertical: 4,
+    minWidth: "100%",
   },
   quickAccessPanel: {
     width: 180,
     height: 180,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     marginRight: 16,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -503,16 +549,16 @@ const styles = StyleSheet.create({
   },
   quickAccessContent: {
     flex: 1,
-    height: '100%',
-    justifyContent: 'space-between',
+    height: "100%",
+    justifyContent: "space-between",
   },
   iconContainer: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(27, 107, 99, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(27, 107, 99, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   textContainer: {
     flex: 1,
@@ -520,14 +566,14 @@ const styles = StyleSheet.create({
   },
   quickAccessTitle: {
     fontSize: 17,
-    fontWeight: '700',
-    color: '#2E2E2E',
+    fontWeight: "700",
+    color: "#2E2E2E",
     marginBottom: 6,
     letterSpacing: -0.3,
   },
   quickAccessDescription: {
     fontSize: 13,
-    color: '#666666',
+    color: "#666666",
     lineHeight: 18,
     letterSpacing: -0.2,
   },
@@ -538,38 +584,38 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   titleUnderline: {
-    display: 'none', // Remove the underline
+    display: "none", // Remove the underline
   },
   descriptionContainer: {
     marginVertical: 20,
     paddingHorizontal: 20,
   },
   modernDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(246, 168, 0, 0.3)', // Lighter orange
-    maxWidth: '30%',
+    backgroundColor: "rgba(246, 168, 0, 0.3)", // Lighter orange
+    maxWidth: "30%",
   },
   dividerIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(246, 168, 0, 0.1)', // Very light orange
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(246, 168, 0, 0.1)", // Very light orange
+    alignItems: "center",
+    justifyContent: "center",
     marginHorizontal: 12,
   },
   descriptionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -578,14 +624,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderLeftWidth: 4,
-    borderLeftColor: '#F6A800',
+    borderLeftColor: "#F6A800",
   },
   descriptionText: {
     fontSize: 15,
     lineHeight: 24,
-    color: '#2E2E2E',
-    textAlign: 'left',
-    fontWeight: '500',
+    color: "#2E2E2E",
+    textAlign: "left",
+    fontWeight: "500",
   },
   buttonGrid: {
     flexDirection: "row",
@@ -614,25 +660,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   sectionIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(244, 169, 65, 0.1)', // Changed to match new color scheme
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(244, 169, 65, 0.1)", // Changed to match new color scheme
+    justifyContent: "center",
+    alignItems: "center",
   },
   noEventsContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -645,36 +691,36 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   noEventsTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
   },
   noEventsSubtext: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     lineHeight: 20,
     marginBottom: 20,
   },
   joinEventButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1B6B63',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1B6B63",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
   },
   joinEventButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 8,
   },
   buttonIcon: {
@@ -684,7 +730,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     overflow: "hidden",
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -724,13 +770,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   supportBox: {
-    backgroundColor: '#FFF0F0',
+    backgroundColor: "#FFF0F0",
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 24,
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -769,12 +815,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sosButton: {
-    backgroundColor: '#C44536',
+    backgroundColor: "#C44536",
     marginHorizontal: 20,
     marginVertical: 20,
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -784,17 +830,17 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   sosContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   sosIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   sosTextContainer: {
     flex: 1,
@@ -802,12 +848,12 @@ const styles = StyleSheet.create({
   },
   sosButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: "bold",
+    color: "#FFFFFF",
   },
   sosDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "rgba(255, 255, 255, 0.8)",
     marginTop: 2,
   },
   sosArrow: {
@@ -865,20 +911,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   paginationDots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 16,
   },
   paginationDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: '#1B6B63',
+    backgroundColor: "#1B6B63",
     width: 24,
     borderRadius: 4,
   },

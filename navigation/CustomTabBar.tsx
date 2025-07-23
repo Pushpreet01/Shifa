@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -15,6 +15,8 @@ const height = 65;
 const curveHeight = 50;
 
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
+  const [lastPress, setLastPress] = useState(0);
+
   const getIconName = (route: string, isFocused: boolean) => {
     if (route === "Home") return isFocused ? "home" : "home-outline";
     if (route === "Settings")
@@ -95,6 +97,20 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               target: route.key,
               canPreventDefault: true,
             });
+
+            if (route.name === "Settings" && isFocused) {
+              const time = new Date().getTime();
+              const delta = time - lastPress;
+
+              if (delta < 300) {
+                // Double tap detected
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "Settings" }],
+                });
+              }
+              setLastPress(time);
+            }
 
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);

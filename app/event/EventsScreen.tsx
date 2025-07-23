@@ -218,13 +218,15 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           onPrevMonth={goToPreviousMonth}
         />
         <View style={{ alignItems: 'flex-end', marginTop: 10 }}>
-          <TouchableOpacity
-            style={styles.myEventsButton}
-            onPress={() => navigation.navigate('MyEvents')}
-          >
-            <Ionicons name="list-outline" size={20} color="#1B6B63" style={{ marginRight: 4 }} />
-            <Text style={styles.myEventsButtonText}>My Events</Text>
-          </TouchableOpacity>
+          {user?.role === 'Event Organizer' && (
+            <TouchableOpacity
+              style={styles.myEventsButton}
+              onPress={() => navigation.navigate('MyEvents')}
+            >
+              <Ionicons name="list-outline" size={20} color="#1B6B63" style={{ marginRight: 4 }} />
+              <Text style={styles.myEventsButtonText}>My Events</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -255,20 +257,20 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
                     ? styles.localEvent
                     : styles.firebaseEvent
                 }
-                showAttendanceButton={!!event.needsVolunteers}
-                showAssignButton={!!event.needsVolunteers}
               />
             );
           })
         ) : (
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
-            <TouchableOpacity
-              style={styles.addEventSmallButton}
-              onPress={handleAddEvent}
-            >
-              <Text style={styles.addEventSmallButtonText}>Add Event</Text>
-            </TouchableOpacity>
+            {user?.role === 'Event Organizer' && (
+              <TouchableOpacity
+                style={styles.addEventSmallButton}
+                onPress={handleAddEvent}
+              >
+                <Text style={styles.addEventSmallButtonText}>Add Event</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </ScrollView>

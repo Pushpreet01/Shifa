@@ -34,6 +34,8 @@
     "expo-status-bar": "~2.0.1",
     "expo-web-browser": "^14.1.6",
     "firebase": "^11.6.0",
+    "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.4.0",
     "node-steam-openid": "^2.0.0",
     "papaparse": "^5.5.3",
     "passport-steam": "^1.0.18",

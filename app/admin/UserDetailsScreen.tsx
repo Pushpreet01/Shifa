@@ -103,30 +103,33 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={styles.label}>Role:</Text>
         <Text style={styles.value}>{user.role}</Text>
 
-        <Text style={styles.label}>Status:</Text>
-        <Text style={styles.value}>{user.approved ? 'Active' : 'Banned'}</Text>
+        {/* Only show Status for non-admin users */}
+        {user.role !== 'Admin' && (
+          <>
+            <Text style={styles.label}>Status:</Text>
+            <Text style={styles.value}>{user.approved ? 'Active' : 'Banned'}</Text>
+          </>
+        )}
 
         <View style={styles.actions}>
-          {/* Edit Info button can be implemented as needed */}
-          {/* <TouchableOpacity
-            style={[styles.button, styles.editButton]}
-            onPress={() => navigation.navigate('EditUser', { userId: user.id })}
-          >
-            <Text style={styles.buttonText}>Edit Info</Text>
-          </TouchableOpacity> */}
-          <TouchableOpacity
-            style={[styles.button, styles.banButton]}
-            onPress={handleBanUnban}
-            disabled={updating}
-          >
-            <Text style={styles.buttonText}>{user.approved ? 'Ban' : 'Unban'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.roleButton]}
-            onPress={() => navigation.navigate('AssignUserRole', { user })}
-          >
-            <Text style={styles.buttonText}>Assign Role</Text>
-          </TouchableOpacity>
+          {/* Only show Ban and Assign Role for non-admin users */}
+          {user.role !== 'Admin' && (
+            <>
+              <TouchableOpacity
+                style={[styles.button, styles.banButton]}
+                onPress={handleBanUnban}
+                disabled={updating}
+              >
+                <Text style={styles.buttonText}>{user.approved ? 'Ban' : 'Unban'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.roleButton]}
+                onPress={() => navigation.navigate('AssignUserRole', { user })}
+              >
+                <Text style={styles.buttonText}>Assign Role</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </View>
     </ScrollView>

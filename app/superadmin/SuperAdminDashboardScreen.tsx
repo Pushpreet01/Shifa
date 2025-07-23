@@ -63,6 +63,7 @@ const SuperAdminDashboardScreen: React.FC = () => {
                             const data = await getAllAdmins();
                             setAdmins(data);
                         } catch (err) {
+                            console.error('Delete admin error:', err);
                             Alert.alert('Error', 'Failed to delete admin');
                         }
                     },
@@ -88,9 +89,9 @@ const SuperAdminDashboardScreen: React.FC = () => {
                 <TouchableOpacity style={styles.createButton} onPress={handleCreateAdmin}>
                     <Text style={styles.createButtonText}>Create New Admin</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.approvalsButton} onPress={handleApprovals}>
+                {/* <TouchableOpacity style={styles.approvalsButton} onPress={handleApprovals}>
                     <Text style={styles.approvalsButtonText}>Approvals</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
             {loading ? (
                 <ActivityIndicator size="large" color="#1B6B63" style={{ marginTop: 40 }} />

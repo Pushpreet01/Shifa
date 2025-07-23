@@ -177,25 +177,24 @@ const UserManagementScreen = () => {
                 style={[styles.actionButton, styles.viewBtn]}>
                 <Ionicons name="eye-outline" size={18} color="#fff" />
               </TouchableOpacity>
-              {/* Edit button can be implemented as needed */}
-              {/* <TouchableOpacity
-                onPress={() => navigation.navigate('EditUser', { userId: user.id })}
-                style={[styles.actionButton, styles.editBtn]}>
-                <Ionicons name="create-outline" size={18} color="#fff" />
-              </TouchableOpacity> */}
-              <TouchableOpacity
-                onPress={() => handleBanUnban(user)}
-                style={[styles.actionButton, styles.banBtn]}
-              >
-                <Ionicons name="close-circle-outline" size={18} color="#fff" />
-                <Text style={{ color: '#fff', marginLeft: 6, fontSize: 12 }}>
-                  {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
-                </Text>
-              </TouchableOpacity>
-              {user.approvalStatus.status === 'Rejected' && user.approvalStatus.reason && (
-                <Text style={{ color: '#C44536', fontSize: 12, marginTop: 4 }}>
-                  Rejected: {user.approvalStatus.reason}
-                </Text>
+              {/* Only show ban/unban and rejection reason for non-admin users */}
+              {user.role !== 'Admin' && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => handleBanUnban(user)}
+                    style={[styles.actionButton, styles.banBtn]}
+                  >
+                    <Ionicons name="close-circle-outline" size={18} color="#fff" />
+                    <Text style={{ color: '#fff', marginLeft: 6, fontSize: 12 }}>
+                      {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
+                    </Text>
+                  </TouchableOpacity>
+                  {user.approvalStatus.status === 'Rejected' && user.approvalStatus.reason && (
+                    <Text style={{ color: '#C44536', fontSize: 12, marginTop: 4 }}>
+                      Rejected: {user.approvalStatus.reason}
+                    </Text>
+                  )}
+                </>
               )}
             </View>
           </View>

@@ -59,7 +59,7 @@ type DashboardButton = {
   label: string;
   color: string;
   route: keyof HomeStackParamList;
-  icon: "people" | "book" | "calendar";
+  icon: "people" | "pencil" | "calendar";
   description: string;
 };
 
@@ -71,14 +71,14 @@ const dashboardButtons: DashboardButton[] = [
     icon: "people",
     description: "Access volunteer opportunities"
   },
-  { 
+  {
     label: "Journal",
     color: "#1B6B63",
     route: "JournalScreen",
-    icon: "book",
+    icon: "pencil",
     description: "Write and manage entries"
   },
-  { 
+  {
     label: "Manage Events",
     color: "#1B6B63",
     route: "Events",
@@ -94,6 +94,7 @@ const HomeDashboardScreen = () => {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const fetchRegisteredEvents = useCallback(async () => {
     if (!user) return;
@@ -216,7 +217,19 @@ const HomeDashboardScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <HeroBox title="Home Dashboard" />
+        <View style={styles.customHeroBox}>
+          <View style={styles.customHeader}>
+            <Text style={styles.customHeaderTitle}>Home Dashboard</Text>
+            <View style={styles.headerIcons}>
+              <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
+                <Ionicons name="notifications-outline" size={24} color="#C44536" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.sosWrapper} onPress={() => navigation.navigate("Emergency")}>
+                <Text style={styles.sosText}>SOS</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
 
         {/* Profile Section */}
         <TouchableOpacity onPress={handleProfilePress} style={styles.profileCard}>
@@ -240,47 +253,66 @@ const HomeDashboardScreen = () => {
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <View style={styles.sectionIconContainer}>
-                <Ionicons name="grid" size={18} color="#1B6B63" />
+                <Ionicons name="grid" size={18} color="#F4A941" />
               </View>
-              <View>
-                <Text style={styles.sectionTitle}>Quick Access</Text>
-                <View style={styles.titleUnderline} />
-              </View>
+              <Text style={styles.sectionTitle}>Quick Access</Text>
             </View>
           </View>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.quickAccessScroll}
-            decelerationRate={0.85}
+            decelerationRate="fast"
             snapToInterval={196} // panel width (180) + margin right (16)
-            snapToAlignment="center"
-            disableIntervalMomentum={true}
-            bounces={false}
-            overScrollMode="never"
-            style={{ overflow: 'visible' }}
+            snapToAlignment="start"
+            onMomentumScrollEnd={(event) => {
+              const position = event.nativeEvent.contentOffset.x;
+              const newIndex = position > 196 ? 1 : 0; // Only 2 positions: 0 and 1
+              setActiveIndex(newIndex);
+            }}
           >
-            {dashboardButtons.map((button, index) => (
-              <TouchableOpacity
+            {dashboardButtons
+              .filter((button) => {
+                if (button.label === 'Manage Volunteering') {
+                  return user?.role === 'Volunteer';
+                }
+                if (button.label === 'Manage Events') {
+                  return user?.role === 'Event Organizer' || user?.role === 'Support Seeker';
+                }
+                return true;
+              })
+              .map((button, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.quickAccessPanel,
+                    index === dashboardButtons.length - 1 && { marginRight: 20 }
+                  ]}
+                  onPress={() => handleNavigation(button.route)}
+                >
+                  <View style={styles.quickAccessContent}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons name={button.icon} size={24} color="#1B6B63" />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.quickAccessTitle}>{button.label}</Text>
+                      <Text style={styles.quickAccessDescription}>{button.description}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+          <View style={styles.paginationDots}>
+            {[0, 1].map((index) => (
+              <View
                 key={index}
                 style={[
-                  styles.quickAccessPanel,
-                  index === dashboardButtons.length - 1 && { marginRight: 20 } // Add extra margin to last panel
+                  styles.paginationDot,
+                  index === activeIndex && styles.paginationDotActive
                 ]}
-                onPress={() => handleNavigation(button.route)}
-              >
-                <View style={styles.quickAccessContent}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name={button.icon} size={24} color="#1B6B63" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.quickAccessTitle}>{button.label}</Text>
-                    <Text style={styles.quickAccessDescription}>{button.description}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+              />
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         {/* SOS Button */}
@@ -300,62 +332,60 @@ const HomeDashboardScreen = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Events Section */}
-        <View style={styles.eventsContainer}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <View style={styles.sectionIconContainer}>
-                <Ionicons name="calendar" size={18} color="#1B6B63" />
-              </View>
-              <View>
+        {(user?.role === 'Support Seeker' || user?.role === 'Event Organizer') && (
+          <View style={styles.eventsContainer}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <View style={styles.sectionIconContainer}>
+                  <Ionicons name="calendar" size={18} color="#F4A941" />
+                </View>
                 <Text style={styles.sectionTitle}>Upcoming Events</Text>
-                <View style={styles.titleUnderline} />
               </View>
             </View>
-          </View>
 
-          {events.length === 0 ? (
-            <View style={styles.noEventsContainer}>
-              <View style={styles.noEventsIconContainer}>
-                <Ionicons name="calendar" size={40} color="#1B6B63" />
-              </View>
-              <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
-              <Text style={styles.noEventsSubtext}>
-                Join our supportive community events and connect with others on
-                their journey to wellness.
-              </Text>
-              <TouchableOpacity
-                style={styles.joinEventButton}
-                onPress={() => handleNavigation("Events")}
-              >
-                <Text style={styles.joinEventButtonText}>Explore Events</Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={16}
-                  color="#FFFFFF"
-                  style={styles.buttonIcon}
-                />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.eventsList}>
-              {events.map((event) => (
+            {events.length === 0 ? (
+              <View style={styles.noEventsContainer}>
+                <View style={styles.noEventsIconContainer}>
+                  <Ionicons name="calendar" size={40} color="#1B6B63" />
+                </View>
+                <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
+                <Text style={styles.noEventsSubtext}>
+                  Join our supportive community events and connect with others on
+                  their journey to wellness.
+                </Text>
                 <TouchableOpacity
-                  key={event.id}
-                  style={styles.eventCard}
+                  style={styles.joinEventButton}
                   onPress={() => handleNavigation("Events")}
                 >
-                  <View style={styles.eventText}>
-                    <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
-                    <Text style={styles.eventTime}>{event.time}</Text>
-                    <Text style={styles.eventDate}>{event.date}</Text>
-                  </View>
+                  <Text style={styles.joinEventButtonText}>Explore Events</Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={16}
+                    color="#FFFFFF"
+                    style={styles.buttonIcon}
+                  />
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
+              </View>
+            ) : (
+              <View style={styles.eventsList}>
+                {events.map((event) => (
+                  <TouchableOpacity
+                    key={event.id}
+                    style={styles.eventCard}
+                    onPress={() => handleNavigation("Events")}
+                  >
+                    <View style={styles.eventText}>
+                      <Text style={styles.eventTitle}>{event.title}</Text>
+                      <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                      <Text style={styles.eventTime}>{event.time}</Text>
+                      <Text style={styles.eventDate}>{event.date}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Description Section with Modern Divider */}
         <View style={styles.descriptionContainer}>
@@ -503,17 +533,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#000000", // Changed from #1B6B63 to black
+    fontWeight: "600",
+    color: "#4A4A4A", // Changed to a dark grey for better readability
     letterSpacing: -0.3,
-    marginBottom: 4,
   },
   titleUnderline: {
-    height: 2,
-    width: '40%',
-    backgroundColor: '#000000',
-    borderRadius: 2,
-    opacity: 0.7,
+    display: 'none', // Remove the underline
   },
   descriptionContainer: {
     marginVertical: 20,
@@ -586,19 +611,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginBottom: 20,
-    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   sectionIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(27, 107, 99, 0.1)',
+    backgroundColor: 'rgba(244, 169, 65, 0.1)', // Changed to match new color scheme
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -796,6 +820,67 @@ const styles = StyleSheet.create({
   eventsList: {
     paddingHorizontal: 20,
     gap: 12,
+  },
+  customHeroBox: {
+    backgroundColor: "#FDF6EC",
+    paddingTop: 40,
+    paddingBottom: 18,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  customHeader: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  customHeaderTitle: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1B6B63", // Changed back to teal
+  },
+  headerIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sosWrapper: {
+    backgroundColor: "#C44536",
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+  paginationDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: '#1B6B63',
+    width: 24,
+    borderRadius: 4,
   },
 });
 

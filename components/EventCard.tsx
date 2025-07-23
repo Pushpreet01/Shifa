@@ -83,7 +83,7 @@ const EventCard: React.FC<EventCardProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[styles.container, style]} // Apply the style here
+      style={[styles.container, style]}
     >
       <View style={styles.content}>
         <Text style={styles.title}>{event.title}</Text>

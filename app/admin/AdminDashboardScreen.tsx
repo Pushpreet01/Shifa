@@ -15,10 +15,34 @@ const AdminDashboardScreen = () => {
   const navigation = useNavigation<any>();
 
   const dashboardItems = [
-    { title: "Users", count: 120, icon: "person-outline", route: "UserManagement" },
-    { title: "Approvals", count: 45, icon: "people-outline", route: "ApprovalManagement" },
-    { title: "Events", count: 8, icon: "calendar-outline", route: "Events" },
-    { title: "Resources", count: 30, icon: "book-outline", route: "ResourceManagement" },
+    {
+      title: "Users",
+      count: 120,
+      icon: "person-outline",
+      route: "UserManagement",
+      description: "Manage user accounts and roles"
+    },
+    {
+      title: "Approvals",
+      count: 45,
+      icon: "people-outline",
+      route: "ApprovalManagement",
+      description: "Review pending volunteer requests"
+    },
+    {
+      title: "Events",
+      count: 8,
+      icon: "calendar-outline",
+      route: "Events",
+      description: "Create and manage community events"
+    },
+    {
+      title: "Resources",
+      count: 30,
+      icon: "book-outline",
+      route: "ResourceManagement",
+      description: "Update help resources and guides"
+    },
   ];
 
   return (
@@ -45,10 +69,23 @@ const AdminDashboardScreen = () => {
               onPress={() => item.route && navigation.navigate(item.route)}
             >
               <Ionicons name={item.icon as any} size={28} color="#1B6B63" />
-              <Text style={styles.count}>{item.count}</Text>
               <Text style={styles.title}>{item.title}</Text>
+              <View style={styles.descriptionContainer}>
+                <Ionicons name="information-circle-outline" size={16} color="#666" />
+                <Text style={styles.description}>{item.description}</Text>
+              </View>
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* Friendly Reminder */}
+        <View style={styles.reminderContainer}>
+          <Ionicons name="heart" size={24} color="#1B6B63" />
+          <Text style={styles.reminderText}>
+            Your dedication makes a difference in our community.{'\n'}
+            Remember to take breaks and stay energized!{'\n'}
+            Together, we create positive change.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -61,7 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FDF6EC",
   },
   container: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   heroBox: {
     backgroundColor: "#FDF6EC",
@@ -82,7 +119,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1B6B63",
     marginBottom: 10,
-   
   },
   avatarContainer: {
     alignItems: "center",
@@ -112,6 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E0F2F1",
     width: "47%",
     paddingVertical: 20,
+    paddingHorizontal: 10,
     borderRadius: 18,
     alignItems: "center",
     marginBottom: 20,
@@ -128,10 +165,45 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   title: {
-    fontSize: 16,
+    fontSize: 19,
+    fontWeight: "bold",
     color: "#2E2E2E",
-    marginTop: 4,
-    
+    marginTop: 10,
+  },
+  descriptionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 5,
+  },
+  description: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
+    textAlign: 'center',
+    flex: 1,
+  },
+  reminderContainer: {
+    marginTop: 30,
+    marginHorizontal: 20,
+    padding: 20,
+    backgroundColor: "#FDF6EC",
+    // borderRadius: 18,
+    // borderWidth: 4,
+    // borderColor: "#E0F2F1",
+    alignItems: "center",
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.08,
+    // shadowRadius: 4,
+    // elevation: 3,
+  },
+  reminderText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: "#2E2E2E",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });
 

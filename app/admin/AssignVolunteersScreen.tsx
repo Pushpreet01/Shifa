@@ -1,3 +1,34 @@
+/**
+ * AssignVolunteersScreen Component
+ * 
+ * An interface for administrators to manage volunteer assignments for events.
+ * Provides functionality to view volunteer applications and assign/unassign
+ * volunteers while respecting slot limits.
+ * 
+ * Features:
+ * - Event selection dropdown
+ * - Volunteer application management
+ * - Slot limit enforcement
+ * - Name caching for performance
+ * - Loading and error states
+ * - Sorted volunteer display
+ * 
+ * Navigation Parameters:
+ * - eventId: Optional initial event ID to pre-select
+ * 
+ * States:
+ * - events: Array of available events
+ * - selectedEventId: Currently selected event
+ * - selectedEventTitle: Title of selected event
+ * - eventDropdownVisible: Controls dropdown visibility
+ * - applications: Array of volunteer applications
+ * - loading: Loading state indicator
+ * - nameCache: Cache of volunteer names
+ * - noOpportunity: Error state for missing opportunity
+ * - opportunityId: ID of associated opportunity
+ * - slots: Number of available volunteer slots
+ */
+
 import React, { useState } from 'react';
 import {
   View,
@@ -17,6 +48,7 @@ import { db } from '../../config/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import * as adminEventService from '../../services/adminEventService';
 
+// Type definitions for data structures
 type Volunteer = {
   id: string;
   name: string;
@@ -31,6 +63,8 @@ type Event = {
 const AssignVolunteersScreen = () => {
   const route = useRoute<any>();
   const { eventId: initialEventId } = route.params || {};
+
+  // State Management
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEventTitle, setSelectedEventTitle] = useState<string>('Choose an event');
@@ -42,7 +76,11 @@ const AssignVolunteersScreen = () => {
   const [opportunityId, setOpportunityId] = useState<string | null>(null);
   const [slots, setSlots] = useState<number | null>(null);
 
-  // Fetch and cache user name if not present
+  /**
+   * Fetches and caches volunteer names
+   * Uses cached names when available for performance
+   * @param userId - ID of the volunteer to fetch name for
+   */
   const getVolunteerName = async (userId: string) => {
     if (nameCache[userId]) return nameCache[userId];
     try {
@@ -56,7 +94,10 @@ const AssignVolunteersScreen = () => {
     return userId;
   };
 
-  // On applications change, fetch missing names
+  /**
+   * Fetches missing volunteer names when application list changes
+   * Updates name cache for newly added volunteers
+   */
   React.useEffect(() => {
     const fetchNames = async () => {
       const missing = applications.filter(a => !a.fullName && !nameCache[a.userId]);
@@ -65,7 +106,10 @@ const AssignVolunteersScreen = () => {
     if (applications.length > 0) fetchNames();
   }, [applications]);
 
-  // Fetch all events for dropdown on mount
+  /**
+   * Fetches available events on component mount
+   * Pre-selects event if ID is provided in navigation params
+   */
   React.useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -88,12 +132,16 @@ const AssignVolunteersScreen = () => {
     fetchEvents();
   }, []);
 
-  // When selectedEventId changes, fetch opportunity and applications
+  /**
+   * Fetches opportunity and applications when event selection changes
+   * Updates slot limits and application list
+   */
   React.useEffect(() => {
     const fetchData = async () => {
       if (!selectedEventId) return;
       setLoading(true);
       try {
+        // Get volunteer opportunity for event
         const opportunity = await FirebaseOpportunityService.getOpportunityByEventId(selectedEventId);
         if (!opportunity) {
           setNoOpportunity(true);
@@ -103,6 +151,8 @@ const AssignVolunteersScreen = () => {
         }
         setOpportunityId(opportunity.opportunityId);
         setSlots(opportunity.noVolunteersNeeded || null);
+        
+        // Fetch volunteer applications
         const apps = await FirebaseVolunteerApplicationService.getApplicationsByOpportunity(opportunity.opportunityId);
         setApplications(apps);
       } catch (err) {
@@ -116,7 +166,12 @@ const AssignVolunteersScreen = () => {
     fetchData();
   }, [selectedEventId]);
 
-  // Assign/unassign volunteer
+  /**
+   * Handles volunteer assignment toggling
+   * Respects slot limits when assigning volunteers
+   * @param applicationId - ID of the application to toggle
+   * @param currentStatus - Current assignment status
+   */
   const selectedCount = applications.filter(a => a.status === 'Selected').length;
   const toggleAssignment = async (applicationId: string, currentStatus: string) => {
     // Prevent assigning if slots are full and trying to assign
@@ -131,7 +186,7 @@ const AssignVolunteersScreen = () => {
     }
   };
 
-  // Sort applications: Not Selected at top, Selected at bottom
+  // Sort applications by status for better organization
   const sortedApplications = [...applications].sort((a, b) => {
     if (a.status === 'Not Selected' && b.status === 'Selected') return -1;
     if (a.status === 'Selected' && b.status === 'Not Selected') return 1;
@@ -142,6 +197,7 @@ const AssignVolunteersScreen = () => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Assign Volunteers" showBackButton customBackRoute="Events" />
 
+      {/* Event Selection Dropdown */}
       <View style={styles.dropdownWrapper}>
         <Text style={styles.label}>Select Event:</Text>
         <View style={styles.dropdownContainer}>
@@ -175,21 +231,25 @@ const AssignVolunteersScreen = () => {
         </View>
       </View>
 
+      {/* Slot Counter */}
       {slots !== null && (
         <Text style={{ textAlign: 'right', marginRight: 16, marginBottom: 8, fontWeight: 'bold', color: '#1B6B63' }}>
           Selected: {selectedCount} / {slots}
         </Text>
       )}
 
+      {/* Error State */}
       {noOpportunity ? (
         <Text style={{ textAlign: 'center', color: '#C44536', margin: 24 }}>No opportunity found for this event.</Text>
       ) : (
+        // Application List
         <ScrollView contentContainerStyle={styles.content}>
           {sortedApplications.map((app) => {
             const isSelected = app.status === 'Selected';
             const disableAssign = !isSelected && slots !== null && selectedCount >= slots;
             return (
               <View key={app.applicationId} style={styles.card}>
+                {/* Volunteer Info */}
                 <View style={styles.infoSection}>
                   <Ionicons
                     name={isSelected ? 'checkmark-circle' : 'close-circle'}
@@ -198,6 +258,7 @@ const AssignVolunteersScreen = () => {
                   />
                   <Text style={styles.name}>{app.fullName || nameCache[app.userId] || app.userId}</Text>
                 </View>
+                {/* Assignment Toggle Button */}
                 <TouchableOpacity
                   style={[
                     styles.toggleBtn,
@@ -219,11 +280,15 @@ const AssignVolunteersScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the volunteer assignment screen
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FDF6EC', // Warm background color
   },
+  
+  // Dropdown styles
   dropdownWrapper: {
     paddingHorizontal: 16,
     marginTop: 10,
@@ -250,7 +315,7 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 16,
-    color: '#1B6B63',
+    color: '#1B6B63', // Teal color for consistency
   },
   dropdownList: {
     backgroundColor: '#FFFFFF',
@@ -263,10 +328,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#2E2E2E',
   },
+  
+  // Content styles
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 40, // Extra padding for comfortable scrolling
   },
+  
+  // Card styles
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -275,12 +344,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    // Card elevation
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 4,
     elevation: 2,
   },
+  
+  // Info section styles
   infoSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -291,6 +363,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  
+  // Button styles
   toggleBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,

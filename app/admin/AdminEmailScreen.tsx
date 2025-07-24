@@ -1,3 +1,30 @@
+/**
+ * AdminEmailScreen Component
+ * 
+ * An interface for administrators to send emails to users based on their roles.
+ * Provides functionality for both bulk role-based emailing and individual user
+ * communication with character limits and validation.
+ * 
+ * Features:
+ * - Role-based recipient selection
+ * - Individual user emailing
+ * - Character-limited subject and message
+ * - Email validation
+ * - Success animation
+ * - Keyboard-aware scrolling
+ * 
+ * States:
+ * - selectedRole: Currently selected recipient role
+ * - specificUserRole: Role for individual user emailing
+ * - userEmail: Email address for individual user
+ * - subject: Email subject line
+ * - message: Email body content
+ * - showRoleDropdown: Controls role selection dropdown
+ * - showUserRoleDropdown: Controls user role dropdown
+ * - showSuccessModal: Controls success animation
+ * - fadeAnim: Animation value for success modal
+ */
+
 import React, { useState } from 'react';
 import {
   View,
@@ -17,12 +44,16 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 import * as MailComposer from 'expo-mail-composer';
 import KeyboardAwareWrapper from '../../components/KeyboardAwareWrapper';
 
+// Available user roles in the system
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
+
+// Character limits for input fields
 const MAX_CHAR_LIMITS = {
   subject: 30,
   message: 500,
 };
 
+// Placeholder email data (replace with actual data in production)
 const placeholderEmails = {
   Admin: ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'],
   'Support Seeker': ['support1@example.com', 'support2@example.com', 'support3@example.com'],
@@ -31,6 +62,7 @@ const placeholderEmails = {
 };
 
 const AdminEmailScreen = () => {
+  // State Management
   const [selectedRole, setSelectedRole] = useState('');
   const [specificUserRole, setSpecificUserRole] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -41,11 +73,21 @@ const AdminEmailScreen = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
 
+  /**
+   * Counts characters in a text field
+   * Used for character limit validation
+   * @param text - Text to count characters in
+   */
   const countChars = (text: string) => {
-    return text.length; // Count individual characters
+    return text.length;
   };
 
+  /**
+   * Handles email sending
+   * Validates input, checks email availability, and sends email
+   */
   const handleSend = async () => {
+    // Validate input fields
     if (selectedRole === 'Particular User') {
       if (!specificUserRole || !userEmail || !subject || !message.trim()) {
         alert('Please fill all fields for specific user.');
@@ -58,6 +100,7 @@ const AdminEmailScreen = () => {
       }
     }
 
+    // Validate character limits
     if (countChars(subject) > MAX_CHAR_LIMITS.subject) {
       alert(`Subject exceeds character limit of ${MAX_CHAR_LIMITS.subject}.`);
       return;
@@ -68,24 +111,29 @@ const AdminEmailScreen = () => {
       return;
     }
 
+    // Check email availability
     const isAvailable = await MailComposer.isAvailableAsync();
     if (!isAvailable) {
       Alert.alert('Error', 'No email app is available on this device');
       return;
     }
 
+    // Send email
     await MailComposer.composeAsync({
       recipients: [userEmail],
       subject: subject,
       body: message,
     });
 
+    // Reset form and show success animation
     setSelectedRole('');
     setSpecificUserRole('');
     setUserEmail('');
     setSubject('');
     setMessage('');
     setShowSuccessModal(true);
+
+    // Animate success modal
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 400,
@@ -111,6 +159,7 @@ const AdminEmailScreen = () => {
       />
       <KeyboardAwareWrapper>
         <ScrollView contentContainerStyle={styles.content}>
+          {/* Role Selection Section */}
           <Text style={styles.label}>Select Recipient:</Text>
           <View style={styles.dropdownContainer}>
             <TouchableOpacity
@@ -143,6 +192,7 @@ const AdminEmailScreen = () => {
             )}
           </View>
 
+          {/* Role-based Email List */}
           {selectedRole && selectedRole !== 'Particular User' && (
             <View style={styles.emailListContainer}>
               <Text style={styles.label}>Users in {selectedRole}:</Text>
@@ -159,6 +209,7 @@ const AdminEmailScreen = () => {
             </View>
           )}
 
+          {/* Individual User Section */}
           {selectedRole === 'Particular User' && (
             <>
               <Text style={styles.label}>User Role:</Text>
@@ -206,6 +257,7 @@ const AdminEmailScreen = () => {
             </>
           )}
 
+          {/* Email Content Section */}
           <Text style={styles.label}>Subject:</Text>
           <TextInput
             placeholder="Enter email subject"
@@ -233,12 +285,14 @@ const AdminEmailScreen = () => {
             {countChars(message)}/{MAX_CHAR_LIMITS.message}
           </Text>
 
+          {/* Send Button */}
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send Email</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAwareWrapper>
 
+      {/* Success Modal */}
       <Modal transparent visible={showSuccessModal} animationType="none">
         <View style={styles.modalOverlay}>
           <Animated.View style={[styles.successPopup, { opacity: fadeAnim }]}>
@@ -251,12 +305,19 @@ const AdminEmailScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the email composition screen
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDF6EC" },
+  // Container styles
+  container: { 
+    flex: 1, 
+    backgroundColor: "#FDF6EC", // Warm background color
+  },
   content: {
     padding: 20,
-    paddingBottom: 40, // Increased for better scrolling with keyboard
+    paddingBottom: 40, // Extra padding for keyboard scrolling
   },
+  
+  // Label styles
   label: {
     marginTop: 16,
     marginBottom: 6,
@@ -264,7 +325,11 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "600",
   },
-  dropdownContainer: { marginBottom: 10 },
+  
+  // Dropdown styles
+  dropdownContainer: { 
+    marginBottom: 10,
+  },
   dropdown: {
     backgroundColor: '#fff',
     borderColor: '#DDD',
@@ -276,14 +341,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  dropdownText: { color: '#1B6B63', fontWeight: 'bold' },
+  dropdownText: { 
+    color: '#1B6B63', 
+    fontWeight: 'bold',
+  },
   dropdownList: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 10,
     elevation: 2,
   },
-  dropdownItem: { paddingVertical: 6, fontSize: 15, color: '#2E2E2E' },
+  dropdownItem: { 
+    paddingVertical: 6, 
+    fontSize: 15, 
+    color: '#2E2E2E',
+  },
+  
+  // Email list styles
   emailListContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
@@ -297,9 +371,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
   },
-  emailIcon: { marginRight: 8 },
-  emailText: { fontSize: 14, color: '#2E2E2E' },
-  noEmailsText: { fontSize: 14, color: '#888', textAlign: 'center', paddingVertical: 10 },
+  emailIcon: { 
+    marginRight: 8,
+  },
+  emailText: { 
+    fontSize: 14, 
+    color: '#2E2E2E',
+  },
+  noEmailsText: { 
+    fontSize: 14, 
+    color: '#888', 
+    textAlign: 'center', 
+    paddingVertical: 10,
+  },
+  
+  // Input styles
   input: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -311,15 +397,17 @@ const styles = StyleSheet.create({
   charCountSubject: {
     alignSelf: 'flex-end',
     fontSize: 12,
-    color: '#1B6B63', // Teal color to match other screens
-    marginBottom: -10, // Reduced to bring Message field closer
+    color: '#1B6B63', // Teal color for consistency
+    marginBottom: -10, // Reduced spacing
   },
   charCount: {
     alignSelf: 'flex-end',
     fontSize: 12,
-    color: '#1B6B63', // Teal color to match other screens
+    color: '#1B6B63',
     marginBottom: 20,
   },
+  
+  // Button styles
   sendButton: {
     backgroundColor: "#1B6B63",
     paddingVertical: 14,
@@ -331,11 +419,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  
+  // Modal styles
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 30,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.3)', // Semi-transparent overlay
   },
   successPopup: {
     backgroundColor: '#fff',
@@ -344,6 +434,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     width: 250,
+    // Modal elevation
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,

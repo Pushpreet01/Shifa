@@ -1,3 +1,19 @@
+/**
+ * ResourcesScreen Component
+ * 
+ * A screen that provides access to various mental health and support resources.
+ * Displays a list of resource categories that users can explore, including
+ * addiction help, therapy, counseling, awareness, and support systems.
+ * 
+ * Props:
+ * - navigation: React Navigation prop for screen navigation
+ * 
+ * Features:
+ * - Clean, accessible UI with icon-based navigation
+ * - Consistent styling with the app's theme
+ * - Responsive layout with scrollable content
+ */
+
 import React from "react";
 import {
   View,
@@ -11,6 +27,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 import HeroBox from "../../components/HeroBox";
 
 const ResourcesScreen = ({ navigation }) => {
+  // Resource categories configuration
+  // Each resource has a label, navigation route, and associated icon
   const resources = [
     { label: "Addiction Help", route: "AddictionHelp", icon: "heart-circle-outline" },
     { label: "Find a Therapist", route: "FindTherapist", icon: "person-search-outline" },
@@ -25,17 +43,20 @@ const ResourcesScreen = ({ navigation }) => {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header Component with back navigation */}
         <HeroBox title="Resources" showBackButton={true} customBackRoute="Home" />
 
+        {/* Section Title */}
         <Text style={styles.headerText}>Explore Your Resources</Text>
 
+        {/* Resource Buttons Container */}
         <View style={styles.buttonContainer}>
           {resources.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={styles.resourceButton}
               onPress={() => item.route && navigation.navigate(item.route)}
-              activeOpacity={0.7}
+              activeOpacity={0.7} // Feedback opacity when pressed
             >
               <View style={styles.buttonContent}>
                 <View style={styles.iconContainer}>
@@ -56,16 +77,20 @@ const ResourcesScreen = ({ navigation }) => {
   );
 };
 
+// Styles: Defines the visual appearance of the resources screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#F8F1E9",
+    backgroundColor: "#F8F1E9", // Warm, calming background color
   },
   container: {
     flexGrow: 1,
-    paddingBottom: 100,
+    paddingBottom: 100, // Extra padding for comfortable scrolling
     backgroundColor: "#F8F1E9",
   },
+  
+  // Header styles
   headerText: {
     fontSize: 24,
     fontWeight: "600",
@@ -75,16 +100,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     alignSelf: "flex-start",
   },
+  
+  // Resource buttons container
   buttonContainer: {
     width: "100%",
     paddingHorizontal: 20,
     alignItems: "flex-start", // Align buttons to the left to match header text
   },
+  
+  // Individual resource button styles
   resourceButton: {
     backgroundColor: "#1B6B63",
     marginVertical: 8,
     borderRadius: 12,
-    width: "100%", // Full width within container to align with header text
+    width: "100%",
+    // Elevation and shadow for depth
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -103,13 +133,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   buttonIcon: {
-    // No additional styling needed here
+    // Icon styling handled by Icon component props
   },
   buttonText: {
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 16,
-    letterSpacing: 0.5,
+    letterSpacing: 0.5, // Improved readability
   },
 });
 

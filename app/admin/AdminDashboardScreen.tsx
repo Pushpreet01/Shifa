@@ -1,3 +1,13 @@
+/**
+ * AdminDashboardScreen Component
+ * 
+ * A dashboard interface for administrators to access and manage various aspects of the application.
+ * Provides quick access to user management, approvals, events, and resources.
+ * 
+ * Navigation: Uses React Navigation for routing between admin screens
+ * Layout: Implements a grid-based card layout with a hero section and reminder footer
+ */
+
 import React from "react";
 import {
   View,
@@ -12,8 +22,11 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
 const AdminDashboardScreen = () => {
+  // Navigation hook for routing between screens
   const navigation = useNavigation<any>();
 
+  // Dashboard items configuration
+  // Each item represents a major administrative function with its metadata
   const dashboardItems = [
     {
       title: "Users",
@@ -48,7 +61,7 @@ const AdminDashboardScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Styled Header */}
+        {/* Hero Section: Displays admin welcome message and profile avatar */}
         <View style={styles.heroBox}>
           <Text style={styles.headerTitle}>Admin Dashboard</Text>
           <View style={styles.avatarContainer}>
@@ -60,7 +73,7 @@ const AdminDashboardScreen = () => {
           </View>
         </View>
 
-        {/* Dashboard Grid */}
+        {/* Dashboard Grid: Displays administrative function cards */}
         <View style={styles.grid}>
           {dashboardItems.map((item, index) => (
             <TouchableOpacity
@@ -82,7 +95,7 @@ const AdminDashboardScreen = () => {
           ))}
         </View>
 
-        {/* Friendly Reminder */}
+        {/* Motivational Reminder Section: Displays encouraging message for admins */}
         <View style={styles.reminderContainer}>
           <Ionicons name="heart" size={24} color="#1B6B63" />
           <Text style={styles.reminderText}>
@@ -96,14 +109,18 @@ const AdminDashboardScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the dashboard
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color for comfortable viewing
   },
   container: {
-    paddingBottom: 120,
+    paddingBottom: 120, // Extra padding for scrolling content
   },
+  
+  // Hero section styles
   heroBox: {
     backgroundColor: "#FDF6EC",
     paddingTop: 40,
@@ -112,6 +129,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     alignItems: "center",
+    // Shadow for depth
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,

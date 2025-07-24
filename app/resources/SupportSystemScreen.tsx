@@ -1,3 +1,23 @@
+/**
+ * SupportSystemScreen Component
+ * 
+ * A resource interface that provides access to various support services including
+ * women's helplines, family services, and transitional homes. Features an
+ * interactive card-based layout with expandable information.
+ * 
+ * Features:
+ * - Expandable resource cards
+ * - Animated transitions
+ * - External resource links
+ * - Emergency access
+ * - Notification integration
+ * - Accessible navigation
+ * 
+ * States:
+ * - expandedIndices: Tracks which cards are expanded
+ * - animations: Animation values for smooth transitions
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -16,6 +36,7 @@ import { useNavigation } from "@react-navigation/native";
 const SupportSystemScreen = () => {
   const navigation = useNavigation();
 
+  // Resource data configuration
   const supportResources = [
     {
       label: "Women's Helplines",
@@ -34,11 +55,17 @@ const SupportSystemScreen = () => {
     },
   ];
 
+  // State Management
   const [expandedIndices, setExpandedIndices] = useState([]);
   const [animations] = useState(
     supportResources.map(() => new Animated.Value(0))
   );
 
+  /**
+   * Handles card expansion/collapse
+   * Manages animation state for smooth transitions
+   * @param index - Index of card to toggle
+   */
   const toggleCard = (index) => {
     const isExpanded = expandedIndices.includes(index);
     const newExpandedIndices = isExpanded
@@ -47,6 +74,7 @@ const SupportSystemScreen = () => {
 
     setExpandedIndices(newExpandedIndices);
 
+    // Animate card expansion/collapse
     Animated.timing(animations[index], {
       toValue: isExpanded ? 0 : 1,
       duration: 300,
@@ -54,10 +82,20 @@ const SupportSystemScreen = () => {
     }).start();
   };
 
+  /**
+   * Shows resource label in alert dialog
+   * @param label - Label of the resource
+   */
   const showLabel = (label) => {
     Alert.alert("Resource", label, [{ text: "OK" }]);
   };
 
+  /**
+   * Renders expandable details section
+   * Includes resource link with animation
+   * @param resource - Resource data
+   * @param index - Index for animation tracking
+   */
   const renderDetails = (resource, index) => {
     const height = animations[index].interpolate({
       inputRange: [0, 1],
@@ -75,15 +113,19 @@ const SupportSystemScreen = () => {
     );
   };
 
+  /**
+   * Handles navigation back to resources screen
+   */
   const handleBack = () => {
     navigation.navigate("Resources");
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Unified Header styled like HeroBox */}
+      {/* Custom Header Section */}
       <View style={styles.heroBox}>
         <View style={styles.header}>
+          {/* Left Header Section */}
           <View style={styles.leftSection}>
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
               <Ionicons name="chevron-back-outline" size={24} color="#1B6B63" />
@@ -91,6 +133,7 @@ const SupportSystemScreen = () => {
             <Text style={styles.headerTitle}>Support System</Text>
           </View>
 
+          {/* Right Header Section */}
           <View style={styles.rightSection}>
             <TouchableOpacity onPress={() => navigation.navigate("Announcements")}>
               <Ionicons name="notifications-outline" size={24} color="#C44536" />
@@ -105,7 +148,7 @@ const SupportSystemScreen = () => {
         </View>
       </View>
 
-      {/* Main Content */}
+      {/* Resource Cards Section */}
       <ScrollView contentContainerStyle={styles.container}>
         {supportResources.map((item, index) => (
           <TouchableOpacity
@@ -115,6 +158,7 @@ const SupportSystemScreen = () => {
             activeOpacity={0.7}
           >
             <View style={styles.cardContent}>
+              {/* Card Main Content */}
               <View style={styles.mainContent}>
                 <TouchableOpacity onPress={() => showLabel(item.label)}>
                   <View style={styles.iconBox}>
@@ -125,12 +169,14 @@ const SupportSystemScreen = () => {
                   <Text style={styles.infoButtonText}>{item.label}</Text>
                   {renderDetails(item, index)}
                 </View>
+                {/* Expand/Collapse Indicator */}
                 {!expandedIndices.includes(index) && (
                   <View style={styles.arrowButton}>
                     <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
                   </View>
                 )}
               </View>
+              {/* Close Button for Expanded State */}
               {expandedIndices.includes(index) && (
                 <TouchableOpacity
                   style={styles.closeButton}
@@ -147,11 +193,20 @@ const SupportSystemScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the support system screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color
   },
+  container: {
+    paddingBottom: 100,
+    alignItems: "center",
+    paddingTop: 20,
+  },
+  
+  // Header styles
   heroBox: {
     backgroundColor: "#FDF6EC",
     paddingTop: 40,
@@ -159,6 +214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    // Header elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -181,14 +237,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#1B6B63",
+    color: "#1B6B63", // Teal color for consistency
   },
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
   },
   sosWrapper: {
-    backgroundColor: "#C44536",
+    backgroundColor: "#C44536", // Emergency red color
     borderRadius: 15,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -201,18 +257,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12,
   },
-  container: {
-    paddingBottom: 100,
-    alignItems: "center",
-    paddingTop: 20,
-  },
+  
+  // Card styles
   cardRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 12, // Reduced from 16 for compactness
-    width: "85%", // Reduced from 90% for smaller tiles
-    backgroundColor: "#A8D8C9",
+    marginVertical: 12, // Reduced spacing for compactness
+    width: "85%", // Reduced width for smaller tiles
+    backgroundColor: "#A8D8C9", // Light teal background
     borderRadius: 20,
+    // Card elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -224,32 +278,37 @@ const styles = StyleSheet.create({
     position: "relative",
     flexDirection: "column",
     width: "100%",
-    paddingVertical: 10, // Reduced from 14 for smaller tiles
-    paddingHorizontal: 14, // Reduced from 18
+    paddingVertical: 10, // Reduced padding for smaller tiles
+    paddingHorizontal: 14,
   },
   mainContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 40, // Reduced from 60 to match smaller iconBox
+    minHeight: 40, // Reduced height to match smaller iconBox
   },
+  
+  // Icon styles
   iconBox: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 40, // Half of 80 for a perfect circle
-    padding: 12, // Reduced from 16
-    width: 80, // Reduced from 120
-    height: 80, // Reduced from 120
+    borderRadius: 40, // Perfect circle
+    padding: 12,
+    width: 80,
+    height: 80,
     justifyContent: "center",
     alignItems: "center",
+    // Icon box elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 5,
   },
+  
+  // Text styles
   textContainer: {
     flex: 1,
-    marginHorizontal: 8, // Reduced from 10
+    marginHorizontal: 8,
   },
   infoButtonText: {
     color: "#1B6B63",
@@ -269,19 +328,23 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "600",
   },
+  
+  // Animation container styles
   detailsContainer: {
     marginTop: 8,
     overflow: "hidden",
   },
+  
+  // Button styles
   closeButton: {
     position: "absolute",
-    top: 5, // Changed from -10 to stay within tile
-    right: 5, // Changed from -10
+    top: 5, // Positioned within tile
+    right: 5,
     padding: 5,
   },
   arrowButton: {
     position: "absolute",
-    right: 5, // Changed from -10
+    right: 5,
     padding: 5,
     justifyContent: "center",
   },

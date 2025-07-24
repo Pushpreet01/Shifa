@@ -1,3 +1,29 @@
+/**
+ * ApprovalDetailsScreen Component
+ * 
+ * A detailed view for administrators to review and make decisions on approval requests.
+ * Currently focused on event approvals with associated volunteer opportunities.
+ * 
+ * Features:
+ * - Detailed event information display
+ * - Event creator profile information
+ * - Volunteer opportunity details when applicable
+ * - Approve/Reject functionality with rejection reason
+ * - Loading and error states
+ * 
+ * Navigation Parameters:
+ * - id: The ID of the item to review
+ * - type: The type of approval ('event', 'volunteer', 'organizer')
+ * 
+ * States:
+ * - event: Event data being reviewed
+ * - opportunity: Associated volunteer opportunity data
+ * - eventCreator: Event creator's profile information
+ * - loading: Loading state indicator
+ * - rejectionModalVisible: Controls rejection modal visibility
+ * - rejectionReason: Stores the reason for rejection
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -18,6 +44,7 @@ import { RouteProp } from "@react-navigation/native";
 import { AdminStackParamList } from "../../navigation/AdminNavigator";
 import { db } from "../../config/firebaseConfig";
 
+// Type definitions for navigation props
 type ApprovalDetailsScreenProps = {
   route: RouteProp<AdminStackParamList, "ApprovalDetails">;
   navigation: NativeStackNavigationProp<AdminStackParamList, "ApprovalDetails">;
@@ -25,6 +52,8 @@ type ApprovalDetailsScreenProps = {
 
 const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, navigation }) => {
   const { id, type } = route.params;
+  
+  // State Management
   const [event, setEvent] = useState<any>(null);
   const [opportunity, setOpportunity] = useState<any>(null);
   const [eventCreator, setEventCreator] = useState<any>(null);
@@ -32,17 +61,21 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
   const [rejectionModalVisible, setRejectionModalVisible] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  /**
+   * Fetches detailed information about the approval request
+   * Includes event details, creator information, and associated opportunity
+   */
   useEffect(() => {
     const fetchDetails = async () => {
       setLoading(true);
       if (type === "event") {
-        // Fetch event by ID directly from Firestore
+        // Fetch event details
         const eventDoc = await getDoc(doc(db, "events", id));
         if (eventDoc.exists()) {
           const eventData = eventDoc.data();
           setEvent({ id, ...eventData });
 
-          // Fetch event creator details
+          // Fetch event creator's profile
           if (eventData.createdBy) {
             try {
               const userDoc = await getDoc(doc(db, "users", eventData.createdBy));
@@ -54,8 +87,8 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
             }
           }
 
+          // Fetch associated volunteer opportunity if needed
           if (eventData.needsVolunteers) {
-            // Fetch associated opportunity
             const q = query(
               collection(db, "opportunities"),
               where("eventId", "==", id)
@@ -70,12 +103,16 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
           }
         }
       }
-      // Add similar logic for 'volunteer' and 'organizer' if needed
+      // TODO: Add handling for 'volunteer' and 'organizer' types
       setLoading(false);
     };
     fetchDetails();
   }, [id, type]);
 
+  /**
+   * Handles approval of the event and associated opportunity
+   * Updates status and navigates back on success
+   */
   const handleApprove = async () => {
     try {
       await approveItem(event.id, "event");
@@ -87,11 +124,19 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
     }
   };
 
+  /**
+   * Initiates the rejection process
+   * Opens the rejection reason modal
+   */
   const handleReject = () => {
     setRejectionReason("");
     setRejectionModalVisible(true);
   };
 
+  /**
+   * Confirms rejection with provided reason
+   * Updates status and navigates back on success
+   */
   const confirmReject = async () => {
     try {
       await denyItem(event.id, "event", rejectionReason);
@@ -104,6 +149,7 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
     }
   };
 
+  // Loading state display
   if (loading) {
     return (
       <View
@@ -118,6 +164,8 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
       </View>
     );
   }
+
+  // Error state display
   if (!event) {
     return (
       <View
@@ -140,6 +188,7 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
         showBackButton
         customBackRoute="ApprovalManagement"
       />
+
       {/* Rejection Reason Modal */}
       <Modal
         visible={rejectionModalVisible}
@@ -169,8 +218,10 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
           </View>
         </View>
       </Modal>
+
+      {/* Main Content Card */}
       <View style={styles.card}>
-        {/* Event Creator Card */}
+        {/* Event Creator Profile Section */}
         {eventCreator && (
           <View style={styles.eventCreatorCard}>
             <Image
@@ -185,6 +236,7 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
           </View>
         )}
 
+        {/* Event Details Section */}
         <Text style={styles.label}>Title:</Text>
         <Text style={styles.value}>{event.title}</Text>
         <Text style={styles.label}>Description:</Text>
@@ -208,6 +260,8 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
         <Text style={styles.value}>{event.location}</Text>
         <Text style={styles.label}>Needs Volunteers:</Text>
         <Text style={styles.value}>{event.needsVolunteers ? "Yes" : "No"}</Text>
+
+        {/* Volunteer Opportunity Details Section */}
         {opportunity && (
           <>
             <Text style={styles.label}>Number of Volunteers Needed:</Text>
@@ -222,6 +276,8 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
             <Text style={styles.value}>{opportunity.refreshments || "Not specified"}</Text>
           </>
         )}
+
+        {/* Action Buttons */}
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.button, styles.approveBtn]}
@@ -241,8 +297,16 @@ const ApprovalDetailsScreen: React.FC<ApprovalDetailsScreenProps> = ({ route, na
   );
 };
 
+// Styles: Defines the visual appearance of the approval details screen
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDF6EC", paddingBottom: 100 },
+  // Container styles
+  container: { 
+    flex: 1, 
+    backgroundColor: "#FDF6EC", 
+    paddingBottom: 100, // Extra padding for comfortable scrolling
+  },
+  
+  // Card styles
   card: {
     backgroundColor: "#fff",
     margin: 20,
@@ -251,6 +315,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     elevation: 3,
   },
+  
+  // Content styles
   label: {
     fontWeight: "bold",
     fontSize: 16,
@@ -262,6 +328,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#333",
   },
+  
+  // Action button styles
   actions: {
     marginTop: 20,
     flexDirection: "row",
@@ -274,15 +342,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: 120,
   },
-  approveBtn: { backgroundColor: "#1B6B63" },
-  rejectBtn: { backgroundColor: "#C44536" },
-  buttonText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
+  approveBtn: { 
+    backgroundColor: "#1B6B63", // Success color
+  },
+  rejectBtn: { 
+    backgroundColor: "#C44536", // Danger color
+  },
+  buttonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    textAlign: "center",
+  },
+  
+  // Event creator card styles
   eventCreatorCard: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 20,
     padding: 15,
-    backgroundColor: "#E0F2F7",
+    backgroundColor: "#E0F2F7", // Light blue background
     borderRadius: 12,
   },
   eventCreatorImage: {

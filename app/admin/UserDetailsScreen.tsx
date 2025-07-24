@@ -1,4 +1,25 @@
-// app/admin/UserDetailsScreen.tsx
+/**
+ * UserDetailsScreen Component
+ * 
+ * A detailed view of user information for administrators. Provides functionality
+ * to view user details, manage user status (ban/unban), and assign roles.
+ * 
+ * Features:
+ * - User profile information display
+ * - User status management (ban/unban)
+ * - Role assignment navigation
+ * - Loading and error states
+ * - Special handling for admin users
+ * 
+ * Navigation Parameters:
+ * - userId: ID of the user to display
+ * 
+ * States:
+ * - user: Current user's data
+ * - loading: Initial data loading indicator
+ * - updating: Status update loading indicator
+ */
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,8 +28,10 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 import { fetchUsers, banUser } from '../../services/adminUserService';
 import { useIsFocused } from '@react-navigation/native';
 
-// User type for UI
-// (should match the type in UserManagementScreen)
+/**
+ * User Interface Definition
+ * Defines the structure of user data displayed in the details view
+ */
 type User = {
   id: string;
   fullName: string;
@@ -19,16 +42,22 @@ type User = {
   approved: boolean;
 };
 
+// Navigation prop types
 type Props = NativeStackScreenProps<AdminStackParamList, 'UserDetails'>;
 
 const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { userId } = route.params;
+  
+  // State Management
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const isFocused = useIsFocused();
 
-  // Fetch user by userId
+  /**
+   * Fetches user details from backend
+   * Updates on navigation focus to ensure data freshness
+   */
   useEffect(() => {
     const loadUser = async () => {
       setLoading(true);
@@ -46,6 +75,10 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     loadUser();
   }, [userId, isFocused]);
 
+  /**
+   * Handles user ban/unban functionality
+   * Updates user status and provides feedback
+   */
   const handleBanUnban = async () => {
     if (!user) return;
     setUpdating(true);
@@ -60,6 +93,7 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
+  // Loading state display
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FDF6EC' }}>
@@ -68,6 +102,7 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   }
 
+  // Error state display
   if (!user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FDF6EC' }}>
@@ -84,13 +119,17 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         customBackRoute="UserManagement"
       />
 
+      {/* User Profile Card */}
       <View style={styles.card}>
+        {/* Profile Image */}
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
           <Image
             source={user.profileImage ? { uri: user.profileImage } : require('../../assets/aiplaceholder.png')}
             style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#E0E0E0' }}
           />
         </View>
+
+        {/* User Information */}
         <Text style={styles.label}>Full Name:</Text>
         <Text style={styles.value}>{user.fullName || 'No Name'}</Text>
 
@@ -103,7 +142,7 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={styles.label}>Role:</Text>
         <Text style={styles.value}>{user.role}</Text>
 
-        {/* Only show Status for non-admin users */}
+        {/* Status Section (Non-admin only) */}
         {user.role !== 'Admin' && (
           <>
             <Text style={styles.label}>Status:</Text>
@@ -111,8 +150,8 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           </>
         )}
 
+        {/* Action Buttons (Non-admin only) */}
         <View style={styles.actions}>
-          {/* Only show Ban and Assign Role for non-admin users */}
           {user.role !== 'Admin' && (
             <>
               <TouchableOpacity
@@ -136,8 +175,15 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
+// Styles: Defines the visual appearance of the user details screen
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FDF6EC' },
+  // Container styles
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FDF6EC', // Warm background color
+  },
+  
+  // Card styles
   card: {
     backgroundColor: '#fff',
     margin: 20,
@@ -145,10 +191,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     elevation: 3,
   },
+  
+  // Content styles
   label: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#1B6B63',
+    color: '#1B6B63', // Teal color for consistency
     marginTop: 12,
   },
   value: {
@@ -156,6 +204,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#333',
   },
+  
+  // Action button styles
   actions: {
     marginTop: 20,
     flexDirection: 'column',
@@ -166,10 +216,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  editButton: { backgroundColor: '#008080' },
-  banButton: { backgroundColor: '#008080' },
-  roleButton: { backgroundColor: '#008080' },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
+  editButton: { 
+    backgroundColor: '#008080', // Teal color for edit actions
+  },
+  banButton: { 
+    backgroundColor: '#008080', // Teal color for ban actions
+  },
+  roleButton: { 
+    backgroundColor: '#008080', // Teal color for role actions
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontWeight: 'bold',
+  },
 });
 
 export default UserDetailsScreen;

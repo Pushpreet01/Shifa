@@ -1,3 +1,29 @@
+/**
+ * AdminEditEventScreen Component
+ * 
+ * A detailed form interface for administrators to edit existing events and their
+ * associated volunteer opportunities. Provides comprehensive event management with
+ * character limits and validation.
+ * 
+ * Features:
+ * - Event details editing (title, date, time, location, description)
+ * - Volunteer opportunity management
+ * - Character limit validation
+ * - Real-time character counting
+ * - Loading and saving states
+ * 
+ * Navigation Parameters:
+ * - eventId: ID of the event to edit
+ * 
+ * States:
+ * - loading: Initial data loading indicator
+ * - saving: Save operation indicator
+ * - event: Current event data
+ * - opportunity: Associated volunteer opportunity data
+ * - Form fields: title, date, startTime, endTime, location, description, needsVolunteers
+ * - Opportunity fields: noVolunteersNeeded, timings, rewards, refreshments
+ */
+
 import React, { useEffect, useState } from "react";
 import {
     View,
@@ -16,6 +42,7 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 import * as adminEventService from '../../services/adminEventService';
 import FirebaseOpportunityService from '../../services/FirebaseOpportunityService';
 
+// Character limits for form fields
 const MAX_CHAR_LIMITS = {
   title: 30,
   description: 500,
@@ -26,12 +53,14 @@ const MAX_CHAR_LIMITS = {
 const AdminEditEventScreen = () => {
     const route = useRoute<any>();
     const { eventId } = route.params || {};
+
+    // Loading and data states
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [event, setEvent] = useState<any>(null);
     const [opportunity, setOpportunity] = useState<any>(null);
 
-    // Editable fields
+    // Event form fields
     const [title, setTitle] = useState('');
     const [date, setDate] = useState(new Date());
     const [startTime, setStartTime] = useState('');
@@ -40,21 +69,29 @@ const AdminEditEventScreen = () => {
     const [description, setDescription] = useState('');
     const [needsVolunteers, setNeedsVolunteers] = useState(false);
 
-    // Opportunity fields
+    // Volunteer opportunity form fields
     const [noVolunteersNeeded, setNoVolunteersNeeded] = useState(1);
     const [timings, setTimings] = useState('');
     const [rewards, setRewards] = useState('');
     const [refreshments, setRefreshments] = useState('');
 
-    // Count characters
+    /**
+     * Counts characters in a text field
+     * Used for character limit validation
+     * @param text - Text to count characters in
+     */
     const countChars = (text: string) => {
       return text.length;
     };
 
-    // Fetch event and opportunity
+    /**
+     * Fetches event and associated opportunity data
+     * Initializes form fields with fetched data
+     */
     const fetchData = async () => {
         setLoading(true);
         try {
+            // Fetch event details
             const eventData = await adminEventService.getEventById(eventId);
             if (!eventData) {
                 Alert.alert('Error', 'Event not found');
@@ -62,6 +99,8 @@ const AdminEditEventScreen = () => {
                 return;
             }
             setEvent(eventData);
+
+            // Initialize event form fields
             setTitle(eventData.title || '');
             setDate(eventData.date?.toDate ? eventData.date.toDate() : new Date(eventData.date));
             setStartTime(eventData.startTime || '');
@@ -69,6 +108,8 @@ const AdminEditEventScreen = () => {
             setLocation(eventData.location || '');
             setDescription(eventData.description || '');
             setNeedsVolunteers(!!eventData.needsVolunteers);
+
+            // Fetch and initialize opportunity data if needed
             if (eventData.needsVolunteers) {
                 const opp = await FirebaseOpportunityService.getOpportunityByEventId(eventId);
                 if (opp) {
@@ -88,15 +129,19 @@ const AdminEditEventScreen = () => {
         }
     };
 
+    // Load data on mount and when eventId changes
     useEffect(() => {
         fetchData();
     }, [eventId]);
 
-    // Save handler
+    /**
+     * Handles form submission
+     * Validates character limits and updates event and opportunity data
+     */
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Validate character limits
+            // Validate character limits for all fields
             if (countChars(title) > MAX_CHAR_LIMITS.title) {
               Alert.alert(`Error`, `Title exceeds character limit of ${MAX_CHAR_LIMITS.title}.`);
               setSaving(false);
@@ -118,7 +163,7 @@ const AdminEditEventScreen = () => {
               return;
             }
 
-            // Update event
+            // Update event details
             await adminEventService.updateEvent(eventId, {
                 title,
                 date,
@@ -128,9 +173,11 @@ const AdminEditEventScreen = () => {
                 description,
                 needsVolunteers,
             });
-            // Update or create opportunity if needed
+
+            // Handle volunteer opportunity updates
             if (needsVolunteers) {
                 if (opportunity) {
+                    // Update existing opportunity
                     await FirebaseOpportunityService.updateOpportunity(opportunity.opportunityId, {
                         noVolunteersNeeded,
                         timings,
@@ -161,6 +208,7 @@ const AdminEditEventScreen = () => {
         }
     };
 
+    // Loading state display
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
@@ -174,6 +222,7 @@ const AdminEditEventScreen = () => {
         <SafeAreaView style={styles.container}>
             <AdminHeroBox title="Edit Event" showBackButton customBackRoute="Events" />
             <ScrollView style={styles.formContainer} contentContainerStyle={{ paddingBottom: 130 }}>
+                {/* Event Details Section */}
                 <Text style={styles.label}>Title</Text>
                 <TextInput
                   style={styles.input}
@@ -223,11 +272,13 @@ const AdminEditEventScreen = () => {
                   {countChars(description)}/{MAX_CHAR_LIMITS.description}
                 </Text>
 
+                {/* Volunteer Toggle */}
                 <View style={styles.switchRow}>
                     <Text style={styles.label}>Needs Volunteers</Text>
                     <Switch value={needsVolunteers} onValueChange={setNeedsVolunteers} />
                 </View>
 
+                {/* Volunteer Opportunity Section */}
                 {needsVolunteers && (
                     <>
                         <Text style={styles.sectionHeader}>Opportunity Details</Text>
@@ -263,6 +314,7 @@ const AdminEditEventScreen = () => {
                     </>
                 )}
 
+                {/* Save Button */}
                 <TouchableOpacity
                     style={styles.saveButton}
                     onPress={handleSave}
@@ -275,14 +327,18 @@ const AdminEditEventScreen = () => {
     );
 };
 
+// Styles: Defines the visual appearance of the event edit form
 const styles = StyleSheet.create({
+    // Container styles
     container: {
         flex: 1,
-        backgroundColor: '#FDF6EC',
+        backgroundColor: '#FDF6EC', // Warm background color
     },
     formContainer: {
         padding: 20,
     },
+    
+    // Form field styles
     label: {
         fontWeight: 'bold',
         color: '#1B6B63',
@@ -304,19 +360,25 @@ const styles = StyleSheet.create({
       color: '#1B6B63', // Teal color to match other screens
       marginBottom: 16,
     },
+    
+    // Switch row styles
     switchRow: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 16,
         justifyContent: 'space-between',
     },
+    
+    // Section header styles
     sectionHeader: {
         fontWeight: 'bold',
         fontSize: 16,
-        color: '#C44536',
+        color: '#C44536', // Highlight color for section headers
         marginTop: 16,
         marginBottom: 8,
     },
+    
+    // Save button styles
     saveButton: {
         backgroundColor: '#1B6B63',
         borderRadius: 16,

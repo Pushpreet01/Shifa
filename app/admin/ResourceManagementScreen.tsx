@@ -1,3 +1,32 @@
+/**
+ * ResourceManagementScreen Component
+ * 
+ * A comprehensive interface for administrators to manage various types of resources
+ * including text, images, videos, and documents. Provides functionality for creating,
+ * editing, deleting, and toggling resource visibility.
+ * 
+ * Features:
+ * - Resource statistics dashboard
+ * - Search and filtering capabilities
+ * - Multiple content type support
+ * - File upload handling
+ * - Resource status management
+ * - Tag management
+ * - Priority settings
+ * 
+ * States:
+ * - resources: Array of all resources
+ * - loading: Main loading state
+ * - modalVisible: Controls resource form modal
+ * - editingResource: Currently edited resource
+ * - uploading: File upload state
+ * - searchTerm: Current search query
+ * - selectedType: Current resource type filter
+ * - stats: Resource statistics data
+ * - formData: Resource form data
+ * - selectedFile: Currently selected file for upload
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -38,6 +67,7 @@ import { auth } from "../../config/firebaseConfig";
 
 const { width } = Dimensions.get("window");
 
+// Icon mapping for resource types
 const iconMap: Record<Resource["type"], JSX.Element> = {
   AddictionHelp: (
     <MaterialCommunityIcons name="hand-heart" size={20} color="#fff" />
@@ -48,6 +78,7 @@ const iconMap: Record<Resource["type"], JSX.Element> = {
   SupportSystem: <Ionicons name="people" size={20} color="#fff" />,
 };
 
+// Content type configuration
 const contentTypeMap: Record<
   Resource["contentType"],
   { icon: string; label: string }
@@ -59,17 +90,17 @@ const contentTypeMap: Record<
 };
 
 const ResourceManagementScreen = () => {
+  // State Management
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<Resource["type"] | "all">(
-    "all"
-  );
+  const [selectedType, setSelectedType] = useState<Resource["type"] | "all">("all");
   const [stats, setStats] = useState<any>(null);
 
+  // Form state
   const [formData, setFormData] = useState<CreateResourceData>({
     title: "",
     description: "",
@@ -80,6 +111,7 @@ const ResourceManagementScreen = () => {
     priority: 0,
   });
 
+  // File upload state
   const [selectedFile, setSelectedFile] = useState<{
     uri: string;
     name: string;
@@ -87,6 +119,7 @@ const ResourceManagementScreen = () => {
     size: number;
   } | null>(null);
 
+  // Available resource types
   const resourceTypes: Resource["type"][] = [
     "AddictionHelp",
     "FindTherapist",
@@ -95,6 +128,7 @@ const ResourceManagementScreen = () => {
     "SupportSystem",
   ];
 
+  // Available content types
   const contentTypeOptions: Resource["contentType"][] = [
     "text",
     "image",
@@ -102,11 +136,16 @@ const ResourceManagementScreen = () => {
     "document",
   ];
 
+  // Load initial data
   useEffect(() => {
     loadResources();
     loadStats();
   }, []);
 
+  /**
+   * Fetches resources from backend
+   * Updates resources state and handles loading state
+   */
   const loadResources = async () => {
     try {
       setLoading(true);
@@ -120,6 +159,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Fetches resource statistics
+   * Updates stats state with aggregated data
+   */
   const loadStats = async () => {
     try {
       const resourceStats = await getResourceStats();
@@ -129,6 +172,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Resets form state to initial values
+   * Clears selected file and editing resource
+   */
   const resetForm = () => {
     setFormData({
       title: "",
@@ -143,6 +190,10 @@ const ResourceManagementScreen = () => {
     setEditingResource(null);
   };
 
+  /**
+   * Opens edit modal with resource data
+   * @param resource - Resource to edit
+   */
   const openEditModal = (resource: Resource) => {
     setEditingResource(resource);
     setFormData({
@@ -158,6 +209,10 @@ const ResourceManagementScreen = () => {
     setModalVisible(true);
   };
 
+  /**
+   * Handles image selection
+   * Validates and processes selected image
+   */
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -183,6 +238,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Handles video selection
+   * Validates and processes selected video
+   */
   const pickVideo = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -208,6 +267,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Handles document selection
+   * Validates and processes selected document
+   */
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -231,6 +294,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Shows file selection dialog
+   * Provides options for different file types
+   */
   const handleFileSelection = () => {
     Alert.alert(
       "Select Content Type",
@@ -244,6 +311,10 @@ const ResourceManagementScreen = () => {
     );
   };
 
+  /**
+   * Handles resource save/update
+   * Validates form data and handles file upload
+   */
   const handleSave = async () => {
     if (!formData.title.trim() || !formData.description.trim()) {
       Alert.alert("Error", "Please fill in all required fields");
@@ -288,6 +359,11 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Handles resource deletion
+   * Shows confirmation dialog and processes deletion
+   * @param resource - Resource to delete
+   */
   const handleDelete = async (resource: Resource) => {
     Alert.alert(
       "Delete Resource",
@@ -313,6 +389,11 @@ const ResourceManagementScreen = () => {
     );
   };
 
+  /**
+   * Handles resource status toggle
+   * Updates resource active state
+   * @param resource - Resource to toggle status
+   */
   const handleToggleStatus = async (resource: Resource) => {
     try {
       await toggleResourceStatus(resource.id, !resource.isActive);
@@ -330,6 +411,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Handles resource search
+   * Filters resources based on search term and type
+   */
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       loadResources();
@@ -351,6 +436,10 @@ const ResourceManagementScreen = () => {
     }
   };
 
+  /**
+   * Formats file size for display
+   * @param bytes - File size in bytes
+   */
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -359,6 +448,10 @@ const ResourceManagementScreen = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  /**
+   * Renders file preview based on file type
+   * Supports images, videos, and documents
+   */
   const renderFilePreview = () => {
     if (!selectedFile) return null;
 
@@ -403,6 +496,11 @@ const ResourceManagementScreen = () => {
     );
   };
 
+  /**
+   * Renders resource content based on type
+   * Supports images, videos, documents, and text
+   * @param resource - Resource to render content for
+   */
   const renderResourceContent = (resource: Resource) => {
     if (resource.contentType === "image" && resource.fileUrl) {
       return (
@@ -480,7 +578,7 @@ const ResourceManagementScreen = () => {
           </View>
         )}
 
-        {/* Search and Filter */}
+        {/* Search and Filter Section */}
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
@@ -494,6 +592,7 @@ const ResourceManagementScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Resource Type Filter */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -536,7 +635,7 @@ const ResourceManagementScreen = () => {
           ))}
         </ScrollView>
 
-        {/* Add Button */}
+        {/* Add Resource Button */}
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => {
@@ -548,7 +647,7 @@ const ResourceManagementScreen = () => {
           <Text style={styles.addButtonText}>Add New Resource</Text>
         </TouchableOpacity>
 
-        {/* Resources List */}
+        {/* Resource List */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1B6B63" />
@@ -565,6 +664,7 @@ const ResourceManagementScreen = () => {
               key={resource.id}
               style={[styles.card, !resource.isActive && styles.inactiveCard]}
             >
+              {/* Resource Header */}
               <View style={styles.cardHeader}>
                 <View style={styles.badge}>{iconMap[resource.type]}</View>
                 <View style={styles.cardTitleContainer}>
@@ -590,10 +690,11 @@ const ResourceManagementScreen = () => {
                 </View>
               </View>
 
+              {/* Resource Content */}
               <Text style={styles.cardDescription}>{resource.description}</Text>
-
               {renderResourceContent(resource)}
 
+              {/* Resource Tags */}
               {resource.tags && resource.tags.length > 0 && (
                 <View style={styles.tagsContainer}>
                   {resource.tags.map((tag, index) => (
@@ -604,6 +705,7 @@ const ResourceManagementScreen = () => {
                 </View>
               )}
 
+              {/* Resource Actions */}
               <View style={styles.cardActions}>
                 <TouchableOpacity
                   style={[
@@ -638,7 +740,7 @@ const ResourceManagementScreen = () => {
         )}
       </ScrollView>
 
-      {/* MODAL */}
+      {/* Resource Form Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalContent}>
@@ -646,6 +748,7 @@ const ResourceManagementScreen = () => {
               {editingResource ? "Edit Resource" : "Add Resource"}
             </Text>
 
+            {/* Basic Information */}
             <TextInput
               style={styles.input}
               placeholder="Title *"
@@ -672,6 +775,7 @@ const ResourceManagementScreen = () => {
               }
             />
 
+            {/* Content Type Selection */}
             <Text style={styles.sectionTitle}>Content Type</Text>
             <ScrollView
               horizontal
@@ -708,6 +812,7 @@ const ResourceManagementScreen = () => {
               ))}
             </ScrollView>
 
+            {/* File Upload Section */}
             {formData.contentType !== "text" && (
               <View style={styles.fileSection}>
                 <Text style={styles.sectionTitle}>File</Text>
@@ -737,6 +842,7 @@ const ResourceManagementScreen = () => {
               </View>
             )}
 
+            {/* Resource Type Selection */}
             <Text style={styles.sectionTitle}>Resource Type</Text>
             <ScrollView
               horizontal
@@ -764,6 +870,7 @@ const ResourceManagementScreen = () => {
               ))}
             </ScrollView>
 
+            {/* Additional Fields */}
             <TextInput
               style={styles.input}
               placeholder="Tags (comma separated)"
@@ -792,6 +899,7 @@ const ResourceManagementScreen = () => {
               keyboardType="numeric"
             />
 
+            {/* Modal Actions */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.cancelBtn]}
@@ -828,16 +936,24 @@ const ResourceManagementScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the resource management screen
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDF6EC" },
-  content: { padding: 20 },
+  // Container styles
+  container: { 
+    flex: 1, 
+    backgroundColor: "#FDF6EC", // Warm background color
+  },
+  content: { 
+    padding: 20,
+  },
 
-  // Stats Section
+  // Stats section styles
   statsContainer: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
+    // Stats card elevation
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,

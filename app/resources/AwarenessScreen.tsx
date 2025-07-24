@@ -1,3 +1,23 @@
+/**
+ * AwarenessScreen Component
+ * 
+ * An educational interface that provides access to mental health awareness resources
+ * and articles. Features a visually engaging layout with expandable information
+ * cards and external resource links.
+ * 
+ * Features:
+ * - Featured image display
+ * - Expandable resource cards
+ * - Animated transitions
+ * - External article links
+ * - Visual feedback
+ * - Smooth navigation
+ * 
+ * States:
+ * - expandedIndices: Tracks which cards are expanded
+ * - animations: Animation values for smooth transitions
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -14,6 +34,7 @@ import HeroBox from "../../components/HeroBox";
 import { Ionicons } from "@expo/vector-icons";
 
 const AwarenessScreen = ({ navigation }) => {
+  // Resource data configuration
   const resources = [
     {
       title: "Suicide Awareness",
@@ -33,11 +54,17 @@ const AwarenessScreen = ({ navigation }) => {
     },
   ];
 
+  // State Management
   const [expandedIndices, setExpandedIndices] = useState([]);
   const [animations] = useState(
     resources.map(() => new Animated.Value(0))
   );
 
+  /**
+   * Handles card expansion/collapse
+   * Manages animation state for smooth transitions
+   * @param index - Index of card to toggle
+   */
   const toggleCard = (index) => {
     const isExpanded = expandedIndices.includes(index);
     const newExpandedIndices = isExpanded
@@ -46,6 +73,7 @@ const AwarenessScreen = ({ navigation }) => {
 
     setExpandedIndices(newExpandedIndices);
 
+    // Animate card expansion/collapse
     Animated.timing(animations[index], {
       toValue: isExpanded ? 0 : 1,
       duration: 300,
@@ -53,6 +81,12 @@ const AwarenessScreen = ({ navigation }) => {
     }).start();
   };
 
+  /**
+   * Renders expandable details section
+   * Includes article link with animation
+   * @param resource - Resource data
+   * @param index - Index for animation tracking
+   */
   const renderDetails = (resource, index) => {
     const height = animations[index].interpolate({
       inputRange: [0, 1],
@@ -79,7 +113,7 @@ const AwarenessScreen = ({ navigation }) => {
           customBackRoute="Resources"
         />
 
-        {/* Image Section */}
+        {/* Featured Image Section */}
         <View style={styles.imageWrapper}>
           <Image
             source={require("../../assets/awareness-placeholder.png")}
@@ -88,12 +122,12 @@ const AwarenessScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Intro Text Box */}
+        {/* Information Header */}
         <View style={styles.infoBox}>
           <Text style={styles.infoTitle}>View our Educational Resources</Text>
         </View>
 
-        {/* Resource Buttons */}
+        {/* Resource Cards Section */}
         {resources.map((resource, index) => (
           <TouchableOpacity
             key={index}
@@ -102,17 +136,20 @@ const AwarenessScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <View style={styles.cardContent}>
+              {/* Card Main Content */}
               <View style={styles.mainContent}>
                 <View style={styles.textContainer}>
                   <Text style={styles.buttonText}>{resource.title}</Text>
                   {renderDetails(resource, index)}
                 </View>
+                {/* Expand/Collapse Indicator */}
                 {!expandedIndices.includes(index) && (
                   <View style={styles.arrowButton}>
                     <Ionicons name="chevron-forward" size={20} color="#1B6B63" />
                   </View>
                 )}
               </View>
+              {/* Close Button for Expanded State */}
               {expandedIndices.includes(index) && (
                 <TouchableOpacity
                   style={styles.closeButton}
@@ -129,21 +166,26 @@ const AwarenessScreen = ({ navigation }) => {
   );
 };
 
+// Styles: Defines the visual appearance of the awareness screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color
   },
   container: {
     paddingBottom: 100,
     alignItems: "center",
   },
+  
+  // Image section styles
   imageWrapper: {
     backgroundColor: "#ffffff",
     borderRadius: 20,
     padding: 2,
     marginTop: 20,
     width: "75%",
+    // Image container elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -151,36 +193,40 @@ const styles = StyleSheet.create({
     elevation: 6,
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: "#E0F2F1",
+    borderColor: "#E0F2F1", // Light teal border
   },
   image: {
     width: "100%",
     height: 200,
     borderRadius: 20,
   },
+  
+  // Info box styles
   infoBox: {
-    backgroundColor: "#E0F2F1",
+    backgroundColor: "#E0F2F1", // Light teal background
     borderRadius: 20,
     paddingVertical: 18,
     paddingHorizontal: 20,
     marginTop: 30,
     width: "85%",
     alignItems: "center",
-   
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#1B6B63",
+    color: "#1B6B63", // Teal color for consistency
     textAlign: "center",
   },
+  
+  // Resource button styles
   resourceButton: {
-    backgroundColor: "#FCE9C8",
+    backgroundColor: "#FCE9C8", // Light orange background
     marginTop: 20,
     width: "85%",
     borderRadius: 20,
     paddingVertical: 14,
     paddingHorizontal: 18,
+    // Button elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -196,8 +242,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 40, // Ensures consistent height for vertical centering
+    minHeight: 40, // Consistent height for vertical centering
   },
+  
+  // Text styles
   textContainer: {
     flex: 1,
     marginHorizontal: 10,
@@ -218,10 +266,14 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "600",
   },
+  
+  // Animation container styles
   detailsContainer: {
     marginTop: 8,
     overflow: "hidden",
   },
+  
+  // Button styles
   closeButton: {
     position: "absolute",
     top: -10,
@@ -230,7 +282,7 @@ const styles = StyleSheet.create({
   },
   arrowButton: {
     position: "absolute",
-    right: -10, // Removed top offset for vertical centering
+    right: -10,
     padding: 5,
     justifyContent: "center", // Centers icon vertically
   },

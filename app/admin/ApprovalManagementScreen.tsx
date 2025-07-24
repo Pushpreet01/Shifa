@@ -1,3 +1,27 @@
+/**
+ * ApprovalManagementScreen Component
+ * 
+ * A comprehensive interface for administrators to manage approval requests for events,
+ * volunteers, and event organizers. Provides functionality for viewing, approving,
+ * and denying requests with rejection reasons.
+ * 
+ * Features:
+ * - Tab-based filtering between event, volunteer, and organizer approvals
+ * - Swipeable cards with approve/deny actions
+ * - Detailed view of approval requests
+ * - Modal for rejection reason input
+ * - Loading and empty states
+ * 
+ * States:
+ * - activeTab: Current approval type filter (event/volunteer/organizer)
+ * - approvals: Array of pending approval requests
+ * - loading: Main loading state indicator
+ * - actionLoading: Loading state for approve/deny actions
+ * - rejectionModalVisible: Controls rejection reason modal visibility
+ * - rejectionReason: Stores the reason for rejection
+ * - pendingDenyId: Tracks the item pending rejection
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -22,6 +46,7 @@ import { useNavigation } from "@react-navigation/native";
 import { fetchApprovals, approveItem, denyItem, ApprovalType, ApprovalItem } from "../../services/adminApprovalService";
 
 const ApprovalManagementScreen = () => {
+  // State Management
   const [activeTab, setActiveTab] = useState<ApprovalType>("event");
   const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +56,10 @@ const ApprovalManagementScreen = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [pendingDenyId, setPendingDenyId] = useState<string | null>(null);
 
-  // Fetch pending approvals using the service
+  /**
+   * Fetches pending approvals based on the active tab
+   * Updates the approvals state and handles loading/error states
+   */
   useEffect(() => {
     const loadApprovals = async () => {
       setLoading(true);
@@ -50,6 +78,11 @@ const ApprovalManagementScreen = () => {
     loadApprovals();
   }, [activeTab]);
 
+  /**
+   * Handles approval of an item
+   * Updates the UI and removes the approved item from the list
+   * @param id - ID of the item to approve
+   */
   const handleApprove = async (id: string) => {
     setActionLoading(true);
     try {
@@ -64,12 +97,21 @@ const ApprovalManagementScreen = () => {
     }
   };
 
+  /**
+   * Initiates the denial process for an item
+   * Opens the rejection reason modal
+   * @param id - ID of the item to deny
+   */
   const handleDeny = (id: string) => {
     setPendingDenyId(id);
     setRejectionReason("");
     setRejectionModalVisible(true);
   };
 
+  /**
+   * Confirms the denial of an item with a rejection reason
+   * Updates the UI and removes the denied item from the list
+   */
   const confirmDeny = async () => {
     if (!pendingDenyId) return;
     setActionLoading(true);
@@ -88,14 +130,22 @@ const ApprovalManagementScreen = () => {
     }
   };
 
+  /**
+   * Navigates to the approval details screen
+   * @param item - The approval item to view details for
+   */
   const handleCardPress = (item: ApprovalItem) => {
     navigation.navigate("ApprovalDetails", {
       id: item.id,
-      type: activeTab, // 'event', 'volunteer', or 'organizer'
-      userData: activeTab !== "event" ? item : undefined, // Pass user data for non-event items
+      type: activeTab,
+      userData: activeTab !== "event" ? item : undefined,
     });
   };
 
+  /**
+   * Renders the swipeable action buttons for approve/deny
+   * @param id - ID of the item for the actions
+   */
   const renderRightActions = (id: string) => (
     <View style={styles.verticalSwipeActions}>
       <TouchableOpacity
@@ -116,6 +166,7 @@ const ApprovalManagementScreen = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
+        {/* Action Loading Overlay */}
         {actionLoading && (
           <View
             style={{
@@ -133,6 +184,7 @@ const ApprovalManagementScreen = () => {
             <ActivityIndicator size="large" color="#1B6B63" />
           </View>
         )}
+
         {/* Rejection Reason Modal */}
         <Modal
           visible={rejectionModalVisible}
@@ -162,12 +214,14 @@ const ApprovalManagementScreen = () => {
             </View>
           </View>
         </Modal>
+
         <AdminHeroBox
           title="Approvals"
           showBackButton
           customBackRoute="AdminDashboard"
         />
 
+        {/* Approval Type Tabs */}
         <View style={styles.tabContainer}>
           {["event", "volunteer", "organizer"].map((type) => (
             <TouchableOpacity
@@ -191,14 +245,18 @@ const ApprovalManagementScreen = () => {
           ))}
         </View>
 
+        {/* Approval Items List */}
         <ScrollView style={styles.content}>
+          {/* Loading State */}
           {loading ? (
             <Text style={styles.emptyText}>Loading...</Text>
           ) : approvals.length === 0 ? (
+            // Empty State
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No pending approvals</Text>
             </View>
           ) : (
+            // Approval Cards
             approvals.map((item) => (
               <Swipeable
                 key={item.id}
@@ -209,6 +267,7 @@ const ApprovalManagementScreen = () => {
                   style={styles.approvalCard}
                   disabled={actionLoading}
                 >
+                  {/* Event Approval Card */}
                   {activeTab === "event" ? (
                     <>
                       <View style={styles.cardHeader}>
@@ -235,6 +294,7 @@ const ApprovalManagementScreen = () => {
                       </Text>
                     </>
                   ) : (
+                    // User Approval Card (Volunteer/Organizer)
                     <View style={styles.userCardLayout}>
                       <View style={styles.profileImageContainer}>
                         <Image
@@ -275,8 +335,15 @@ const ApprovalManagementScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the approval management screen
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDF6EC" },
+  // Container styles
+  container: { 
+    flex: 1, 
+    backgroundColor: "#FDF6EC", // Warm background color
+  },
+  
+  // Tab styles
   tabContainer: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -303,20 +370,28 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#FFFFFF",
   },
-  content: { flex: 1, paddingTop: 12 },
+  
+  // Content styles
+  content: { 
+    flex: 1, 
+    paddingTop: 12 
+  },
+  
+  // Card styles
   approvalCard: {
-  backgroundColor: "#FFFFFF",
-  borderRadius: 12,
-  padding: 16,
-  marginHorizontal: 16,
-  marginBottom: 12,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.08,
-  shadowRadius: 2,
-  elevation: 2,
-  borderLeftWidth: 4,
-  borderLeftColor: "#F4A941", 
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    // Card elevation
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: "#F4A941", // Pending status indicator
   },
   cardHeader: {
     flexDirection: "row",

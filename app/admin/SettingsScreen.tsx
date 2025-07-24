@@ -1,4 +1,27 @@
-// app/SettingsScreen.tsx
+/**
+ * SettingsScreen Component
+ * 
+ * A comprehensive settings interface for administrators to manage their account
+ * and application preferences. Provides access to profile, privacy, security,
+ * and notification settings.
+ * 
+ * Features:
+ * - Account settings management
+ * - Profile information access
+ * - Sign out functionality
+ * - Account deletion with confirmation
+ * - Loading states for destructive actions
+ * - Organized section-based layout
+ * 
+ * Navigation:
+ * - Navigates to specific setting screens
+ * - Handles authentication state changes
+ * - Resets navigation on account deletion
+ * 
+ * States:
+ * - deleting: Loading state for account deletion
+ */
+
 import React from "react";
 import {
   View,
@@ -18,6 +41,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
 import { deleteCurrentUserAndData } from '../../services/firebaseUserService';
 
+// Navigation prop types
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList & { Login: undefined }>;
 
 const SettingsScreen = () => {
@@ -25,6 +49,10 @@ const SettingsScreen = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
   const [deleting, setDeleting] = React.useState(false);
 
+  /**
+   * Handles navigation to specific setting screens
+   * @param option - Name of the setting screen to navigate to
+   */
   const handleOptionPress = (option: string) => {
     switch (option) {
       case "Profile":
@@ -35,6 +63,7 @@ const SettingsScreen = () => {
     }
   };
 
+  // Settings menu configuration
   const settingsOptions = [
     {
       title: "Account",
@@ -64,6 +93,10 @@ const SettingsScreen = () => {
     }
   ];
 
+  /**
+   * Handles user sign out
+   * Attempts to sign out and handles any errors
+   */
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -72,6 +105,10 @@ const SettingsScreen = () => {
     }
   };
 
+  /**
+   * Handles account deletion
+   * Shows confirmation dialog and manages deletion process
+   */
   const handleDeleteAccount = async () => {
     Alert.alert(
       'Delete Account',
@@ -86,6 +123,7 @@ const SettingsScreen = () => {
             try {
               await deleteCurrentUserAndData();
               setDeleting(false);
+              // Reset navigation stack to login screen
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
@@ -105,12 +143,15 @@ const SettingsScreen = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <HeroBox title="Settings" showBackButton customBackRoute="Home" />
 
+        {/* Settings Sections */}
         {settingsOptions.map((section, index) => (
           <View key={index} style={styles.section}>
+            {/* Section Header */}
             <View style={styles.sectionHeader}>
               <Ionicons name={section.icon} size={24} color="#1B6B63" />
               <Text style={styles.sectionTitle}>{section.title}</Text>
             </View>
+            {/* Section Items */}
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -130,12 +171,15 @@ const SettingsScreen = () => {
           </View>
         ))}
 
+        {/* Account Actions */}
         <View style={styles.accountActions}>
+          {/* Sign Out Button */}
           <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={22} color="#FFFFFF" />
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
 
+          {/* Delete Account Button */}
           <TouchableOpacity 
             style={styles.deleteButton} 
             onPress={handleDeleteAccount} 
@@ -156,14 +200,18 @@ const SettingsScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the settings screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color
   },
   container: {
-    paddingBottom: 120,
+    paddingBottom: 120, // Extra padding for comfortable scrolling
   },
+  
+  // Section styles
   section: {
     marginTop: 20,
     paddingHorizontal: 20,
@@ -176,9 +224,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1B6B63",
+    color: "#1B6B63", // Teal color for consistency
     marginLeft: 10,
   },
+  
+  // Option button styles
   optionButton: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -187,6 +237,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 14,
     marginBottom: 12,
+    // Button elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -212,13 +263,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  
+  // Action button styles
   accountActions: {
     marginTop: 40,
     paddingHorizontal: 20,
     gap: 12,
   },
   signOutButton: {
-    backgroundColor: "#C44536",
+    backgroundColor: "#C44536", // Danger color for sign out
     padding: 15,
     borderRadius: 14,
     flexDirection: "row",
@@ -232,7 +285,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   deleteButton: {
-    backgroundColor: "#C44536",
+    backgroundColor: "#C44536", // Danger color for delete
     padding: 15,
     borderRadius: 14,
     flexDirection: "row",

@@ -1,3 +1,24 @@
+/**
+ * AddictionHelpScreen Component
+ * 
+ * A comprehensive screen that provides addiction-related resources and support materials.
+ * Displays various types of content including text, images, videos, and documents in an
+ * expandable card format with smooth animations.
+ * 
+ * Features:
+ * - Dynamic resource loading from backend
+ * - Multiple content type support (text, images, videos, documents)
+ * - Animated expandable cards
+ * - Tag-based categorization
+ * - Loading and empty states
+ * 
+ * States:
+ * - resources: Array of addiction help resources
+ * - loading: Loading state indicator
+ * - expandedIndices: Tracks which cards are expanded
+ * - animations: Animated values for smooth card transitions
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -19,22 +40,28 @@ import { getUserResources, UserResource } from "../../services/resourceService";
 import { Resource } from "../../services/adminResourceService";
 
 const AddictionHelpScreen = () => {
+  // State Management
   const [resources, setResources] = useState<UserResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
   const [animations] = useState<Animated.Value[]>([]);
 
+  // Load resources on component mount
   useEffect(() => {
     loadResources();
   }, []);
 
+  /**
+   * Fetches addiction help resources from the backend
+   * Initializes animation values for each resource card
+   */
   const loadResources = async () => {
     try {
       setLoading(true);
       const fetchedResources = await getUserResources("AddictionHelp");
       setResources(fetchedResources);
 
-      // Initialize animations for each resource
+      // Create animation values for smooth transitions
       const newAnimations = fetchedResources.map(() => new Animated.Value(0));
       setAnimations(newAnimations);
     } catch (error) {
@@ -45,6 +72,11 @@ const AddictionHelpScreen = () => {
     }
   };
 
+  /**
+   * Handles the expansion/collapse of resource cards
+   * Manages both the expanded state and animation
+   * @param index - Index of the card to toggle
+   */
   const toggleCard = (index: number) => {
     const isExpanded = expandedIndices.includes(index);
     const newExpandedIndices = isExpanded
@@ -53,6 +85,7 @@ const AddictionHelpScreen = () => {
 
     setExpandedIndices(newExpandedIndices);
 
+    // Animate card expansion/collapse
     Animated.timing(animations[index], {
       toValue: isExpanded ? 0 : 1,
       duration: 300,
@@ -60,7 +93,13 @@ const AddictionHelpScreen = () => {
     }).start();
   };
 
+  /**
+   * Renders appropriate content based on resource type
+   * Supports images, videos, documents, and text content
+   * @param resource - The resource object containing content and metadata
+   */
   const renderResourceContent = (resource: UserResource) => {
+    // Image content renderer
     if (resource.contentType === "image" && resource.fileUrl) {
       return (
         <Image
@@ -70,6 +109,7 @@ const AddictionHelpScreen = () => {
       );
     }
 
+    // Video content renderer
     if (resource.contentType === "video" && resource.fileUrl) {
       return (
         <Video
@@ -81,6 +121,7 @@ const AddictionHelpScreen = () => {
       );
     }
 
+    // Document content renderer with download link
     if (resource.contentType === "document" && resource.fileUrl) {
       return (
         <TouchableOpacity
@@ -95,9 +136,16 @@ const AddictionHelpScreen = () => {
       );
     }
 
+    // Default text content renderer
     return <Text style={styles.resourceContent}>{resource.content}</Text>;
   };
 
+  /**
+   * Renders the expandable details section of a resource card
+   * Includes content and tags with animated height
+   * @param resource - The resource to display
+   * @param index - Index for animation tracking
+   */
   const renderDetails = (resource: UserResource, index: number) => {
     const height = animations[index]?.interpolate({
       inputRange: [0, 1],
@@ -108,6 +156,7 @@ const AddictionHelpScreen = () => {
       <Animated.View style={[styles.detailsContainer, { height }]}>
         {renderResourceContent(resource)}
 
+        {/* Tags section */}
         {resource.tags && resource.tags.length > 0 && (
           <View style={styles.tagsContainer}>
             {resource.tags.map((tag, tagIndex) => (
@@ -121,6 +170,7 @@ const AddictionHelpScreen = () => {
     );
   };
 
+  // Loading state renderer
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -146,6 +196,7 @@ const AddictionHelpScreen = () => {
           customBackRoute="Resources"
         />
 
+        {/* Empty state display */}
         {resources.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="heart-outline" size={48} color="#ccc" />
@@ -155,6 +206,7 @@ const AddictionHelpScreen = () => {
             </Text>
           </View>
         ) : (
+          // Resource cards section
           <View style={styles.cardSection}>
             {resources.map((resource, index) => (
               <TouchableOpacity
@@ -164,6 +216,7 @@ const AddictionHelpScreen = () => {
                 activeOpacity={0.7}
               >
                 <View style={styles.cardContent}>
+                  {/* Main card content */}
                   <View style={styles.mainContent}>
                     <TouchableOpacity
                       onPress={() => Alert.alert("Resource", resource.title)}
@@ -181,6 +234,7 @@ const AddictionHelpScreen = () => {
                       </Text>
                       {renderDetails(resource, index)}
                     </View>
+                    {/* Expand/collapse indicator */}
                     {!expandedIndices.includes(index) && (
                       <View style={styles.arrowButton}>
                         <Ionicons
@@ -191,6 +245,7 @@ const AddictionHelpScreen = () => {
                       </View>
                     )}
                   </View>
+                  {/* Close button for expanded cards */}
                   {expandedIndices.includes(index) && (
                     <TouchableOpacity
                       style={styles.closeButton}
@@ -213,15 +268,19 @@ const AddictionHelpScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the addiction help screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm, calming background color
   },
   container: {
     flexGrow: 1,
-    paddingBottom: 120,
+    paddingBottom: 120, // Extra padding for comfortable scrolling
   },
+  
+  // Loading state styles
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -232,6 +291,8 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
   },
+  
+  // Empty state styles
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -249,15 +310,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#999",
   },
+  
+  // Card section styles
   cardSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
   },
   card: {
-    backgroundColor: "#006666",
+    backgroundColor: "#006666", // Calming teal color
     borderRadius: 20,
     padding: 18,
     marginBottom: 20,
+    // Card elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,

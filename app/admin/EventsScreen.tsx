@@ -1,3 +1,29 @@
+/**
+ * EventsScreen Component
+ * 
+ * A comprehensive interface for administrators to manage community events.
+ * Provides calendar-based event viewing, creation, editing, and deletion functionality.
+ * 
+ * Features:
+ * - Calendar-based event navigation
+ * - Event creation and editing
+ * - Event deletion with cascade (removes associated volunteers and registrations)
+ * - Volunteer management integration
+ * - Attendance tracking
+ * - Animated interactions
+ * - Date validation and restrictions
+ * 
+ * States:
+ * - selectedDate: Currently selected date for viewing events
+ * - currentMonth: Current month in calendar view
+ * - events: Array of all events
+ * - modalVisible: Controls event form modal visibility
+ * - formData: Event form data for creation/editing
+ * - editingEventId: Tracks which event is being edited
+ * - loading: Loading state indicator
+ * - scaleAnims: Animation values for card press feedback
+ */
+
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -18,6 +44,7 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 import Calendar from '../../components/Calendar';
 import * as adminEventService from '../../services/adminEventService';
 
+// Type definition for event data structure
 type Event = {
   id: string;
   title: string;
@@ -29,6 +56,8 @@ type Event = {
 
 const EventsScreen = () => {
   const today = new Date();
+  
+  // State Management
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [currentMonth, setCurrentMonth] = useState<Date>(
     new Date(today.getFullYear(), today.getMonth(), 1)
@@ -42,7 +71,10 @@ const EventsScreen = () => {
 
   const navigation = useNavigation<any>();
 
-  // Fetch events from backend
+  /**
+   * Fetches events from backend and initializes animation values
+   * Converts Firestore timestamps to JavaScript Date objects
+   */
   const fetchAndSetEvents = useCallback(async () => {
     setLoading(true);
     try {
@@ -61,11 +93,15 @@ const EventsScreen = () => {
     }
   }, []);
 
+  // Load events on mount and when date/month changes
   useEffect(() => {
     fetchAndSetEvents();
   }, [fetchAndSetEvents, currentMonth, selectedDate]);
 
-  // Ensure currentMonth is not in the past
+  /**
+   * Prevents navigation to past months
+   * Ensures currentMonth is not before the current month
+   */
   useEffect(() => {
     const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     if (currentMonth < todayMonth) {
@@ -73,6 +109,10 @@ const EventsScreen = () => {
     }
   }, []);
 
+  /**
+   * Handles navigation to previous month
+   * Prevents navigation to past months
+   */
   const goToPreviousMonth = () => {
     const previousMonth = new Date(
       currentMonth.getFullYear(),
@@ -87,12 +127,20 @@ const EventsScreen = () => {
     setCurrentMonth(previousMonth);
   };
 
+  /**
+   * Handles navigation to next month
+   */
   const goToNextMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
     );
   };
 
+  /**
+   * Handles date selection in calendar
+   * Validates selected date is not in the past
+   * @param date - Selected date
+   */
   const handleDateSelect = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -103,6 +151,10 @@ const EventsScreen = () => {
     }
   };
 
+  /**
+   * Opens event form modal for creation or editing
+   * @param event - Optional event for editing
+   */
   const openModal = (event?: Event) => {
     if (event) {
       setFormData({
@@ -119,6 +171,11 @@ const EventsScreen = () => {
     setModalVisible(true);
   };
 
+  /**
+   * Handles event save/update
+   * Validates form data and date format
+   * Creates or updates event in backend
+   */
   const handleSave = async () => {
     if (!formData.title || !formData.date || !formData.location) {
       Alert.alert('Error', 'Please fill all fields.');
@@ -163,6 +220,11 @@ const EventsScreen = () => {
     }
   };
 
+  /**
+   * Handles event deletion with cascade
+   * Removes event and all associated data (volunteers, applications, registrations)
+   * @param id - ID of event to delete
+   */
   const handleDelete = (id: string) => {
     Alert.alert('Delete Event', 'Are you sure? This will also delete all associated volunteers, applications, and registrations.', [
       { text: 'Cancel' },
@@ -182,6 +244,11 @@ const EventsScreen = () => {
     ]);
   };
 
+  /**
+   * Handles card press-in animation
+   * Scales card down slightly for feedback
+   * @param index - Index of card being pressed
+   */
   const handlePressIn = (index: number) => {
     Animated.spring(scaleAnims[index], {
       toValue: 0.95,
@@ -189,6 +256,11 @@ const EventsScreen = () => {
     }).start();
   };
 
+  /**
+   * Handles card press-out animation
+   * Restores card to original scale
+   * @param index - Index of card being released
+   */
   const handlePressOut = (index: number) => {
     Animated.spring(scaleAnims[index], {
       toValue: 1,
@@ -196,6 +268,7 @@ const EventsScreen = () => {
     }).start();
   };
 
+  // Filter events for selected date and approved status
   const filteredEvents = events.filter(
     (event) =>
       event.date.getDate() === selectedDate.getDate() &&
@@ -209,6 +282,7 @@ const EventsScreen = () => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Manage Events" showBackButton customBackRoute="AdminDashboard" />
 
+      {/* Date Selection Section */}
       <View style={styles.dateSelectionContainer}>
         <View style={styles.selectedDateContainer}>
           <Text style={styles.selectedDateText}>
@@ -233,13 +307,16 @@ const EventsScreen = () => {
         />
       </View>
 
+      {/* Events List Section */}
       <ScrollView style={styles.eventsListContainer}>
+        {/* Loading State */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#F4A941" />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
+          // Event Cards
           filteredEvents.map((event, index) => (
             <Animated.View
               key={event.id}
@@ -250,7 +327,9 @@ const EventsScreen = () => {
                 <Text style={styles.eventDetail}>📅 {event.date.toLocaleDateString('en-US')}</Text>
                 <Text style={styles.eventDetail}>📍 {event.location}</Text>
               </View>
+              {/* Card Action Buttons */}
               <View style={styles.actionsRow}>
+                {/* Volunteer Management Actions */}
                 {event.needsVolunteers && (
                   <>
                     <TouchableOpacity
@@ -275,6 +354,7 @@ const EventsScreen = () => {
                     </TouchableOpacity>
                   </>
                 )}
+                {/* Event Management Actions */}
                 <TouchableOpacity
                   style={[styles.iconButton, { backgroundColor: '#1B6B63' }]}
                   onPress={() => navigation.navigate('AdminEditEvent', { eventId: event.id })}
@@ -299,6 +379,7 @@ const EventsScreen = () => {
             </Animated.View>
           ))
         ) : (
+          // Empty State
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
             <TouchableOpacity
@@ -313,6 +394,7 @@ const EventsScreen = () => {
         )}
       </ScrollView>
 
+      {/* Floating Add Button */}
       <TouchableOpacity
         style={styles.floatingAddButton}
         onPress={() => openModal()}
@@ -322,6 +404,7 @@ const EventsScreen = () => {
         <Ionicons name="add" size={30} color="#FFFFFF" />
       </TouchableOpacity>
 
+      {/* Event Form Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -374,11 +457,15 @@ const EventsScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the events management screen
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FDF6EC', // Warm background color
   },
+  
+  // Date selection styles
   dateSelectionContainer: {
     padding: 20,
   },
@@ -390,24 +477,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2E2E2E',
   },
+  
+  // Events list styles
   eventsListContainer: {
     flex: 1,
     marginBottom: 50,
     padding: 20,
-    paddingBottom: 150,
+    paddingBottom: 150, // Extra padding for floating button
   },
+  
+  // Event card styles
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 16,
     marginBottom: 20,
+    // Card elevation
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 3,
     borderLeftWidth: 4,
-    borderLeftColor: '#F4A941',
+    borderLeftColor: '#F4A941', // Event status indicator
   },
   cardContent: {
     marginBottom: 12,

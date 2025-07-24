@@ -1,3 +1,26 @@
+/**
+ * UserManagementScreen Component
+ * 
+ * A comprehensive interface for administrators to manage users across different roles.
+ * Provides functionality for viewing, searching, and managing user accounts including
+ * banning/unbanning users and viewing detailed user information.
+ * 
+ * Features:
+ * - Role-based user filtering
+ * - Real-time search functionality
+ * - User status management (ban/unban)
+ * - Detailed user information display
+ * - Responsive design with loading states
+ * 
+ * States:
+ * - activeRole: Currently selected user role filter
+ * - users: Array of user data
+ * - loading: Loading state indicator
+ * - error: Error state message
+ * - search: Current search input value
+ * - searchQuery: Submitted search query
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -20,8 +43,10 @@ import {
 } from '../../services/adminUserService';
 import { useIsFocused } from '@react-navigation/native';
 
-// User type for UI
-// (You may want to extend this with more fields as needed)
+/**
+ * User Interface Definition
+ * Defines the structure of user data displayed in the management interface
+ */
 type User = {
   id: string;
   fullName: string;
@@ -32,25 +57,32 @@ type User = {
   approvalStatus: { status: 'Approved' | 'Pending' | 'Rejected'; reason?: string };
 };
 
+// Available user roles for filtering
 const roles: User['role'][] = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 
 const UserManagementScreen = () => {
+  // Navigation and screen focus hooks
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
+
+  // State management
   const [activeRole, setActiveRole] = useState<User['role']>('Support Seeker');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [searchQuery, setSearchQuery] = useState(''); // The submitted search
-  const isFocused = useIsFocused();
+  const [searchQuery, setSearchQuery] = useState(''); // Committed search query
 
-  // Fetch users by role
+  /**
+   * Fetches users based on selected role
+   * Includes validation of user data and error handling
+   */
   const loadUsers = async (role: User['role']) => {
     setLoading(true);
     setError(null);
     try {
       const data = await fetchUsers(role);
-      // Only include users with all required fields
+      // Validate user data to ensure all required fields are present
       const validUsers = (Array.isArray(data) ? data : []).filter(
         (user: any): user is User =>
           typeof user.fullName === 'string' &&
@@ -69,16 +101,20 @@ const UserManagementScreen = () => {
     }
   };
 
+  // Load users when role changes or screen is focused
   useEffect(() => {
     loadUsers(activeRole);
     setSearch('');
     setSearchQuery('');
   }, [activeRole, isFocused]);
 
+  /**
+   * Handles user ban/unban functionality
+   * Updates user status and refreshes user list
+   */
   const handleBanUnban = async (user: User) => {
     try {
       setLoading(true);
-      // Use approvalStatus: ban = set status to Rejected, unban = set status to Approved
       await banUser(user.id, user.approvalStatus.status !== 'Approved');
       loadUsers(activeRole);
     } catch (err) {
@@ -88,7 +124,7 @@ const UserManagementScreen = () => {
     }
   };
 
-  // Only filter users if a search has been submitted
+  // Filter users based on search query
   const filteredUsers = searchQuery.trim()
     ? users.filter((user) => {
       const searchLower = searchQuery.toLowerCase();
@@ -99,6 +135,7 @@ const UserManagementScreen = () => {
     })
     : users;
 
+  // Commit search query when user submits
   const handleSearchSubmit = () => {
     setSearchQuery(search.trim());
   };
@@ -107,7 +144,7 @@ const UserManagementScreen = () => {
     <SafeAreaView style={styles.container}>
       <AdminHeroBox title="Manage Users" showBackButton customBackRoute="AdminDashboard" />
 
-      {/* Search Bar */}
+      {/* Search Bar Section: Allows filtering users by name or email */}
       <View style={styles.searchBarWrapper}>
         <Ionicons name="search-outline" size={20} color="#1B6B63" style={{ marginRight: 8 }} />
         <TextInput
@@ -124,7 +161,7 @@ const UserManagementScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Role Tabs */}
+      {/* Role Selection Tabs: Horizontal scrollable role filters */}
       <View style={styles.tabWrapper}>
         <ScrollView
           horizontal
@@ -145,21 +182,26 @@ const UserManagementScreen = () => {
         </ScrollView>
       </View>
 
-      {/* User Cards */}
+      {/* User List Section: Displays filtered user cards */}
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Loading State */}
         {loading && (
           <View style={{ alignItems: 'center', marginTop: 30 }}>
             <ActivityIndicator size="large" color="#1B6B63" />
           </View>
         )}
+        {/* Error State */}
         {error && (
           <Text style={{ color: 'red', textAlign: 'center', marginTop: 20 }}>{error}</Text>
         )}
+        {/* User Count */}
         {!loading && !error && (
           <Text style={styles.totalText}>Total Registered Users: {filteredUsers.length}</Text>
         )}
+        {/* User Cards */}
         {!loading && !error && filteredUsers.map(user => (
           <View key={user.id} style={styles.userCard}>
+            {/* User Information Display */}
             <View style={styles.userInfoRow}>
               <Image
                 source={user.profileImage ? { uri: user.profileImage } : require('../../assets/aiplaceholder.png')}
@@ -171,13 +213,14 @@ const UserManagementScreen = () => {
                 {user.phone && <Text style={styles.userPhone}>{user.phone}</Text>}
               </View>
             </View>
+            {/* User Action Buttons */}
             <View style={styles.actionsRow}>
               <TouchableOpacity
                 onPress={() => navigation.navigate('UserDetails', { userId: user.id })}
                 style={[styles.actionButton, styles.viewBtn]}>
                 <Ionicons name="eye-outline" size={18} color="#fff" />
               </TouchableOpacity>
-              {/* Only show ban/unban and rejection reason for non-admin users */}
+              {/* Ban/Unban Actions (Non-admin users only) */}
               {user.role !== 'Admin' && (
                 <>
                   <TouchableOpacity
@@ -189,6 +232,7 @@ const UserManagementScreen = () => {
                       {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
                     </Text>
                   </TouchableOpacity>
+                  {/* Rejection Reason Display */}
                   {user.approvalStatus.status === 'Rejected' && user.approvalStatus.reason && (
                     <Text style={{ color: '#C44536', fontSize: 12, marginTop: 4 }}>
                       Rejected: {user.approvalStatus.reason}
@@ -204,9 +248,15 @@ const UserManagementScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the user management interface
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FDF6EC',
-   },
+  // Container and layout styles
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FDF6EC',
+  },
+  
+  // Search bar styles
   searchBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',

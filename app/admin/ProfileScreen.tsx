@@ -1,3 +1,27 @@
+/**
+ * ProfileScreen Component
+ * 
+ * A comprehensive profile management interface for administrators to update their
+ * personal information and profile picture. Provides functionality for editing
+ * user details with real-time validation and image handling.
+ * 
+ * Features:
+ * - Profile image upload and removal
+ * - Base64 image handling
+ * - Phone number formatting
+ * - Form validation
+ * - Loading states
+ * - Keyboard-aware scrolling
+ * 
+ * States:
+ * - name: User's full name
+ * - email: User's email (read-only)
+ * - phone: Formatted phone number
+ * - profileImage: Base64 encoded profile image
+ * - loading: Form loading state
+ * - uploading: Image upload state
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -18,9 +42,11 @@ import { db, auth } from "../../config/firebaseConfig";
 import * as ImagePicker from "expo-image-picker";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 
+// Navigation prop types
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
+  // State Management
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,10 +54,15 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  // Load user profile on mount
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
+  /**
+   * Fetches user profile data from Firestore
+   * Initializes form fields with user data
+   */
   const fetchUserProfile = async () => {
     try {
       const currentUser = auth.currentUser;
@@ -53,6 +84,10 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  /**
+   * Formats phone number input with proper separators
+   * @param text - Raw phone number input
+   */
   const formatPhoneNumber = (text: string) => {
     // Remove all non-numeric characters
     const cleaned = text.replace(/\D/g, "");
@@ -75,11 +110,20 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     return "";
   };
 
+  /**
+   * Handles phone number input changes
+   * Applies formatting to input value
+   * @param text - Raw input value
+   */
   const handlePhoneChange = (text: string) => {
     const formattedNumber = formatPhoneNumber(text);
     setPhone(formattedNumber);
   };
 
+  /**
+   * Handles profile image selection and upload
+   * Includes size validation and base64 conversion
+   */
   const pickImage = async () => {
     try {
       // Request permission to access the photo library
@@ -110,7 +154,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         try {
           const asset = result.assets[0];
 
-          // Add a user-friendly file size check upfront
+          // Validate file size
           if (asset.fileSize && asset.fileSize > 750 * 1024) {
             Alert.alert(
               "Image Too Large",
@@ -134,15 +178,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           // Create base64 image URL
           const base64ImageUrl = `data:image/jpeg;base64,${base64Data}`;
 
-          console.log(
-            "Image size (base64):",
-            Math.round(base64Data.length * 0.75),
-            "bytes"
-          );
-
-          // Check if image is too large (Firestore has 1MB document limit)
+          // Check image size for Firestore limit
           if (base64Data.length > 1000000) {
-            // ~750KB limit for safety
             Alert.alert(
               "Image Too Large",
               "Please select a smaller image. The current image is too large to store."
@@ -150,10 +187,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             return;
           }
 
-          // Update the local state
+          // Update local state and Firestore
           setProfileImage(base64ImageUrl);
-
-          // Update the user profile in Firestore with base64 data
           await updateDoc(doc(db, "users", currentUser.uid), {
             profileImage: base64ImageUrl,
             profileImageType: "base64",
@@ -166,15 +201,11 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         } catch (error) {
           console.error("Error saving image:", error);
 
-          let errorMessage =
-            "Failed to save profile picture. Please try again.";
-
+          let errorMessage = "Failed to save profile picture. Please try again.";
           if (error.message?.includes("permission")) {
-            errorMessage =
-              "Permission denied. Please check your Firestore rules.";
+            errorMessage = "Permission denied. Please check your Firestore rules.";
           } else if (error.message?.includes("quota")) {
-            errorMessage =
-              "Storage quota exceeded. Please try a smaller image.";
+            errorMessage = "Storage quota exceeded. Please try a smaller image.";
           }
 
           Alert.alert("Save Failed", errorMessage);
@@ -192,6 +223,10 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  /**
+   * Handles profile image removal
+   * Shows confirmation dialog and updates Firestore
+   */
   const removeProfileImage = async () => {
     Alert.alert(
       "Remove Profile Picture",
@@ -211,14 +246,12 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
               setUploading(true);
 
-              // Update the user profile in Firestore to remove the profile image
+              // Update Firestore and local state
               await updateDoc(doc(db, "users", currentUser.uid), {
                 profileImage: null,
                 profileImageType: null,
                 profileImageUpdated: new Date().toISOString(),
               });
-
-              // Update local state
               setProfileImage(null);
 
               Alert.alert("Success", "Profile picture removed successfully!", [
@@ -236,6 +269,10 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  /**
+   * Handles profile information updates
+   * Saves name and phone number to Firestore
+   */
   const handleSave = async () => {
     try {
       const currentUser = auth.currentUser;
@@ -257,6 +294,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  // Loading state display
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -269,6 +307,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header Section */}
       <View style={styles.heroBox}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -283,6 +322,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       <KeyboardAwareWrapper>
         <View style={styles.content}>
+          {/* Profile Image Section */}
           <View style={styles.profileImageContainer}>
             <TouchableOpacity
               onPress={pickImage}
@@ -312,6 +352,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
+          {/* Profile Form Section */}
           <View style={styles.formContainer}>
             <Text style={styles.label}>Full Name</Text>
             <TextInput
@@ -340,6 +381,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="phone-pad"
             />
 
+            {/* Save Button */}
             <TouchableOpacity
               style={[styles.saveButton, loading && styles.disabledButton]}
               onPress={handleSave}
@@ -356,7 +398,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
+// Styles: Defines the visual appearance of the profile screen
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
@@ -366,14 +410,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  
+  // Header styles
   heroBox: {
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color
     paddingTop: 40,
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     alignItems: "center",
+    // Header elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -392,32 +439,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1B6B63",
+    color: "#1B6B63", // Teal color for consistency
     marginLeft: 8,
   },
-  headerIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: "auto",
-  },
-  sosWrapper: {
-    backgroundColor: "#C44536",
-    borderRadius: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sosText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 12,
-  },
+  
+  // Content styles
   content: {
     flex: 1,
     padding: 20,
   },
+  
+  // Profile image styles
   profileImageContainer: {
     alignItems: "center",
     marginVertical: 20,
@@ -453,6 +485,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
+  
+  // Form styles
   formContainer: {
     marginTop: 20,
   },
@@ -472,8 +506,10 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
     marginBottom: 20,
   },
+  
+  // Button styles
   saveButton: {
-    backgroundColor: "#F4A941",
+    backgroundColor: "#F4A941", // Orange accent color
     borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 18,

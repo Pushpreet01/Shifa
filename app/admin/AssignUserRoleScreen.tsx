@@ -1,3 +1,25 @@
+/**
+ * AssignUserRoleScreen Component
+ * 
+ * An interface for administrators to assign or change user roles in the system.
+ * Provides a simple selection interface with role options and handles role updates
+ * in the database.
+ * 
+ * Features:
+ * - Role selection from predefined options
+ * - Visual feedback for selected role
+ * - Loading state during role assignment
+ * - Error handling and success feedback
+ * - Custom navigation handling
+ * 
+ * Navigation Parameters:
+ * - user: User object containing id, role, and other user data
+ * 
+ * States:
+ * - selectedRole: Currently selected role for assignment
+ * - loading: Loading state during role update
+ */
+
 import React, { useState } from 'react';
 import {
   View,
@@ -15,8 +37,10 @@ import { banUser } from '../../services/adminUserService';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebaseConfig';
 
+// Type definition for route parameters
 type AssignUserRoleRouteProp = RouteProp<AdminStackParamList, 'AssignUserRole'>;
 
+// Available roles in the system
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
 
 const AssignUserRoleScreen = () => {
@@ -24,9 +48,14 @@ const AssignUserRoleScreen = () => {
   const route = useRoute<AssignUserRoleRouteProp>();
   const user = route.params?.user;
 
+  // State Management
   const [selectedRole, setSelectedRole] = useState(user?.role || '');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles role assignment
+   * Updates user's role in Firestore and navigates back to user details
+   */
   const handleAssignRole = async () => {
     if (!selectedRole || !user) return;
     setLoading(true);
@@ -43,7 +72,10 @@ const AssignUserRoleScreen = () => {
     }
   };
 
-  // Custom back handler
+  /**
+   * Custom back navigation handler
+   * Returns to user details if user exists, otherwise goes back
+   */
   const handleBackPress = () => {
     if (user) {
       navigation.navigate('UserDetails', { userID: user.id });
@@ -52,6 +84,7 @@ const AssignUserRoleScreen = () => {
     }
   };
 
+  // Error state when user data is missing
   if (!user) {
     return (
       <SafeAreaView style={styles.container}>
@@ -76,6 +109,7 @@ const AssignUserRoleScreen = () => {
         onBackPress={handleBackPress}
       />
       <View style={styles.inner}>
+        {/* Role Selection Section */}
         <Text style={styles.label}>Select Role for {user.fullName || 'No Name'}:</Text>
         {roles.map((role) => (
           <TouchableOpacity
@@ -97,6 +131,8 @@ const AssignUserRoleScreen = () => {
             </Text>
           </TouchableOpacity>
         ))}
+
+        {/* Assignment Button */}
         <TouchableOpacity style={styles.assignButton} onPress={handleAssignRole} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
@@ -109,28 +145,34 @@ const AssignUserRoleScreen = () => {
   );
 };
 
+// Styles: Defines the visual appearance of the role assignment screen
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
-    backgroundColor: '#FDF6EC',
+    backgroundColor: '#FDF6EC', // Warm background color
   },
   inner: {
     padding: 20,
   },
+  
+  // Label styles
   label: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#1B6B63',
+    color: '#1B6B63', // Teal color for consistency
   },
+  
+  // Role button styles
   roleButton: {
     padding: 12,
     borderRadius: 10,
-    backgroundColor: '#E0F2F1',
+    backgroundColor: '#E0F2F1', // Light teal for unselected state
     marginBottom: 12,
   },
   selectedButton: {
-    backgroundColor: '#1B6B63',
+    backgroundColor: '#1B6B63', // Teal for selected state
   },
   roleText: {
     color: '#1B6B63',
@@ -138,8 +180,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedText: {
-    color: '#FFF',
+    color: '#FFF', // White text for selected state
   },
+  
+  // Assignment button styles
   assignButton: {
     marginTop: 20,
     backgroundColor: '#1B6B63',
@@ -152,12 +196,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  
+  // Error state styles
   errorBox: {
     marginTop: 100,
     alignItems: 'center',
   },
   errorText: {
-    color: '#C44536',
+    color: '#C44536', // Error red
     fontSize: 16,
     fontWeight: '600',
   },

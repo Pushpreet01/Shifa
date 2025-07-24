@@ -1,3 +1,22 @@
+/**
+ * FindTherapistScreen Component
+ * 
+ * A resource interface that helps users find and connect with Muslim therapists
+ * and counseling services. Provides information about certified professionals,
+ * online consultations, and affordable care options.
+ * 
+ * Features:
+ * - Expandable information cards
+ * - Animated transitions
+ * - External resource links
+ * - Resource descriptions
+ * - Smooth navigation
+ * 
+ * States:
+ * - expandedIndices: Tracks which cards are expanded
+ * - animations: Animation values for smooth transitions
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -14,6 +33,7 @@ import { Ionicons } from "@expo/vector-icons";
 import HeroBox from "../../components/HeroBox";
 
 const FindTherapistScreen = ({ navigation }) => {
+  // Resource data configuration
   const topics = [
     {
       title: "Certified Therapists",
@@ -32,11 +52,17 @@ const FindTherapistScreen = ({ navigation }) => {
     },
   ];
 
+  // State Management
   const [expandedIndices, setExpandedIndices] = useState([]);
   const [animations] = useState(
     topics.map(() => new Animated.Value(0))
   );
 
+  /**
+   * Handles card expansion/collapse
+   * Manages animation state for smooth transitions
+   * @param index - Index of card to toggle
+   */
   const toggleCard = (index) => {
     const isExpanded = expandedIndices.includes(index);
     const newExpandedIndices = isExpanded
@@ -45,6 +71,7 @@ const FindTherapistScreen = ({ navigation }) => {
 
     setExpandedIndices(newExpandedIndices);
 
+    // Animate card expansion/collapse
     Animated.timing(animations[index], {
       toValue: isExpanded ? 0 : 1,
       duration: 300,
@@ -52,10 +79,20 @@ const FindTherapistScreen = ({ navigation }) => {
     }).start();
   };
 
+  /**
+   * Shows resource title in alert dialog
+   * @param title - Title of the resource
+   */
   const showTitle = (title) => {
     Alert.alert("Resource", title, [{ text: "OK" }]);
   };
 
+  /**
+   * Renders expandable details section
+   * Includes resource link with animation
+   * @param topic - Resource topic data
+   * @param index - Index for animation tracking
+   */
   const renderDetails = (topic, index) => {
     const height = animations[index].interpolate({
       inputRange: [0, 1],
@@ -82,6 +119,7 @@ const FindTherapistScreen = ({ navigation }) => {
           onBackPress={() => navigation.navigate("Resources")}
         />
 
+        {/* Resource Cards Section */}
         <View style={styles.cardSection}>
           {topics.map((topic, index) => (
             <TouchableOpacity
@@ -91,6 +129,7 @@ const FindTherapistScreen = ({ navigation }) => {
               activeOpacity={0.7}
             >
               <View style={styles.cardContent}>
+                {/* Card Main Content */}
                 <View style={styles.mainContent}>
                   <TouchableOpacity onPress={() => showTitle(topic.title)}>
                     <Ionicons name="person-outline" size={20} color="#FFFFFF" />
@@ -100,12 +139,14 @@ const FindTherapistScreen = ({ navigation }) => {
                     <Text style={styles.cardDescription}>{topic.description}</Text>
                     {renderDetails(topic, index)}
                   </View>
+                  {/* Expand/Collapse Indicator */}
                   {!expandedIndices.includes(index) && (
                     <View style={styles.arrowButton}>
                       <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
                     </View>
                   )}
                 </View>
+                {/* Close Button for Expanded State */}
                 {expandedIndices.includes(index) && (
                   <TouchableOpacity
                     style={styles.closeButton}
@@ -123,24 +164,31 @@ const FindTherapistScreen = ({ navigation }) => {
   );
 };
 
+// Styles: Defines the visual appearance of the therapist finder screen
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
-    backgroundColor: "#FDF6EC",
+    backgroundColor: "#FDF6EC", // Warm background color
   },
   container: {
     flexGrow: 1,
-    paddingBottom: 120,
+    paddingBottom: 120, // Extra padding for comfortable scrolling
   },
+  
+  // Card section styles
   cardSection: {
     paddingHorizontal: 20,
     paddingTop: 20,
   },
+  
+  // Card styles
   card: {
-    backgroundColor: "#1B6B63",
+    backgroundColor: "#1B6B63", // Teal color for consistency
     borderRadius: 20,
     padding: 15,
     marginBottom: 20,
+    // Card elevation
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -158,6 +206,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     minHeight: 40,
   },
+  
+  // Text styles
   textContainer: {
     flex: 1,
     marginHorizontal: 10,
@@ -185,10 +235,14 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "600",
   },
+  
+  // Animation container styles
   detailsContainer: {
     marginTop: 8,
     overflow: "hidden",
   },
+  
+  // Button styles
   arrowButton: {
     position: "absolute",
     right: 5,

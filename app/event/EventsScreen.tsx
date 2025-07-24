@@ -1,3 +1,10 @@
+/**
+ * EventsScreen.tsx
+ * Main events management screen that displays a calendar view of events and allows users
+ * to view, register for, and (for event organizers) create new events.
+ * Supports filtering by date and handles both local and Firebase events.
+ */
+
 import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
@@ -21,31 +28,50 @@ import { isDateValidForEvent } from "../../utils/dateUtils";
 import { Ionicons } from "@expo/vector-icons";
 import HeroBox from "../../components/HeroBox";
 
+// Flag to toggle between Firebase and local calendar service
 const USE_FIREBASE_SERVICE = true;
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Events">;
 
+interface ApprovalStatusObject {
+  status: string;
+}
+
+/**
+ * EventsScreen Component
+ * Provides calendar-based event management with date selection,
+ * event registration, and event creation capabilities
+ */
 const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
-  // Set to current date instead of hardcoded value
+  // State Management
   const today = new Date();
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(today); // Currently selected date in calendar
   const [currentMonth, setCurrentMonth] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
-  );
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-  const [refreshKey, setRefreshKey] = useState(0);
+  ); // Current month being viewed
+  const [events, setEvents] = useState<CalendarEvent[]>([]); // All events for the current month
+  const [loading, setLoading] = useState(true); // Loading state for data fetching
+  const { user } = useAuth(); // Current authenticated user
+  const [refreshKey, setRefreshKey] = useState(0); // Key to force refresh of events
 
+  // Service selection based on configuration
   const service = USE_FIREBASE_SERVICE ? firebaseEventService : CalendarService;
 
-  // Handle refresh from route params
+  /**
+   * Effect hook to handle refresh requests from navigation params
+   */
   useEffect(() => {
     if (route.params && "refresh" in route.params && route.params.refresh) {
       setRefreshKey((prev) => prev + 1);
     }
   }, [route.params]);
 
+  /**
+   * Effect hook to fetch events when screen is focused or month changes
+   * - Fetches events for the entire month
+   * - Filters out past and unapproved events
+   * - Marks events user has registered for
+   */
   useFocusEffect(
     useCallback(() => {
       const fetchEventsForMonth = async () => {
@@ -83,14 +109,17 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
           // Filter out past events, only show approved, and mark registered ones
           const validEvents = fetchedEvents
-            .filter(
-              (event) =>
-                isDateValidForEvent(event.date) &&
-                event.approvalStatus &&
-                typeof event.approvalStatus === "object" &&
-                event.approvalStatus.status &&
-                event.approvalStatus.status.toLowerCase() === "approved"
-            )
+            .filter((event) => {
+              if (!isDateValidForEvent(event.date)) return false;
+              if (!event.approvalStatus) return false;
+              
+              const approvalStatus = event.approvalStatus as string | ApprovalStatusObject;
+              const status = typeof approvalStatus === 'string'
+                ? approvalStatus
+                : approvalStatus.status;
+                
+              return status.toLowerCase() === 'approved';
+            })
             .map((event) => ({
               ...event,
               registered: registeredEventIds.includes(event.id),
@@ -107,9 +136,13 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
         }
       };
       fetchEventsForMonth();
-    }, [currentMonth, refreshKey]) // Add refreshKey to dependencies
+    }, [currentMonth, refreshKey])
   );
 
+  /**
+   * Handles navigation to previous month
+   * Prevents viewing past months
+   */
   const goToPreviousMonth = () => {
     // Don't allow navigating to past months
     const previousMonth = new Date(
@@ -130,12 +163,20 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     setCurrentMonth(previousMonth);
   };
 
+  /**
+   * Handles navigation to next month
+   */
   const goToNextMonth = () => {
     setCurrentMonth(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
     );
   };
 
+  /**
+   * Handles date selection in calendar
+   * Prevents selecting past dates
+   * @param date - The date selected by the user
+   */
   const handleDateSelect = (date: Date) => {
     // Prevent selecting dates in the past
     if (isDateValidForEvent(date)) {
@@ -148,6 +189,11 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
+  /**
+   * Handles event registration process
+   * Validates user authentication and navigates to registration screen
+   * @param eventId - ID of the event to register for
+   */
   const handleRegister = async (eventId: string) => {
     if (!user) {
       Alert.alert("Error", "You must be logged in to register for events.");
@@ -160,6 +206,11 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.navigate("RegisterEvent", { eventId });
   };
 
+  /**
+   * Handles event click/selection
+   * Validates user authentication and navigates to event details
+   * @param eventId - ID of the event that was clicked
+   */
   const handleEventClick = (eventId: string) => {
     const event = events.find((e) => e.id === eventId);
     if (!event) return;
@@ -172,6 +223,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.navigate("RegisterEvent", { eventId });
   };
 
+  /**
+   * Handles navigation to event creation form
+   * Only available to event organizers
+   */
   const handleAddEvent = () => {
     console.log(
       "[EventsScreen] Navigating to EventsForm with selectedDate:",
@@ -180,6 +235,9 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.navigate("EventsForm", { selectedDate });
   };
 
+  /**
+   * Filters events to show only those on the selected date
+   */
   const filteredEvents = events.filter(
     (event) =>
       event.date.getDate() === selectedDate?.getDate() &&
@@ -187,7 +245,9 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
       event.date.getFullYear() === selectedDate?.getFullYear()
   );
 
-  // Adjust currentMonth if it's in the past
+  /**
+   * Effect hook to ensure current month is not in the past
+   */
   useEffect(() => {
     const todayMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     if (currentMonth < todayMonth) {
@@ -197,16 +257,18 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with title and back button */}
       <HeroBox title="Events" showBackButton={true} />
+
+      {/* Date Selection and Calendar Section */}
       <View style={styles.dateSelectionContainer}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            marginBottom: 15,
-          }}
-        >
+        {/* Selected Date Display */}
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          marginBottom: 15,
+        }}>
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
@@ -219,6 +281,7 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           </Text>
         </View>
 
+        {/* Calendar Component */}
         <Calendar
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
@@ -227,6 +290,8 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           onNextMonth={goToNextMonth}
           onPrevMonth={goToPreviousMonth}
         />
+
+        {/* My Events Button - Only visible to event organizers */}
         <View style={{ alignItems: "flex-end", marginTop: 10 }}>
           {user?.role === "Event Organizer" && (
             <TouchableOpacity
@@ -245,13 +310,16 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
       </View>
 
+      {/* Events List Section */}
       <ScrollView style={styles.eventsListContainer}>
         {loading ? (
+          // Loading spinner
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#F4A941" />
             <Text style={styles.loadingText}>Loading events...</Text>
           </View>
         ) : filteredEvents.length > 0 ? (
+          // Map and render event cards
           filteredEvents.map((event) => {
             console.log("[EventsScreen] Rendering event:", {
               id: event.id,
@@ -276,6 +344,7 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
             );
           })
         ) : (
+          // Empty state with optional add event button
           <View style={styles.noEventsContainer}>
             <Text style={styles.noEventsText}>No events for this date</Text>
             {user?.role === "Event Organizer" && (
@@ -293,6 +362,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
+/**
+ * Styles for the EventsScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,3 +1,9 @@
+/**
+ * AnnouncementsScreen.tsx
+ * Displays user-specific notifications and global announcements in a unified feed.
+ * Supports real-time updates, read/unread status, and navigation to relevant screens.
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -19,14 +25,30 @@ import notificationService, {
 } from "../../services/notificationService";
 import HeroBox from "../../components/HeroBox";
 
+/**
+ * Type alias combining both notification and announcement items
+ * Used for unified handling of both types in the UI
+ */
 type CombinedItem = NotificationItem | AnnouncementItem;
 
+/**
+ * AnnouncementsScreen Component
+ * Manages and displays notifications and announcements in a scrollable list
+ * Supports pull-to-refresh and automatic marking of notifications as read
+ */
 const AnnouncementsScreen = () => {
+  // Navigation hook for routing between screens
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
-  const [notifications, setNotifications] = useState<CombinedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  
+  // State Management
+  const [notifications, setNotifications] = useState<CombinedItem[]>([]); // Combined notifications and announcements
+  const [loading, setLoading] = useState(true); // Loading state for initial fetch
+  const [refreshing, setRefreshing] = useState(false); // Pull-to-refresh state
 
+  /**
+   * Fetches both user notifications and global announcements
+   * Combines and sorts them by timestamp in descending order
+   */
   const fetchNotifications = async () => {
     try {
       const notificationsPromise = notificationService.getNotifications();
@@ -49,15 +71,28 @@ const AnnouncementsScreen = () => {
     }
   };
 
+  /**
+   * Initial fetch of notifications on component mount
+   */
   useEffect(() => {
     fetchNotifications();
   }, []);
 
+  /**
+   * Handles pull-to-refresh functionality
+   * Triggers a fresh fetch of notifications
+   */
   const onRefresh = () => {
     setRefreshing(true);
     fetchNotifications();
   };
 
+  /**
+   * Handles notification item press events
+   * - Marks unread notifications as read
+   * - Navigates to relevant screens based on notification type
+   * @param notification - The notification item that was pressed
+   */
   const handleNotificationPress = async (notification: CombinedItem) => {
     if ("status" in notification && notification.status === "unread") {
       await notificationService.markAsRead(notification.id);
@@ -78,6 +113,11 @@ const AnnouncementsScreen = () => {
     }
   };
 
+  /**
+   * Returns the appropriate icon name based on notification type
+   * @param type - The type of notification
+   * @returns Ionicons icon name string
+   */
   const getNotificationIcon = (type: CombinedItem["type"]) => {
     switch (type) {
       case "event":
@@ -94,6 +134,11 @@ const AnnouncementsScreen = () => {
     }
   };
 
+  /**
+   * Formats a timestamp into a human-readable relative time string
+   * @param timestamp - The date to format
+   * @returns Formatted string (e.g., "5m ago", "2h ago", "3d ago")
+   */
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
     const diff = now.getTime() - timestamp.getTime();
@@ -114,12 +159,16 @@ const AnnouncementsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with title and back button */}
       <HeroBox title="Announcements" showBackButton={true} />
+
       {loading ? (
+        // Loading spinner while fetching notifications
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1B6B63" />
         </View>
       ) : (
+        // Main notification list with pull-to-refresh
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           refreshControl={
@@ -127,6 +176,7 @@ const AnnouncementsScreen = () => {
           }
         >
           {notifications.length === 0 ? (
+            // Empty state when no notifications exist
             <View style={styles.emptyContainer}>
               <Ionicons
                 name="notifications-off-outline"
@@ -136,6 +186,7 @@ const AnnouncementsScreen = () => {
               <Text style={styles.emptyText}>No notifications yet</Text>
             </View>
           ) : (
+            // Map through and render notification items
             notifications.map((notification) => (
               <TouchableOpacity
                 key={notification.id}
@@ -175,6 +226,10 @@ const AnnouncementsScreen = () => {
   );
 };
 
+/**
+ * Styles for the AnnouncementsScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,3 +1,9 @@
+/**
+ * HomeDashboardScreen.tsx
+ * Main dashboard screen of the application that displays user information, quick access buttons,
+ * upcoming events, and emergency support options.
+ */
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -39,6 +45,9 @@ import {
 } from "../navigation/AppNavigator";
 import HeroBox from "../components/HeroBox";
 
+/**
+ * Interface for raw event data from Firebase
+ */
 interface EventData {
   id: string;
   title: string;
@@ -47,6 +56,9 @@ interface EventData {
   startTime: string;
 }
 
+/**
+ * Interface for processed event data ready for display
+ */
 interface ProcessedEventData {
   id: string;
   title: string;
@@ -55,6 +67,9 @@ interface ProcessedEventData {
   date: string;
 }
 
+/**
+ * Type definition for navigation props combining stack and tab navigation
+ */
 type HomeDashboardScreenNavigationProp = CompositeNavigationProp<
   StackNavigationProp<HomeStackParamList>,
   CompositeNavigationProp<
@@ -63,6 +78,9 @@ type HomeDashboardScreenNavigationProp = CompositeNavigationProp<
   >
 >;
 
+/**
+ * Type definition for dashboard quick access buttons
+ */
 type DashboardButton = {
   label: string;
   color: string;
@@ -71,6 +89,10 @@ type DashboardButton = {
   description: string;
 };
 
+/**
+ * Configuration for quick access buttons shown in the dashboard
+ * Buttons are conditionally displayed based on user role
+ */
 const dashboardButtons: DashboardButton[] = [
   {
     label: "Manage Volunteering",
@@ -96,14 +118,24 @@ const dashboardButtons: DashboardButton[] = [
 ];
 
 const HomeDashboardScreen = () => {
+  // Navigation hook for routing between screens
   const navigation = useNavigation<HomeDashboardScreenNavigationProp>();
+  
+  // Authentication context for user information
   const { user } = useAuth();
-  const [events, setEvents] = useState<ProcessedEventData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  
+  // State Management
+  const [events, setEvents] = useState<ProcessedEventData[]>([]); // Stores upcoming events
+  const [loading, setLoading] = useState(true); // Loading state for async operations
+  const [userName, setUserName] = useState(""); // User's display name
+  const [profileImage, setProfileImage] = useState<string | null>(null); // User's profile image URL
+  const [activeIndex, setActiveIndex] = useState(0); // Current index for quick access carousel
 
+  /**
+   * Fetches registered events for the current user
+   * Processes and formats events for display
+   * Only shows future events, sorted by date
+   */
   const fetchRegisteredEvents = useCallback(async () => {
     if (!user) return;
 
@@ -168,6 +200,10 @@ const HomeDashboardScreen = () => {
     }
   }, [user]);
 
+  /**
+   * Effect hook to refresh data when screen is focused
+   * Fetches user profile and registered events
+   */
   useFocusEffect(
     useCallback(() => {
       fetchUserProfile();
@@ -175,6 +211,10 @@ const HomeDashboardScreen = () => {
     }, [fetchRegisteredEvents])
   );
 
+  /**
+   * Fetches user profile data from Firebase
+   * Updates userName and profileImage states
+   */
   const fetchUserProfile = async () => {
     try {
       const currentUser = auth.currentUser;
@@ -191,11 +231,18 @@ const HomeDashboardScreen = () => {
     }
   };
 
+  /**
+   * Handles navigation to user profile screen
+   */
   const handleProfilePress = () => {
     // @ts-ignore - Ignoring type check for cross-stack navigation
     navigation.navigate("Settings", { screen: "Profile" });
   };
 
+  /**
+   * Generic navigation handler for dashboard buttons
+   * @param route - The route name to navigate to
+   */
   const handleNavigation = (route: keyof HomeStackParamList) => {
     // Using a more specific type assertion for the navigation object
     (navigation as unknown as { navigate: (screen: string) => void }).navigate(
@@ -203,7 +250,10 @@ const HomeDashboardScreen = () => {
     );
   };
 
-  // Helper function to chunk array
+  /**
+   * Utility function to split array into chunks
+   * Used for batch processing of Firebase queries
+   */
   const chunkArray = (array: any[], size: number) => {
     const chunks = [];
     for (let i = 0; i < array.length; i += size) {
@@ -212,7 +262,10 @@ const HomeDashboardScreen = () => {
     return chunks;
   };
 
-  // Initial load and periodic refresh
+  /**
+   * Effect hook for initial load and periodic refresh
+   * Sets up auto-refresh interval for events
+   */
   useEffect(() => {
     fetchRegisteredEvents();
 
@@ -226,7 +279,9 @@ const HomeDashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Main ScrollView container */}
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Header Section with Notifications and SOS */}
         <View style={styles.customHeroBox}>
           <View style={styles.customHeader}>
             <Text style={styles.customHeaderTitle}>Home Dashboard</Text>
@@ -250,7 +305,7 @@ const HomeDashboardScreen = () => {
           </View>
         </View>
 
-        {/* Profile Section */}
+        {/* Profile Card - Shows user info and avatar */}
         <TouchableOpacity
           onPress={handleProfilePress}
           style={styles.profileCard}
@@ -277,7 +332,7 @@ const HomeDashboardScreen = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Quick Access Section */}
+        {/* Quick Access Section - Horizontal scrollable buttons */}
         <View style={[styles.quickAccessContainer, { overflow: "visible" }]}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
@@ -325,7 +380,7 @@ const HomeDashboardScreen = () => {
           </View>
         </View>
 
-        {/* SOS Button */}
+        {/* SOS Emergency Button */}
         <TouchableOpacity
           style={styles.sosButton}
           onPress={() => handleNavigation("Emergency")}
@@ -347,6 +402,7 @@ const HomeDashboardScreen = () => {
           </View>
         </TouchableOpacity>
 
+        {/* Upcoming Events Section - Conditional render based on user role */}
         {(user?.role === "Support Seeker" ||
           user?.role === "Event Organizer") && (
           <View style={styles.eventsContainer}>
@@ -403,7 +459,7 @@ const HomeDashboardScreen = () => {
           </View>
         )}
 
-        {/* Description Section with Modern Divider */}
+        {/* Description Section with Divider */}
         <View style={styles.descriptionContainer}>
           <View style={styles.modernDivider}>
             <View style={styles.dividerLine} />
@@ -420,7 +476,7 @@ const HomeDashboardScreen = () => {
           </View>
         </View>
 
-        {/* Support Box */}
+        {/* Emergency Support Reminder Box */}
         <View style={styles.supportBox}>
           <Text style={styles.supportTitle}>🔴 Emergency Support Reminder</Text>
           <Text style={styles.supportText}>
@@ -434,6 +490,10 @@ const HomeDashboardScreen = () => {
   );
 };
 
+/**
+ * Styles for the HomeDashboardScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

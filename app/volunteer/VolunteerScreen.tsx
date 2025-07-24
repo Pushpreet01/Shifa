@@ -1,3 +1,10 @@
+/**
+ * VolunteerScreen.tsx
+ * Main volunteer dashboard that displays available opportunities and provides access to
+ * volunteer-related features like applications, rewards, and learning resources.
+ * Manages the display and application process for volunteer opportunities.
+ */
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -19,24 +26,33 @@ import { auth } from "../../config/firebaseConfig";
 import { VolunteerOpportunity, VolunteerApplication } from "../../types/volunteer";
 import HeroBox from "../../components/HeroBox";
 
+type ApprovalStatus = "pending" | "approved" | "rejected";
+
+/**
+ * VolunteerScreen Component
+ * Displays a grid of volunteer management options and a list of available opportunities
+ * Handles opportunity application process and status tracking
+ */
 const VolunteerScreen: React.FC<
   NativeStackScreenProps<HomeStackParamList, "VolunteerScreen">
 > = ({ navigation }) => {
-  const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]);
-  const [userApplications, setUserApplications] = useState<VolunteerApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const currentUser = auth.currentUser;
+  // State Management
+  const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]); // List of available opportunities
+  const [userApplications, setUserApplications] = useState<VolunteerApplication[]>([]); // User's existing applications
+  const [loading, setLoading] = useState(true); // Loading state for data fetching
+  const [error, setError] = useState<string | null>(null); // Error state for API failures
+  const currentUser = auth.currentUser; // Current authenticated user
 
-  // Fetch approved opportunities
+  /**
+   * Fetches approved volunteer opportunities from Firebase
+   * Filters opportunities to show only approved ones
+   */
   const fetchApprovedOpportunities = useCallback(async () => {
     try {
       setLoading(true);
       const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
-      const approved = allOpportunities.filter(
-        (opp) => opp.approvalStatus === "approved"
-      );
-      setOpportunities(approved);
+      // getAllOpportunities already filters for approved status in the service
+      setOpportunities(allOpportunities);
     } catch (err) {
       setError("Failed to load volunteer opportunities.");
       console.error(err);
@@ -45,7 +61,10 @@ const VolunteerScreen: React.FC<
     }
   }, []);
 
-  // Fetch current user's applications
+  /**
+   * Fetches the current user's volunteer applications
+   * Updates the userApplications state with the user's application history
+   */
   const fetchUserApplications = useCallback(async () => {
     if (!currentUser) {
       setUserApplications([]);
@@ -59,6 +78,10 @@ const VolunteerScreen: React.FC<
     }
   }, [currentUser]);
 
+  /**
+   * Effect hook to load initial data
+   * Fetches opportunities and applications if user is authenticated
+   */
   useEffect(() => {
     if (currentUser) {
       fetchApprovedOpportunities();
@@ -69,18 +92,31 @@ const VolunteerScreen: React.FC<
     }
   }, [fetchApprovedOpportunities, fetchUserApplications, currentUser]);
 
-  // Check if user already applied
+  /**
+   * Checks if the user has already applied to a specific opportunity
+   * @param opportunityId - ID of the opportunity to check
+   * @returns boolean indicating if user has applied
+   */
   const hasApplied = (opportunityId: string) => {
     return userApplications.some((app) => app.opportunityId === opportunityId);
   };
 
-  // Get application status
+  /**
+   * Gets the status of user's application for a specific opportunity
+   * @param opportunityId - ID of the opportunity to check
+   * @returns Application status string or null if not applied
+   */
   const getApplicationStatus = (opportunityId: string): string | null => {
     const app = userApplications.find((a) => a.opportunityId === opportunityId);
     return app ? app.status : null;
   };
 
-  // Handle apply button press
+  /**
+   * Handles the apply button press for an opportunity
+   * Validates user authentication and previous applications
+   * Navigates to application form if eligible
+   * @param opportunity - The opportunity to apply for
+   */
   const handleApply = (opportunity: VolunteerOpportunity) => {
     if (!currentUser) {
       Alert.alert("Not logged in", "Please log in to apply.");
@@ -110,9 +146,13 @@ const VolunteerScreen: React.FC<
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with title and back button */}
       <HeroBox title="Volunteer" showBackButton={true} />
+      
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Quick Access Grid - Navigation buttons for volunteer features */}
         <View style={styles.gridRow}>
+          {/* Browse Opportunities Button */}
           <TouchableOpacity
             style={styles.gridButton}
             onPress={() => navigation.navigate("Opportunities")}
@@ -120,6 +160,8 @@ const VolunteerScreen: React.FC<
             <Ionicons name="search-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
             <Text style={styles.gridButtonText}>Browse</Text>
           </TouchableOpacity>
+          
+          {/* Learning Resources Button */}
           <TouchableOpacity
             style={styles.gridButton}
             onPress={() => navigation.navigate("VolunteerLearnings")}
@@ -128,7 +170,9 @@ const VolunteerScreen: React.FC<
             <Text style={styles.gridButtonText}>My Learnings</Text>
           </TouchableOpacity>
         </View>
+
         <View style={styles.gridRow}>
+          {/* Rewards Button */}
           <TouchableOpacity
             style={styles.gridButton}
             onPress={() => navigation.navigate("VolunteerRewards")}
@@ -136,6 +180,8 @@ const VolunteerScreen: React.FC<
             <Ionicons name="trophy-outline" size={32} color="#FFFFFF" style={styles.gridIcon} />
             <Text style={styles.gridButtonText}>Rewards</Text>
           </TouchableOpacity>
+          
+          {/* My Applications Button */}
           <TouchableOpacity
             style={styles.gridButton}
             onPress={() => navigation.navigate("MyApplications")}
@@ -145,11 +191,13 @@ const VolunteerScreen: React.FC<
           </TouchableOpacity>
         </View>
 
+        {/* Available Events Section */}
         <View style={styles.sectionHeader}>
           <Ionicons name="calendar-outline" size={20} color="black" />
           <Text style={styles.sectionTitle}>Available Events</Text>
         </View>
 
+        {/* Conditional rendering based on loading and data state */}
         {loading ? (
           <ActivityIndicator
             size="large"
@@ -163,6 +211,7 @@ const VolunteerScreen: React.FC<
             No opportunities available at the moment
           </Text>
         ) : (
+          // Map through and render opportunity cards
           opportunities.map((opportunity) => {
             const applied = hasApplied(opportunity.opportunityId);
             const status = getApplicationStatus(opportunity.opportunityId);
@@ -214,6 +263,10 @@ const VolunteerScreen: React.FC<
   );
 };
 
+/**
+ * Styles for the VolunteerScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

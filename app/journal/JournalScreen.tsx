@@ -1,3 +1,10 @@
+/**
+ * JournalScreen.tsx
+ * Landing screen for the journaling feature that provides access to create new entries
+ * and view existing journal entries. Features a welcoming design with a journal cover image
+ * and clear call-to-action buttons.
+ */
+
 import React from "react";
 import {
   View,
@@ -14,22 +21,35 @@ import type { HomeStackParamList } from "../../navigation/AppNavigator";
 import { Ionicons } from "@expo/vector-icons";
 import HeroBox from "../../components/HeroBox";
 
+/**
+ * JournalScreen Component
+ * Main entry point for the journaling feature
+ * Provides navigation to create new entries or view existing ones
+ */
 const JournalScreen = () => {
+  // Navigation hook for routing between screens
   const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with title and back button */}
       <HeroBox title="Journal" showBackButton={true} />
+
+      {/* Main content container */}
       <View style={styles.content}>
+        {/* Journal cover image */}
         <Image
           source={require("../../assets/journalcover.png")}
           style={styles.journalImage}
           resizeMode="contain"
         />
 
+        {/* Section title */}
         <Text style={styles.label}>My Journal</Text>
 
+        {/* Navigation buttons container */}
         <View style={styles.buttonArea}>
+          {/* New Entry Button */}
           <TouchableOpacity
             style={styles.openButton}
             onPress={() => navigation.navigate("NewJournalEntryScreen")}
@@ -37,6 +57,7 @@ const JournalScreen = () => {
             <Text style={styles.openButtonText}>New Entry</Text>
           </TouchableOpacity>
 
+          {/* View Entries Button */}
           <TouchableOpacity
             style={styles.viewButton}
             onPress={() => navigation.navigate("MyJournalsScreen")}
@@ -49,11 +70,18 @@ const JournalScreen = () => {
   );
 };
 
+/**
+ * Styles for the JournalScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
     backgroundColor: "#FDF6EC",
   },
+  
+  // Header styles
   heroBox: {
     backgroundColor: "#FDF6EC",
     paddingTop: 40,
@@ -102,6 +130,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12,
   },
+
+  // Content styles
   content: {
     flex: 1,
     alignItems: "center",
@@ -118,6 +148,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#2E2E2E",
   },
+
+  // Button styles
   buttonArea: {
     alignItems: "center",
     justifyContent: "center",

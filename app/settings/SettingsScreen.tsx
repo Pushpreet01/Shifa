@@ -1,4 +1,10 @@
-// app/SettingsScreen.tsx
+/**
+ * SettingsScreen.tsx
+ * Main settings screen that provides access to user account management,
+ * application preferences, and support options. Also handles account
+ * deletion and sign out functionality.
+ */
+
 import React from "react";
 import {
   View,
@@ -18,13 +24,25 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { SettingsStackParamList } from "../../navigation/AppNavigator";
 import { deleteCurrentUserAndData } from '../../services/firebaseUserService';
 
+/**
+ * Navigation prop type for the Settings screen
+ * Includes routes for both settings stack and authentication
+ */
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList & { Login: undefined }>;
 
+/**
+ * SettingsScreen Component
+ * Displays a categorized list of settings options and account management actions
+ */
 const SettingsScreen = () => {
-  const { signOut } = useAuth();
+  const { signOut } = useAuth(); // Authentication context for sign out functionality
   const navigation = useNavigation<SettingsScreenNavigationProp>();
-  const [deleting, setDeleting] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false); // State for account deletion process
 
+  /**
+   * Handles navigation when a settings option is pressed
+   * @param option - The name of the selected option
+   */
   const handleOptionPress = (option: string) => {
     switch (option) {
       case "Profile":
@@ -41,6 +59,10 @@ const SettingsScreen = () => {
     }
   };
 
+  /**
+   * Configuration for settings menu items
+   * Organized into sections with icons and descriptions
+   */
   const settingsOptions = [
     {
       title: "Account",
@@ -91,6 +113,10 @@ const SettingsScreen = () => {
     }
   ];
 
+  /**
+   * Handles user sign out process
+   * Attempts to sign out and handles any errors
+   */
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -99,6 +125,10 @@ const SettingsScreen = () => {
     }
   };
 
+  /**
+   * Handles account deletion process
+   * Shows confirmation dialog and manages deletion state
+   */
   const handleDeleteAccount = async () => {
     Alert.alert(
       'Delete Account',
@@ -113,6 +143,7 @@ const SettingsScreen = () => {
             try {
               await deleteCurrentUserAndData();
               setDeleting(false);
+              // Reset navigation stack to login screen
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
@@ -130,14 +161,19 @@ const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Header with title and custom back navigation */}
         <HeroBox title="Settings" showBackButton customBackRoute="Home" />
 
+        {/* Settings Sections */}
         {settingsOptions.map((section, index) => (
           <View key={index} style={styles.section}>
+            {/* Section Header */}
             <View style={styles.sectionHeader}>
               <Ionicons name={section.icon} size={24} color="#1B6B63" />
               <Text style={styles.sectionTitle}>{section.title}</Text>
             </View>
+
+            {/* Section Items */}
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -157,12 +193,15 @@ const SettingsScreen = () => {
           </View>
         ))}
 
+        {/* Account Management Actions */}
         <View style={styles.accountActions}>
+          {/* Sign Out Button */}
           <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={22} color="#FFFFFF" />
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
 
+          {/* Delete Account Button */}
           <TouchableOpacity 
             style={styles.deleteButton} 
             onPress={handleDeleteAccount} 
@@ -183,7 +222,12 @@ const SettingsScreen = () => {
   );
 };
 
+/**
+ * Styles for the SettingsScreen component
+ * Organized by section for easier maintenance
+ */
 const styles = StyleSheet.create({
+  // Container styles
   safeArea: {
     flex: 1,
     backgroundColor: "#FDF6EC",
@@ -191,6 +235,8 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 120,
   },
+
+  // Section styles
   section: {
     marginTop: 20,
     paddingHorizontal: 20,
@@ -207,6 +253,8 @@ const styles = StyleSheet.create({
     color: "#1B6B63",
     marginLeft: 10,
   },
+
+  // Option button styles
   optionButton: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -240,6 +288,8 @@ const styles = StyleSheet.create({
     color: "#666666",
     marginTop: 2,
   },
+
+  // Account action button styles
   accountActions: {
     marginTop: 30,
     paddingHorizontal: 20,

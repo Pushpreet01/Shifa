@@ -16,6 +16,13 @@ import AdminHeroBox from '../../components/AdminHeroBox';
 import * as adminEventService from '../../services/adminEventService';
 import FirebaseOpportunityService from '../../services/FirebaseOpportunityService';
 
+const MAX_CHAR_LIMITS = {
+  title: 30,
+  description: 500,
+  rewards: 100,
+  refreshments: 100,
+};
+
 const AdminEditEventScreen = () => {
     const route = useRoute<any>();
     const { eventId } = route.params || {};
@@ -38,6 +45,11 @@ const AdminEditEventScreen = () => {
     const [timings, setTimings] = useState('');
     const [rewards, setRewards] = useState('');
     const [refreshments, setRefreshments] = useState('');
+
+    // Count characters
+    const countChars = (text: string) => {
+      return text.length;
+    };
 
     // Fetch event and opportunity
     const fetchData = async () => {
@@ -84,6 +96,28 @@ const AdminEditEventScreen = () => {
     const handleSave = async () => {
         setSaving(true);
         try {
+            // Validate character limits
+            if (countChars(title) > MAX_CHAR_LIMITS.title) {
+              Alert.alert(`Error`, `Title exceeds character limit of ${MAX_CHAR_LIMITS.title}.`);
+              setSaving(false);
+              return;
+            }
+            if (countChars(description) > MAX_CHAR_LIMITS.description) {
+              Alert.alert(`Error`, `Description exceeds character limit of ${MAX_CHAR_LIMITS.description}.`);
+              setSaving(false);
+              return;
+            }
+            if (countChars(rewards) > MAX_CHAR_LIMITS.rewards) {
+              Alert.alert(`Error`, `Rewards exceeds character limit of ${MAX_CHAR_LIMITS.rewards}.`);
+              setSaving(false);
+              return;
+            }
+            if (countChars(refreshments) > MAX_CHAR_LIMITS.refreshments) {
+              Alert.alert(`Error`, `Refreshments exceeds character limit of ${MAX_CHAR_LIMITS.refreshments}.`);
+              setSaving(false);
+              return;
+            }
+
             // Update event
             await adminEventService.updateEvent(eventId, {
                 title,
@@ -141,7 +175,15 @@ const AdminEditEventScreen = () => {
             <AdminHeroBox title="Edit Event" showBackButton customBackRoute="Events" />
             <ScrollView style={styles.formContainer} contentContainerStyle={{ paddingBottom: 130 }}>
                 <Text style={styles.label}>Title</Text>
-                <TextInput style={styles.input} value={title} onChangeText={setTitle} />
+                <TextInput
+                  style={styles.input}
+                  value={title}
+                  onChangeText={setTitle}
+                  maxLength={MAX_CHAR_LIMITS.title}
+                />
+                <Text style={styles.charCount}>
+                  {countChars(title)}/{MAX_CHAR_LIMITS.title}
+                </Text>
 
                 <Text style={styles.label}>Date</Text>
                 <TextInput
@@ -175,7 +217,11 @@ const AdminEditEventScreen = () => {
                     value={description}
                     onChangeText={setDescription}
                     multiline
+                    maxLength={MAX_CHAR_LIMITS.description}
                 />
+                <Text style={styles.charCount}>
+                  {countChars(description)}/{MAX_CHAR_LIMITS.description}
+                </Text>
 
                 <View style={styles.switchRow}>
                     <Text style={styles.label}>Needs Volunteers</Text>
@@ -195,9 +241,25 @@ const AdminEditEventScreen = () => {
                         <Text style={styles.label}>Timings</Text>
                         <TextInput style={styles.input} value={timings} onChangeText={setTimings} />
                         <Text style={styles.label}>Rewards</Text>
-                        <TextInput style={styles.input} value={rewards} onChangeText={setRewards} />
+                        <TextInput
+                            style={styles.input}
+                            value={rewards}
+                            onChangeText={setRewards}
+                            maxLength={MAX_CHAR_LIMITS.rewards}
+                        />
+                        <Text style={styles.charCount}>
+                          {countChars(rewards)}/{MAX_CHAR_LIMITS.rewards}
+                        </Text>
                         <Text style={styles.label}>Refreshments</Text>
-                        <TextInput style={styles.input} value={refreshments} onChangeText={setRefreshments} />
+                        <TextInput
+                            style={styles.input}
+                            value={refreshments}
+                            onChangeText={setRefreshments}
+                            maxLength={MAX_CHAR_LIMITS.refreshments}
+                        />
+                        <Text style={styles.charCount}>
+                          {countChars(refreshments)}/{MAX_CHAR_LIMITS.refreshments}
+                        </Text>
                     </>
                 )}
 
@@ -236,6 +298,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         fontSize: 15,
     },
+    charCount: {
+      alignSelf: 'flex-end',
+      fontSize: 12,
+      color: '#1B6B63', // Teal color to match other screens
+      marginBottom: 16,
+    },
     switchRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -263,4 +331,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default AdminEditEventScreen; 
+export default AdminEditEventScreen;

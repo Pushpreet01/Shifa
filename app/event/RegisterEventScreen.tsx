@@ -102,7 +102,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
         } else {
           // Fallback to local JSON data
           try {
-            const eventsData = await import("../event.json");
+            const eventsData = await import("../../event.json");
             const foundEvent = eventsData.events.find(
               (e: any) => e.id === eventId
             );
@@ -210,8 +210,7 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
           [
             {
               text: "OK",
-              onPress: () =>
-                navigation.navigate("Events", { refresh: Date.now() }),
+              onPress: () => navigation.navigate("Events", { refresh: true }),
             },
           ]
         );
@@ -254,9 +253,11 @@ const RegisterEventScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeroBox 
-        title={event && event.registered ? "Your Registration" : "Register for Event"} 
-        showBackButton={true} 
+      <HeroBox
+        title={
+          event && event.registered ? "Your Registration" : "Register for Event"
+        }
+        showBackButton={true}
       />
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.eventInfoContainer}>

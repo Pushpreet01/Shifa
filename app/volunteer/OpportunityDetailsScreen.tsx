@@ -50,7 +50,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   }, []);
 
   // If not approved, show a message and do not allow application
-  const isOpportunityApproved = opportunityDetails?.approvalStatus === 'approved';
+  const isOpportunityApproved = opportunityDetails?.approvalStatus.status === 'Approved';
 
   if (!loadingOpportunity && opportunityDetails && !isOpportunityApproved) {
     return (
@@ -75,7 +75,9 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           title,
           noVolunteersNeeded: 0,
           description,
-          approvalStatus: "approved",
+          approvalStatus: {
+            status: "Approved",
+          },
           timings: timing,
           location: location || undefined,
           createdAt: date ? new Date(date) : new Date(),
@@ -92,7 +94,9 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         title,
         noVolunteersNeeded: 0,
         description,
-        approvalStatus: "approved",
+        approvalStatus: {
+          status: "Approved",
+        },
         timings: timing,
         location: location || undefined,
         createdAt: date ? new Date(date) : new Date(),

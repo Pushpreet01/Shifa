@@ -34,7 +34,7 @@ const VolunteerScreen: React.FC<
       setLoading(true);
       const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
       const approved = allOpportunities.filter(
-        (opp) => opp.approvalStatus === "approved"
+        (opp) => opp.approvalStatus.status === "Approved"
       );
       setOpportunities(approved);
     } catch (err) {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   gridRow: {
     flexDirection: 'row',

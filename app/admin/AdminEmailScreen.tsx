@@ -15,9 +15,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AdminHeroBox from '../../components/AdminHeroBox';
 import * as MailComposer from 'expo-mail-composer';
+import KeyboardAwareWrapper from '../../components/KeyboardAwareWrapper';
 
 const roles = ['Support Seeker', 'Volunteer', 'Event Organizer', 'Admin'];
-const MAX_WORD_LIMIT = 250;
+const MAX_CHAR_LIMITS = {
+  subject: 30,
+  message: 500,
+};
 
 const placeholderEmails = {
   Admin: ['admin1@example.com', 'admin2@example.com', 'admin3@example.com'],
@@ -37,7 +41,9 @@ const AdminEmailScreen = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
 
-  const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
+  const countChars = (text: string) => {
+    return text.length; // Count individual characters
+  };
 
   const handleSend = async () => {
     if (selectedRole === 'Particular User') {
@@ -52,8 +58,13 @@ const AdminEmailScreen = () => {
       }
     }
 
-    if (wordCount > MAX_WORD_LIMIT) {
-      alert(`Message too long. Max ${MAX_WORD_LIMIT} words allowed.`);
+    if (countChars(subject) > MAX_CHAR_LIMITS.subject) {
+      alert(`Subject exceeds character limit of ${MAX_CHAR_LIMITS.subject}.`);
+      return;
+    }
+
+    if (countChars(message) > MAX_CHAR_LIMITS.message) {
+      alert(`Message exceeds character limit of ${MAX_CHAR_LIMITS.message}.`);
       return;
     }
 
@@ -98,126 +109,135 @@ const AdminEmailScreen = () => {
         showBackButton
         customBackRoute="AdminDashboard"
       />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.label}>Select Recipient:</Text>
-        <View style={styles.dropdownContainer}>
-          <TouchableOpacity
-            onPress={() => setShowRoleDropdown(!showRoleDropdown)}
-            style={styles.dropdown}
-          >
-            <Text style={styles.dropdownText}>
-              {selectedRole || 'Choose a Role'}
-            </Text>
-            <Ionicons
-              name={showRoleDropdown ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color="#1B6B63"
-            />
-          </TouchableOpacity>
-          {showRoleDropdown && (
-            <View style={styles.dropdownList}>
-              {['Particular User', ...roles].map((role) => (
-                <TouchableOpacity
-                  key={role}
-                  onPress={() => {
-                    setSelectedRole(role);
-                    setShowRoleDropdown(false);
-                  }}
-                >
-                  <Text style={styles.dropdownItem}>{role}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {selectedRole && selectedRole !== 'Particular User' && (
-          <View style={styles.emailListContainer}>
-            <Text style={styles.label}>Users in {selectedRole}:</Text>
-            {placeholderEmails[selectedRole]?.length > 0 ? (
-              placeholderEmails[selectedRole].map((email, index) => (
-                <View key={index} style={styles.emailItem}>
-                  <Ionicons name="mail-outline" size={16} color="#1B6B63" style={styles.emailIcon} />
-                  <Text style={styles.emailText}>{email}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noEmailsText}>No users found for this role.</Text>
+      <KeyboardAwareWrapper>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.label}>Select Recipient:</Text>
+          <View style={styles.dropdownContainer}>
+            <TouchableOpacity
+              onPress={() => setShowRoleDropdown(!showRoleDropdown)}
+              style={styles.dropdown}
+            >
+              <Text style={styles.dropdownText}>
+                {selectedRole || 'Choose a Role'}
+              </Text>
+              <Ionicons
+                name={showRoleDropdown ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color="#1B6B63"
+              />
+            </TouchableOpacity>
+            {showRoleDropdown && (
+              <View style={styles.dropdownList}>
+                {['Particular User', ...roles].map((role) => (
+                  <TouchableOpacity
+                    key={role}
+                    onPress={() => {
+                      setSelectedRole(role);
+                      setShowRoleDropdown(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownItem}>{role}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
           </View>
-        )}
 
-        {selectedRole === 'Particular User' && (
-          <>
-            <Text style={styles.label}>User Role:</Text>
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity
-                onPress={() => setShowUserRoleDropdown(!showUserRoleDropdown)}
-                style={styles.dropdown}
-              >
-                <Text style={styles.dropdownText}>
-                  {specificUserRole || 'Select User Role'}
-                </Text>
-                <Ionicons
-                  name={showUserRoleDropdown ? 'chevron-up' : 'chevron-down'}
-                  size={18}
-                  color="#1B6B63"
-                />
-              </TouchableOpacity>
-              {showUserRoleDropdown && (
-                <View style={styles.dropdownList}>
-                  {roles.map((role) => (
-                    <TouchableOpacity
-                      key={role}
-                      onPress={() => {
-                        setSpecificUserRole(role);
-                        setShowUserRoleDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItem}>{role}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+          {selectedRole && selectedRole !== 'Particular User' && (
+            <View style={styles.emailListContainer}>
+              <Text style={styles.label}>Users in {selectedRole}:</Text>
+              {placeholderEmails[selectedRole]?.length > 0 ? (
+                placeholderEmails[selectedRole].map((email, index) => (
+                  <View key={index} style={styles.emailItem}>
+                    <Ionicons name="mail-outline" size={16} color="#1B6B63" style={styles.emailIcon} />
+                    <Text style={styles.emailText}>{email}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noEmailsText}>No users found for this role.</Text>
               )}
             </View>
+          )}
 
-            <Text style={styles.label}>User Email:</Text>
-            <TextInput
-              placeholder="Enter email address"
-              value={userEmail}
-              onChangeText={setUserEmail}
-              style={styles.input}
-              keyboardType="email-address"
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-          </>
-        )}
+          {selectedRole === 'Particular User' && (
+            <>
+              <Text style={styles.label}>User Role:</Text>
+              <View style={styles.dropdownContainer}>
+                <TouchableOpacity
+                  onPress={() => setShowUserRoleDropdown(!showUserRoleDropdown)}
+                  style={styles.dropdown}
+                >
+                  <Text style={styles.dropdownText}>
+                    {specificUserRole || 'Select User Role'}
+                  </Text>
+                  <Ionicons
+                    name={showUserRoleDropdown ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    color="#1B6B63"
+                  />
+                </TouchableOpacity>
+                {showUserRoleDropdown && (
+                  <View style={styles.dropdownList}>
+                    {roles.map((role) => (
+                      <TouchableOpacity
+                        key={role}
+                        onPress={() => {
+                          setSpecificUserRole(role);
+                          setShowUserRoleDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItem}>{role}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
 
-        <Text style={styles.label}>Subject:</Text>
-        <TextInput
-          placeholder="Enter email subject"
-          value={subject}
-          onChangeText={setSubject}
-          style={styles.input}
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
+              <Text style={styles.label}>User Email:</Text>
+              <TextInput
+                placeholder="Enter email address"
+                value={userEmail}
+                onChangeText={setUserEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            </>
+          )}
 
-        <Text style={styles.label}>Message:</Text>
-        <TextInput
-          multiline
-          placeholder="Type your message here..."
-          style={[styles.input, { height: 120, textAlignVertical: 'top' }]}
-          value={message}
-          onChangeText={setMessage}
-        />
-        <Text style={styles.wordCount}>{wordCount} / {MAX_WORD_LIMIT} words</Text>
+          <Text style={styles.label}>Subject:</Text>
+          <TextInput
+            placeholder="Enter email subject"
+            value={subject}
+            onChangeText={setSubject}
+            style={styles.input}
+            autoCorrect={false}
+            autoCapitalize="none"
+            maxLength={MAX_CHAR_LIMITS.subject}
+          />
+          <Text style={styles.charCountSubject}>
+            {countChars(subject)}/{MAX_CHAR_LIMITS.subject}
+          </Text>
 
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Text style={styles.sendButtonText}>Send Email</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <Text style={styles.label}>Message:</Text>
+          <TextInput
+            multiline
+            placeholder="Type your message here..."
+            style={[styles.input, { height: 120, textAlignVertical: 'top' }]}
+            value={message}
+            onChangeText={setMessage}
+            maxLength={MAX_CHAR_LIMITS.message}
+          />
+          <Text style={styles.charCount}>
+            {countChars(message)}/{MAX_CHAR_LIMITS.message}
+          </Text>
+
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Text style={styles.sendButtonText}>Send Email</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAwareWrapper>
 
       <Modal transparent visible={showSuccessModal} animationType="none">
         <View style={styles.modalOverlay}>
@@ -233,7 +253,10 @@ const AdminEmailScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FDF6EC" },
-  content: { padding: 20 },
+  content: {
+    padding: 20,
+    paddingBottom: 40, // Increased for better scrolling with keyboard
+  },
   label: {
     marginTop: 16,
     marginBottom: 6,
@@ -285,10 +308,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 10,
   },
-  wordCount: {
+  charCountSubject: {
     alignSelf: 'flex-end',
     fontSize: 12,
-    color: '#888',
+    color: '#1B6B63', // Teal color to match other screens
+    marginBottom: -10, // Reduced to bring Message field closer
+  },
+  charCount: {
+    alignSelf: 'flex-end',
+    fontSize: 12,
+    color: '#1B6B63', // Teal color to match other screens
     marginBottom: 20,
   },
   sendButton: {

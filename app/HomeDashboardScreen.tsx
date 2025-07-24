@@ -287,19 +287,7 @@ const HomeDashboardScreen = () => {
               <Text style={styles.sectionTitle}>Quick Access</Text>
             </View>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.quickAccessScroll}
-            decelerationRate="fast"
-            snapToInterval={196} // panel width (180) + margin right (16)
-            snapToAlignment="start"
-            onMomentumScrollEnd={(event) => {
-              const position = event.nativeEvent.contentOffset.x;
-              const newIndex = position > 196 ? 1 : 0; // Only 2 positions: 0 and 1
-              setActiveIndex(newIndex);
-            }}
-          >
+          <View style={styles.quickAccessRow}>
             {dashboardButtons
               .filter((button) => {
                 if (button.label === "Manage Volunteering") {
@@ -316,12 +304,7 @@ const HomeDashboardScreen = () => {
               .map((button, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[
-                    styles.quickAccessPanel,
-                    index === dashboardButtons.length - 1 && {
-                      marginRight: 20,
-                    },
-                  ]}
+                  style={[styles.quickAccessPanel]}
                   onPress={() => handleNavigation(button.route)}
                 >
                   <View style={styles.quickAccessContent}>
@@ -339,17 +322,6 @@ const HomeDashboardScreen = () => {
                   </View>
                 </TouchableOpacity>
               ))}
-          </ScrollView>
-          <View style={styles.paginationDots}>
-            {[0, 1].map((index) => (
-              <View
-                key={index}
-                style={[
-                  styles.paginationDot,
-                  index === activeIndex && styles.paginationDotActive,
-                ]}
-              />
-            ))}
           </View>
         </View>
 
@@ -525,18 +497,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 20,
   },
-  quickAccessScroll: {
+  quickAccessRow: {
     flexDirection: "row",
-    paddingLeft: 20,
-    paddingVertical: 4,
-    minWidth: "100%",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    gap: 16,
   },
   quickAccessPanel: {
-    width: 180,
+    flex: 1,
     height: 180,
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    marginRight: 16,
     padding: 20,
     shadowColor: "#000",
     shadowOffset: {

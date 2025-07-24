@@ -1,4 +1,3 @@
-// app/admin/AssignUserRoleScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -36,7 +35,7 @@ const AssignUserRoleScreen = () => {
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, { role: selectedRole });
       Alert.alert('Success', `Role assigned: ${selectedRole}`);
-      navigation.goBack();
+      navigation.navigate('UserDetails', { userID: user.id });
     } catch (err) {
       Alert.alert('Error', 'Failed to assign role.');
     } finally {
@@ -44,10 +43,23 @@ const AssignUserRoleScreen = () => {
     }
   };
 
+  // Custom back handler
+  const handleBackPress = () => {
+    if (user) {
+      navigation.navigate('UserDetails', { userID: user.id });
+    } else {
+      navigation.goBack();
+    }
+  };
+
   if (!user) {
     return (
       <SafeAreaView style={styles.container}>
-        <AdminHeroBox title="Assign Role" showBackButton customBackRoute="UserDetails" />
+        <AdminHeroBox
+          title="Assign Role"
+          showBackButton
+          customBackRoute="UserDetails"
+        />
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>User data not found.</Text>
         </View>
@@ -57,7 +69,12 @@ const AssignUserRoleScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeroBox title="Assign Role" showBackButton customBackRoute="UserDetails" />
+      <AdminHeroBox
+        title="Assign Role"
+        showBackButton
+        customBackRoute="UserDetails"
+        onBackPress={handleBackPress}
+      />
       <View style={styles.inner}>
         <Text style={styles.label}>Select Role for {user.fullName || 'No Name'}:</Text>
         {roles.map((role) => (

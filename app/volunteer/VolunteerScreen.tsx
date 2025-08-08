@@ -51,8 +51,10 @@ const VolunteerScreen: React.FC<
     try {
       setLoading(true);
       const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
-      // getAllOpportunities already filters for approved status in the service
-      setOpportunities(allOpportunities);
+      const approved = allOpportunities.filter(
+        (opp) => opp.approvalStatus.status === "Approved"
+      );
+      setOpportunities(approved);
     } catch (err) {
       setError("Failed to load volunteer opportunities.");
       console.error(err);
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   gridRow: {
     flexDirection: 'row',

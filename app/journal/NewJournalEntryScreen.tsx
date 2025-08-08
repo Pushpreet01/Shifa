@@ -13,9 +13,13 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { HomeStackParamList } from "../../navigation/AppNavigator";
-import { saveJournalEntry, updateJournalEntry } from "../../services/firebaseJournalService";
+import {
+  saveJournalEntry,
+  updateJournalEntry,
+} from "../../services/firebaseJournalService";
 import KeyboardAwareWrapper from "../../components/KeyboardAwareWrapper";
 import HeroBox from "../../components/HeroBox";
+import ProfanityFilterService from "../../services/profanityFilterService";
 
 type ScreenRouteProp = RouteProp<HomeStackParamList, "NewJournalEntryScreen">;
 
@@ -58,6 +62,28 @@ const NewJournalEntryScreen = () => {
       return;
     }
 
+    // Profanity filter check
+    try {
+      const [titleHasProfanity, bodyHasProfanity] = await Promise.all([
+        ProfanityFilterService.hasProfanity(title),
+        ProfanityFilterService.hasProfanity(body),
+      ]);
+      if (titleHasProfanity || bodyHasProfanity) {
+        Alert.alert(
+          "Inappropriate Content",
+          "Your journal entry contains inappropriate language. Please revise it."
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking profanity:", error);
+      Alert.alert(
+        "Error",
+        "Failed to check for inappropriate content. Please try again."
+      );
+      return;
+    }
+
     try {
       if (entry?.id) {
         await updateJournalEntry(entry.id, title, body); // EDIT
@@ -79,7 +105,10 @@ const NewJournalEntryScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeroBox title={entry ? "Edit Entry" : "New Entry"} showBackButton={true} />
+      <HeroBox
+        title={entry ? "Edit Entry" : "New Entry"}
+        showBackButton={true}
+      />
       <KeyboardAwareWrapper>
         <ScrollView
           style={styles.content}
@@ -93,7 +122,7 @@ const NewJournalEntryScreen = () => {
               onChangeText={setTitle}
               style={styles.input}
               placeholderTextColor="#999999"
-              maxLength={MAX_CHAR_LIMITS.title} 
+              maxLength={MAX_CHAR_LIMITS.title}
             />
             <Text style={styles.wordCount}>
               {countChars(title)}/{MAX_CHAR_LIMITS.title} words

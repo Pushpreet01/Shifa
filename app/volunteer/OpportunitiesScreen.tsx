@@ -57,7 +57,7 @@ const OpportunitiesScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       const allOpportunities = await FirebaseOpportunityService.getAllOpportunities();
       // Only show opportunities with approvalStatus: 'approved'
-      const approved = allOpportunities.filter((opp) => opp.approvalStatus === "approved");
+      const approved = allOpportunities.filter((opp) => opp.approvalStatus.status === "Approved");
       setOpportunities(approved);
       const locs = Array.from(new Set(approved.map((opp) => opp.location).filter(Boolean)));
       setLocations(["All", ...locs]);

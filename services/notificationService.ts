@@ -38,7 +38,18 @@ export interface AnnouncementItem {
   eventId?: string;
 }
 
+/**
+ * NotificationService handles all notification-related logic, including:
+ * - Requesting push notification permissions
+ * - Fetching announcements and notifications from Firestore
+ * - Marking notifications as read
+ * - Sending push notifications via Expo
+ * - Configuring notification behavior in the app
+ */
 class NotificationService {
+  /**
+   * Requests push notification permissions and saves the Expo push token to Firestore.
+   */
   async requestPermissions() {
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
@@ -83,6 +94,10 @@ class NotificationService {
     }
   }
 
+  /**
+   * Fetches the latest global announcements from Firestore.
+   * @returns {Promise<AnnouncementItem[]>} List of announcements
+   */
   async getAnnouncements(): Promise<AnnouncementItem[]> {
     try {
       const q = query(
@@ -110,6 +125,10 @@ class NotificationService {
     }
   }
 
+  /**
+   * Fetches the current user's notifications from Firestore.
+   * @returns {Promise<NotificationItem[]>} List of notifications
+   */
   async getNotifications(): Promise<NotificationItem[]> {
     try {
       const currentUser = auth.currentUser;
@@ -134,6 +153,10 @@ class NotificationService {
     }
   }
 
+  /**
+   * Marks a single notification as read in Firestore.
+   * @param notificationId The ID of the notification to mark as read
+   */
   async markAsRead(notificationId: string): Promise<void> {
     try {
       const notificationRef = doc(db, "notifications", notificationId);
@@ -146,6 +169,9 @@ class NotificationService {
     }
   }
 
+  /**
+   * Marks all notifications as read for the current user.
+   */
   async markAllAsRead(): Promise<void> {
     try {
       const currentUser = auth.currentUser;
@@ -169,6 +195,10 @@ class NotificationService {
     }
   }
 
+  /**
+   * Gets the count of unread notifications for the current user.
+   * @returns {Promise<number>} The number of unread notifications
+   */
   async getUnreadCount(): Promise<number> {
     try {
       const currentUser = auth.currentUser;
@@ -188,6 +218,13 @@ class NotificationService {
     }
   }
 
+  /**
+   * Sends a push notification using Expo's push notification service.
+   * @param pushToken The Expo push token
+   * @param title The notification title
+   * @param body The notification body
+   * @param data Optional additional data
+   */
   async sendPushNotification(
     pushToken: string,
     title: string,
@@ -215,7 +252,10 @@ class NotificationService {
     console.log("Expo push notification response:", result);
   }
 
-  // Configure notification behavior
+  /**
+   * Configures notification behavior for foreground notifications.
+   * Ensures all required NotificationBehavior properties are returned.
+   */
   configureNotifications() {
     Notifications.setNotificationHandler({
       handleNotification: async (notification) => {
@@ -227,6 +267,8 @@ class NotificationService {
           shouldShowAlert: true,
           shouldPlaySound: true,
           shouldSetBadge: false,
+          shouldShowBanner: true,
+          shouldShowList: true,
         };
       },
     });

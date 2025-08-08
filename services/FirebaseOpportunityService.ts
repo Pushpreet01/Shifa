@@ -64,7 +64,7 @@ export class FirebaseOpportunityService {
     try {
       const q = query(
         collection(db, "opportunities"),
-        where("approvalStatus", "==", "approved")
+        // where("approvalStatus.status", "==", "Approved")
       );
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => doc.data() as VolunteerOpportunity);

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Shifa",
-    "slug": "Shifa",
+    "slug": "shifa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -32,7 +32,8 @@
     },
     "plugins": [
       "expo-font",
-      "expo-mail-composer"
+      "expo-mail-composer",
+      "./plugins/withAndroidGradlePluginFix.js"
     ]
   }
 }

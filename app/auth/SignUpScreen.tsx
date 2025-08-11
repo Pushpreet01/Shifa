@@ -1,3 +1,17 @@
+/**
+ * SignUpScreen Component
+ * 
+ * This is the first step of the three-step signup process where users enter their basic information.
+ * The flow is: SignUpScreen -> RoleSelection -> UserSettings -> EmailVerification
+ * 
+ * Features:
+ * - Form validation for all fields
+ * - Phone number formatting
+ * - Password visibility toggle
+ * - Google authentication integration
+ * - Progress indicator showing step 1 of 3
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -16,6 +30,10 @@ import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { useGoogleAuth } from "./googleAuth";
 
+/**
+ * Type definitions for navigation parameters
+ * Defines the structure of data passed between auth screens
+ */
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
@@ -30,6 +48,10 @@ type AuthStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "Signup">;
 
+/**
+ * Main SignUp component that handles the first step of user registration
+ * Collects basic user information: full name, email, phone, and password
+ */
 const SignUpScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [fullName, setFullName] = useState("");
@@ -42,6 +64,11 @@ const SignUpScreen: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Formats phone number input to (XXX) XXX-XXXX pattern
+   * @param input - Raw phone number input
+   * @returns Formatted phone number string
+   */
   const formatPhoneNumber = (input: string) => {
     const digits = input.replace(/\D/g, "");
     let formatted = digits;
@@ -51,9 +78,24 @@ const SignUpScreen: React.FC = () => {
     return formatted;
   };
 
+  /**
+   * Validates phone number has exactly 10 digits
+   * @param phone - Phone number to validate
+   * @returns boolean indicating if phone number is valid
+   */
   const validatePhoneNumber = (phone: string) =>
     phone.replace(/\D/g, "").length === 10;
 
+  /**
+   * Validates all form fields and sets appropriate error messages
+   * Checks:
+   * - Required fields are not empty
+   * - Email format is valid
+   * - Phone number has correct format
+   * - Password meets minimum requirements
+   * - Passwords match
+   * @returns boolean indicating if all validations passed
+   */
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!fullName.trim()) newErrors.fullName = "Full name is required.";
@@ -78,9 +120,18 @@ const SignUpScreen: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Handles phone number input changes
+   * Formats the number as user types
+   */
   const handlePhoneNumberChange = (text: string) =>
     setPhoneNumber(formatPhoneNumber(text));
 
+  /**
+   * Handles form submission
+   * If validation passes, navigates to role selection screen
+   * with user's basic information
+   */
   const handleContinue = () => {
     if (!validate()) return;
     setLoading(true);
@@ -93,6 +144,11 @@ const SignUpScreen: React.FC = () => {
     setLoading(false);
   };
 
+  /**
+   * Google authentication handler
+   * On successful Google auth, navigates to role selection
+   * with empty form data (will be filled from Google profile)
+   */
   const { promptAsync } = useGoogleAuth(async () => {
     navigation.navigate("RoleSelection", {
       fullName: "",

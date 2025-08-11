@@ -1,3 +1,17 @@
+/**
+ * RoleSelectionScreen Component
+ * 
+ * Second step of the signup process where users select their role in the application.
+ * Receives user's basic information from SignUpScreen and passes it along with the selected role
+ * to the UserSettings screen.
+ * 
+ * Features:
+ * - Visual role cards with descriptions
+ * - Role-specific descriptions and icons
+ * - Progress indicator showing step 2 of 3
+ * - Form validation ensuring role selection
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -10,6 +24,10 @@ import {
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+/**
+ * Type definitions for navigation parameters
+ * Defines the structure of data passed between auth screens
+ */
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
@@ -25,6 +43,14 @@ type AuthStackParamList = {
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, "RoleSelection">;
 type RoleSelectionScreenRouteProp = RouteProp<AuthStackParamList, "RoleSelection">;
 
+/**
+ * Available roles in the application with their descriptions
+ * Each role has:
+ * - id: unique identifier
+ * - title: display name
+ * - description: detailed explanation of role's capabilities
+ * - icon: emoji representing the role
+ */
 const roles = [
   {
     id: "Support Seeker",
@@ -46,6 +72,10 @@ const roles = [
   },
 ];
 
+/**
+ * RoleSelection component that handles the second step of user registration
+ * Allows users to choose their role in the application
+ */
 const RoleSelectionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoleSelectionScreenRouteProp>();
@@ -53,11 +83,21 @@ const RoleSelectionScreen = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string>("");
 
+  /**
+   * Handles role selection
+   * Clears any existing error messages when a role is selected
+   * @param roleId - The ID of the selected role
+   */
   const handleRoleSelect = (roleId: string) => {
     setSelectedRole(roleId);
     setRoleError("");
   };
 
+  /**
+   * Handles navigation to the next screen
+   * Validates role selection before proceeding
+   * Passes all user data along with selected role to UserSettings screen
+   */
   const handleContinue = () => {
     if (!selectedRole || !roles.some(r => r.id === selectedRole)) {
       setRoleError("Please select a valid role to continue.");

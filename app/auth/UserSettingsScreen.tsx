@@ -1,3 +1,22 @@
+/**
+ * UserSettingsScreen Component
+ * 
+ * Final step of the signup process where users complete their profile setup.
+ * This screen handles:
+ * 1. Profile picture upload
+ * 2. Notification preferences
+ * 3. Emergency contacts
+ * 4. Firebase user creation
+ * 5. Email verification initiation
+ * 
+ * Features:
+ * - Image picker for profile photo
+ * - Multiple notification channels (push, email, SMS)
+ * - Dynamic emergency contact list
+ * - Progress indicator showing step 3 of 3
+ * - Firebase authentication integration
+ */
+
 import React, { useState } from "react";
 import {
   View,
@@ -19,6 +38,10 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebaseConfig";
 
+/**
+ * Type definitions for navigation parameters
+ * Defines the structure of data passed between auth screens
+ */
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
@@ -56,6 +79,10 @@ type NavigationProp = NativeStackNavigationProp<
   "UserSettings"
 >;
 
+/**
+ * UserSettings component that handles the final step of user registration
+ * Collects additional user preferences and creates the user account
+ */
 const UserSettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<UserSettingsScreenRouteProp>();
@@ -77,6 +104,11 @@ const UserSettingsScreen = () => {
     setEmergencyContacts([...emergencyContacts, { name: "", phone: "" }]);
   };
 
+  /**
+   * Formats phone number to (XXX) XXX-XXXX pattern
+   * @param text - Raw phone number input
+   * @returns Formatted phone number string
+   */
   const formatPhoneNumber = (text: string) => {
     // Remove all non-numeric characters
     const cleaned = text.replace(/\D/g, "");
@@ -99,6 +131,12 @@ const UserSettingsScreen = () => {
     return "";
   };
 
+  /**
+   * Handles changes to emergency contact information
+   * @param index - Index of the contact being modified
+   * @param field - Field being updated (name or phone)
+   * @param value - New value for the field
+   */
   const handleContactChange = (
     index: number,
     field: "name" | "phone",
@@ -120,6 +158,14 @@ const UserSettingsScreen = () => {
     }
   };
 
+  /**
+   * Handles profile picture selection using expo-image-picker
+   * Includes:
+   * - Permission checking
+   * - Image compression
+   * - Size validation
+   * - Base64 conversion
+   */
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -154,6 +200,20 @@ const UserSettingsScreen = () => {
     }
   };
 
+  /**
+   * Completes the user registration process
+   * Steps:
+   * 1. Validates required fields
+   * 2. Creates Firebase Auth user
+   * 3. Stores additional user data in Firestore
+   * 4. Sets approval status based on role
+   * 5. Navigates to email verification
+   * 
+   * Error handling:
+   * - Firebase Auth errors (email in use, weak password)
+   * - Firestore permission errors
+   * - Missing required fields
+   */
   const handleComplete = async () => {
     setLoading(true);
     try {
@@ -229,8 +289,6 @@ const UserSettingsScreen = () => {
         errorMessage = "Password is too weak. Please choose a stronger password.";
       } else if (error.code === "auth/invalid-email") {
         errorMessage = "Invalid email address.";
-      } else if (error.code === "permission-denied") {
-        errorMessage = "Permission denied. Please check your Firestore rules.";
       } else if (error.message) {
         errorMessage = error.message;
       }

@@ -49,11 +49,10 @@ import {
 } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import * as VideoThumbnails from "expo-video-thumbnails";
-import { Video } from "expo-av";
+import { Video, ResizeMode } from "expo-av";
 import AdminHeroBox from "../../components/AdminHeroBox";
 import {
-  fetchResources,
+  fetchAllResources,
   createResource,
   updateResource,
   deleteResource,
@@ -67,8 +66,7 @@ import { auth } from "../../config/firebaseConfig";
 
 const { width } = Dimensions.get("window");
 
-// Icon mapping for resource types
-const iconMap: Record<Resource["type"], JSX.Element> = {
+const iconMap: Record<Resource["type"], React.ReactElement> = {
   AddictionHelp: (
     <MaterialCommunityIcons name="hand-heart" size={20} color="#fff" />
   ),
@@ -149,7 +147,7 @@ const ResourceManagementScreen = () => {
   const loadResources = async () => {
     try {
       setLoading(true);
-      const fetchedResources = await fetchResources();
+      const fetchedResources = await fetchAllResources();
       setResources(fetchedResources);
     } catch (error) {
       console.error("Error loading resources:", error);
@@ -477,7 +475,7 @@ const ResourceManagementScreen = () => {
             source={{ uri: selectedFile.uri }}
             style={styles.videoPreview}
             useNativeControls
-            resizeMode="contain"
+            resizeMode={ResizeMode.CONTAIN}
           />
           <Text style={styles.fileInfo}>{selectedFile.name}</Text>
           <Text style={styles.fileInfo}>
@@ -517,7 +515,7 @@ const ResourceManagementScreen = () => {
           source={{ uri: resource.fileUrl }}
           style={styles.resourceVideo}
           useNativeControls
-          resizeMode="contain"
+          resizeMode={ResizeMode.CONTAIN}
         />
       );
     }

@@ -85,6 +85,8 @@ export type HomeStackParamList = {
   VolunteerRewards: undefined;
   MyApplications: undefined;
   MyEvents: undefined;
+  AdminEditEvent: { eventId: string };
+  Settings: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -97,7 +99,7 @@ export type SettingsStackParamList = {
 };
 
 export type ResourcesStackParamList = {
-  Resources: undefined;
+  ResourcesList: undefined;
   AddictionHelp: undefined;
   FindTherapist: undefined;
   Counselling: undefined;
@@ -130,7 +132,6 @@ const HomeStackScreen = () => (
         gestureEnabled: true,
         gestureDirection: "horizontal",
         headerLeft: () => null, // This removes the back button
-        headerBackTitle: null,
       }}
       listeners={({ navigation }) => ({
         beforeRemove: (e) => {
@@ -190,7 +191,7 @@ const SettingsStackScreen = () => (
 
 const ResourcesStackScreen = () => (
   <ResourcesStack.Navigator screenOptions={{ headerShown: false }}>
-    <ResourcesStack.Screen name="Resources" component={ResourceScreen} />
+    <ResourcesStack.Screen name="ResourcesList" component={ResourceScreen} />
     <ResourcesStack.Screen
       name="AddictionHelp"
       component={AddictionHelpScreen}
@@ -219,27 +220,9 @@ const TabNavigator = () => (
     screenOptions={{ headerShown: false }}
     initialRouteName={TabRoutes.Home}
   >
-    <Tab.Screen
-      name={TabRoutes.Resources}
-      component={ResourcesStackScreen}
-      options={{
-        unmountOnBlur: true,
-      }}
-    />
-    <Tab.Screen
-      name={TabRoutes.Home}
-      component={HomeStackScreen}
-      options={{
-        unmountOnBlur: false,
-      }}
-    />
-    <Tab.Screen
-      name={TabRoutes.Settings}
-      component={SettingsStackScreen}
-      options={{
-        unmountOnBlur: true,
-      }}
-    />
+    <Tab.Screen name={TabRoutes.Resources} component={ResourcesStackScreen} />
+    <Tab.Screen name={TabRoutes.Home} component={HomeStackScreen} />
+    <Tab.Screen name={TabRoutes.Settings} component={SettingsStackScreen} />
   </Tab.Navigator>
 );
 

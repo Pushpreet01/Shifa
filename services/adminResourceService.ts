@@ -8,14 +8,11 @@ import {
   query,
   where,
   orderBy,
+  Query,
+  DocumentData,
+  getDoc,
 } from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { db, storage } from "../config/firebaseConfig";
+import { db } from "../config/firebaseConfig";
 
 export interface Resource {
   id: string;
@@ -36,6 +33,7 @@ export interface Resource {
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
+  updatedBy?: string;
   isActive: boolean;
   tags?: string[];
   priority?: number;
@@ -57,27 +55,138 @@ export interface CreateResourceData {
   priority?: number;
 }
 
+async function uploadFileToCloudinary(file: { uri: string; type: string; name: string; }) {
+  const formData = new FormData();
+  const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const UPLOAD_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!CLOUD_NAME || !UPLOAD_PRESET) {
+    throw new Error("Cloudinary environment variables are not configured. Please check your .env file.");
+  }
+
+  let resourceType = 'raw';
+  if (file.type.startsWith('image/')) {
+    resourceType = 'image';
+  } else if (file.type.startsWith('video/')) {
+    resourceType = 'video';
+  }
+
+  formData.append('file', {
+    uri: file.uri,
+    type: file.type,
+    name: file.name,
+  } as any);
+  formData.append('upload_preset', UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
+      {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    const result = await response.json();
+    if (result.secure_url) {
+      return result;
+    } else {
+      console.error("Cloudinary Error:", result.error);
+      throw new Error('Cloudinary upload failed: ' + (result.error?.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error("Error uploading to Cloudinary:", error);
+    throw error;
+  }
+}
+
+export async function fetchAllResources(
+  type?: Resource["type"]
+): Promise<Resource[]> {
+  try {
+    const queries = [];
+    const baseQuery = collection(db, "resources");
+
+    const activeQuery = query(baseQuery, where("isActive", "==", true));
+    const inactiveQuery = query(baseQuery, where("isActive", "==", false));
+
+    if (type) {
+      queries.push(query(activeQuery, where("type", "==", type), orderBy("priority", "desc"), orderBy("createdAt", "desc")));
+      queries.push(query(inactiveQuery, where("type", "==", type), orderBy("priority", "desc"), orderBy("createdAt", "desc")));
+    } else {
+      queries.push(query(activeQuery, orderBy("priority", "desc"), orderBy("createdAt", "desc")));
+      queries.push(query(inactiveQuery, orderBy("priority", "desc"), orderBy("createdAt", "desc")));
+    }
+
+    const snapshots = await Promise.all(queries.map(q => getDocs(q)));
+    
+    const resources = snapshots.flatMap(snapshot => 
+      snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+        } as Resource;
+      })
+    );
+
+    resources.sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return (b.priority || 0) - (a.priority || 0);
+      }
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+      return 0;
+    });
+
+    return resources;
+  } catch (error) {
+    console.error("Error fetching all resources:", error);
+    throw error;
+  }
+}
+
 export async function fetchResources(
   type?: Resource["type"]
 ): Promise<Resource[]> {
   try {
-    let q = collection(db, "resources");
+    let resourcesQuery: Query<DocumentData> = collection(db, "resources");
 
     if (type) {
-      q = query(q, where("type", "==", type), where("isActive", "==", true));
+      resourcesQuery = query(
+        resourcesQuery,
+        where("type", "==", type),
+        where("isActive", "==", true)
+      );
     } else {
-      q = query(q, where("isActive", "==", true));
+      resourcesQuery = query(
+        resourcesQuery,
+        where("isActive", "==", true)
+      );
     }
 
-    q = query(q, orderBy("priority", "desc"), orderBy("createdAt", "desc"));
+    resourcesQuery = query(
+      resourcesQuery,
+      orderBy("priority", "desc"),
+      orderBy("createdAt", "desc")
+    );
 
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-      createdAt: docSnap.data().createdAt?.toDate(),
-      updatedAt: docSnap.data().updatedAt?.toDate(),
-    })) as Resource[];
+    const snapshot = await getDocs(resourcesQuery);
+    return snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        ...docSnap.data(),
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      } as Resource;
+    });
   } catch (error) {
     console.error("Error fetching resources:", error);
     throw error;
@@ -89,14 +198,12 @@ export async function fetchResourceById(
 ): Promise<Resource | null> {
   try {
     const docRef = doc(db, "resources", resourceId);
-    const docSnap = await getDocs(
-      query(collection(db, "resources"), where("__name__", "==", resourceId))
-    );
+    const docSnap = await getDoc(docRef);
 
-    if (!docSnap.empty) {
-      const data = docSnap.docs[0].data();
+    if (docSnap.exists()) {
+      const data = docSnap.data();
       return {
-        id: docSnap.docs[0].id,
+        id: docSnap.id,
         ...data,
         createdAt: data.createdAt?.toDate(),
         updatedAt: data.updatedAt?.toDate(),
@@ -119,16 +226,12 @@ export async function createResource(
     let fileSize: number | undefined;
     let fileType: string | undefined;
 
-    // Upload file if provided
     if (data.file && data.contentType !== "text") {
-      const fileRef = ref(storage, `resources/${Date.now()}_${data.file.name}`);
-      const response = await fetch(data.file.uri);
-      const blob = await response.blob();
-      await uploadBytes(fileRef, blob);
-      fileUrl = await getDownloadURL(fileRef);
-      fileName = data.file.name;
-      fileSize = data.file.size;
-      fileType = data.file.type;
+      const uploadResult = await uploadFileToCloudinary(data.file);
+      fileUrl = uploadResult.secure_url;
+      fileName = uploadResult.original_filename;
+      fileSize = uploadResult.bytes;
+      fileType = uploadResult.resource_type;
     }
 
     const resourceData = {
@@ -165,34 +268,19 @@ export async function updateResource(
   try {
     const resourceRef = doc(db, "resources", resourceId);
 
-    // Get existing resource to check if we need to delete old file
-    const existingResource = await fetchResourceById(resourceId);
-
     let fileUrl: string | undefined;
     let fileName: string | undefined;
     let fileSize: number | undefined;
     let fileType: string | undefined;
 
-    // Upload new file if provided
     if (data.file && data.contentType !== "text") {
-      // Delete old file if it exists
-      if (existingResource?.fileUrl) {
-        try {
-          const oldFileRef = ref(storage, existingResource.fileUrl);
-          await deleteObject(oldFileRef);
-        } catch (error) {
-          console.warn("Could not delete old file:", error);
-        }
-      }
-
-      const fileRef = ref(storage, `resources/${Date.now()}_${data.file.name}`);
-      const response = await fetch(data.file.uri);
-      const blob = await response.blob();
-      await uploadBytes(fileRef, blob);
-      fileUrl = await getDownloadURL(fileRef);
-      fileName = data.file.name;
-      fileSize = data.file.size;
-      fileType = data.file.type;
+      // Note: Deleting the old file from Cloudinary is not implemented
+      // to keep the client-side logic simple and avoid extra permissions.
+      const uploadResult = await uploadFileToCloudinary(data.file);
+      fileUrl = uploadResult.secure_url;
+      fileName = uploadResult.original_filename;
+      fileSize = uploadResult.bytes;
+      fileType = uploadResult.resource_type;
     }
 
     const updateData: any = {
@@ -225,19 +313,8 @@ export async function updateResource(
 export async function deleteResource(resourceId: string): Promise<boolean> {
   try {
     const resourceRef = doc(db, "resources", resourceId);
-
-    // Get resource to delete associated file
-    const resource = await fetchResourceById(resourceId);
-
-    if (resource?.fileUrl) {
-      try {
-        const fileRef = ref(storage, resource.fileUrl);
-        await deleteObject(fileRef);
-      } catch (error) {
-        console.warn("Could not delete file:", error);
-      }
-    }
-
+    // Note: Deleting the associated file from Cloudinary is not implemented
+    // as it requires more advanced setup (e.g., backend functions).
     await deleteDoc(resourceRef);
     return true;
   } catch (error) {
@@ -268,9 +345,7 @@ export async function searchResources(
   type?: Resource["type"]
 ): Promise<Resource[]> {
   try {
-    // Note: Firestore doesn't support full-text search natively
-    // This is a simple implementation - for production, consider using Algolia or similar
-    const resources = await fetchResources(type);
+    const resources = await fetchAllResources(type);
     const searchLower = searchTerm.toLowerCase();
 
     return resources.filter(
@@ -292,7 +367,7 @@ export async function getResourceStats(): Promise<{
   byContentType: Record<Resource["contentType"], number>;
 }> {
   try {
-    const resources = await fetchResources();
+    const resources = await fetchAllResources();
 
     const byType = resources.reduce((acc, resource) => {
       acc[resource.type] = (acc[resource.type] || 0) + 1;

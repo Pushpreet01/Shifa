@@ -38,6 +38,8 @@ import {
   RootTabParamList,
 } from "../navigation/AppNavigator";
 import HeroBox from "../components/HeroBox";
+import { updateUserJournalAggregatesForCurrentUser } from "../services/aiUserAggregateService";
+import { getRecommendedEventsForCurrentUser, recomputeRecommendationsForCurrentUser } from "../services/aiRecommendationService";
 
 interface EventData {
   id: string;
@@ -104,61 +106,35 @@ const HomeDashboardScreen = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const fetchRegisteredEvents = useCallback(async () => {
+  const fetchRecommendedEvents = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      // Get user registrations first
-      const registrations = await firebaseEventService.getUserRegistrations();
-      const eventIds = registrations.map((reg) => reg.eventId);
+      // Recompute aggregates and recommendations (best-effort)
+      try {
+        const { avg30d } = await updateUserJournalAggregatesForCurrentUser();
+        await recomputeRecommendationsForCurrentUser(avg30d);
+      } catch (_) { }
 
-      if (eventIds.length === 0) {
-        setEvents([]);
-        return;
-      }
+      const recs = await getRecommendedEventsForCurrentUser();
 
-      // Get current date at midnight for more efficient querying
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-
-      // Fetch events in chunks, but only filter by document ID
-      const allEvents = [];
-      for (const chunk of chunkArray(eventIds, 10)) {
-        const eventsQuery = query(
-          collection(db, "events"),
-          where("__name__", "in", chunk)
-        );
-        const querySnapshot = await getDocs(eventsQuery);
-        allEvents.push(...querySnapshot.docs);
-      }
-
-      // Process all events first
-      const processedEvents = allEvents.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        date: doc.data().date.toDate(),
-      })) as EventData[];
-
-      // Filter and sort the events
-      const fetchedEvents = processedEvents
-        .filter((event) => event.date >= now)
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-        .slice(0, 3);
-
-      // Format events for display
-      const formattedEvents = fetchedEvents.map((event) => ({
-        id: event.id,
-        title: event.title,
-        subtitle: event.description || "Event details",
-        time: event.startTime,
-        date: event.date.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-      }));
+      // Map to UI model
+      const formattedEvents = recs.slice(0, 3).map((ev: any) => {
+        const evtDate = ev?.date?.toDate ? ev.date.toDate() : new Date(ev?.date || Date.now());
+        return {
+          id: ev.id,
+          title: ev.title,
+          subtitle: ev.description || "Event details",
+          time: ev.startTime,
+          date: evtDate.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }),
+        } as ProcessedEventData;
+      });
 
       setEvents(formattedEvents);
     } catch (error) {
@@ -171,8 +147,8 @@ const HomeDashboardScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchUserProfile();
-      fetchRegisteredEvents();
-    }, [fetchRegisteredEvents])
+      fetchRecommendedEvents();
+    }, [fetchRecommendedEvents])
   );
 
   const fetchUserProfile = async () => {
@@ -214,15 +190,15 @@ const HomeDashboardScreen = () => {
 
   // Initial load and periodic refresh
   useEffect(() => {
-    fetchRegisteredEvents();
+    fetchRecommendedEvents();
 
     // Set up a refresh interval (optional, can be removed if not needed)
-    const refreshInterval = setInterval(fetchRegisteredEvents, 60000); // Refresh every minute
+    const refreshInterval = setInterval(fetchRecommendedEvents, 60000); // Refresh every minute
 
     return () => {
       clearInterval(refreshInterval);
     };
-  }, [fetchRegisteredEvents]);
+  }, [fetchRecommendedEvents]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -349,59 +325,58 @@ const HomeDashboardScreen = () => {
 
         {(user?.role === "Support Seeker" ||
           user?.role === "Event Organizer") && (
-          <View style={styles.eventsContainer}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionTitleContainer}>
-                <View style={styles.sectionIconContainer}>
-                  <Ionicons name="calendar" size={18} color="#F4A941" />
+            <View style={styles.eventsContainer}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionTitleContainer}>
+                  <View style={styles.sectionIconContainer}>
+                    <Ionicons name="calendar" size={18} color="#F4A941" />
+                  </View>
+                  <Text style={styles.sectionTitle}>Recommended Events</Text>
                 </View>
-                <Text style={styles.sectionTitle}>Upcoming Events</Text>
               </View>
-            </View>
 
-            {events.length === 0 ? (
-              <View style={styles.noEventsContainer}>
-                <View style={styles.noEventsIconContainer}>
-                  <Ionicons name="calendar" size={40} color="#1B6B63" />
-                </View>
-                <Text style={styles.noEventsTitle}>No Upcoming Events</Text>
-                <Text style={styles.noEventsSubtext}>
-                  Join our supportive community events and connect with others
-                  on their journey to wellness.
-                </Text>
-                <TouchableOpacity
-                  style={styles.joinEventButton}
-                  onPress={() => handleNavigation("Events")}
-                >
-                  <Text style={styles.joinEventButtonText}>Explore Events</Text>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={16}
-                    color="#FFFFFF"
-                    style={styles.buttonIcon}
-                  />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.eventsList}>
-                {events.map((event) => (
+              {events.length === 0 ? (
+                <View style={styles.noEventsContainer}>
+                  <View style={styles.noEventsIconContainer}>
+                    <Ionicons name="calendar" size={40} color="#1B6B63" />
+                  </View>
+                  <Text style={styles.noEventsTitle}>No Recommended Events</Text>
+                  <Text style={styles.noEventsSubtext}>
+                    We couldn't find personalized picks yet. Explore events to discover what's happening.
+                  </Text>
                   <TouchableOpacity
-                    key={event.id}
-                    style={styles.eventCard}
+                    style={styles.joinEventButton}
                     onPress={() => handleNavigation("Events")}
                   >
-                    <View style={styles.eventText}>
-                      <Text style={styles.eventTitle}>{event.title}</Text>
-                      <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
-                      <Text style={styles.eventTime}>{event.time}</Text>
-                      <Text style={styles.eventDate}>{event.date}</Text>
-                    </View>
+                    <Text style={styles.joinEventButtonText}>Explore Events</Text>
+                    <Ionicons
+                      name="arrow-forward"
+                      size={16}
+                      color="#FFFFFF"
+                      style={styles.buttonIcon}
+                    />
                   </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
+                </View>
+              ) : (
+                <View style={styles.eventsList}>
+                  {events.map((event) => (
+                    <TouchableOpacity
+                      key={event.id}
+                      style={styles.eventCard}
+                      onPress={() => navigation.navigate("RegisterEvent", { eventId: event.id })}
+                    >
+                      <View style={styles.eventText}>
+                        <Text style={styles.eventTitle}>{event.title}</Text>
+                        <Text style={styles.eventSubtitle}>{event.subtitle}</Text>
+                        <Text style={styles.eventTime}>{event.time}</Text>
+                        <Text style={styles.eventDate}>{event.date}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
 
         {/* Description Section with Modern Divider */}
         <View style={styles.descriptionContainer}>

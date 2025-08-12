@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Shifa",
+    "slug": "shifa",
+    "scheme": "shifa",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.chroniccoffee.Shifa"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0765b655-f13d-4d0b-80f9-21117dedf601"
+      }
+    },
+    "plugins": [
+      "./plugins/withAndroidGradlePluginFix.js"
+    ]
+  }
+}

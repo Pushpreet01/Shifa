@@ -1,0 +1,1277 @@
+# Documentation for app/superadmin
+
+## SuperAdminDashboardScreen.tsx
+
+**Purpose:**
+This screen is the main dashboard for the Super Admin role. It allows the Super Admin to view all admin users, create new admins, and delete existing admins. It also provides a sign-out button.
+
+**Main Logic and Workflow:**
+- Fetches the list of admin users from Firestore using the service layer (`getAllAdmins`).
+- Displays a loading spinner while fetching, and an error message if fetching fails.
+- Renders a list of admin users, each with a delete (trash) icon.
+- Provides a button to navigate to the Create Admin screen.
+- Provides a fixed sign-out button at the bottom.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation types, service functions, icons, and Auth context.
+- **Type Definition:**
+  - `NavigationProp` is a typed navigation prop for this stack.
+- **Component State:**
+  - `admins`: List of admin users.
+  - `loading`: Loading state for fetching admins.
+  - `error`: Error message if fetching fails.
+- **useEffect:**
+  - Fetches admins on mount. Sets loading and error states appropriately. Logs results for debugging.
+- **handleCreateAdmin:**
+  - Navigates to the Create Admin screen.
+- **handleApprovals:**
+  - Placeholder for future approvals logic.
+- **handleEditAdmin:**
+  - Placeholder for future edit logic.
+- **handleDeleteAdmin:**
+  - Shows a confirmation popup. If confirmed, deletes the admin user from Firestore and refreshes the list. Handles and logs errors.
+- **renderAdmin:**
+  - Renders each admin card with name, email, and a trash icon for deletion.
+- **Return (JSX):**
+  - Renders the dashboard title, top button row (Create Admin), loading/error states, the list of admins, and the fixed sign-out button.
+- **Styles:**
+  - Styles for layout, buttons, cards, and the fixed sign-out button.
+
+---
+
+## CreateAdminScreen.tsx
+
+**Purpose:**
+This screen allows the Super Admin to create a new admin user by entering their details. It uses the service layer to create the user in Firebase Auth and Firestore.
+
+**Main Logic and Workflow:**
+- Collects full name, email, phone number, and password from the Super Admin.
+- Validates input fields.
+- On submit, calls the service layer to create the new admin user.
+- Shows loading spinner during creation, and success/error messages as appropriate.
+- Navigates back to the Super Admin dashboard on success.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation types, service function, and Ionicons for the eye icon.
+- **Component State:**
+  - `fullName`, `email`, `phoneNumber`, `password`: Form fields.
+  - `loading`: Loading state for the create operation.
+  - `showPassword`: Toggles password visibility.
+- **handleCreate:**
+  - Validates all fields. If valid, calls `createAdminUser` from the service layer. Shows success or error messages. Navigates to the Super Admin dashboard on success.
+- **Return (JSX):**
+  - Renders the form fields, password input with show/hide toggle, and the create button. Shows a loading spinner if creating.
+- **Styles:**
+  - Styles for layout, form fields, buttons, and the password eye icon.
+
+---
+
+# Documentation for app/admin
+
+## AdminDashboardScreen.tsx
+
+**Purpose:**
+This screen serves as the main dashboard for admin users. It provides quick access to user management, approvals, events, and resource management. It displays a styled header and a grid of dashboard cards, each leading to a different admin function.
+
+**Main Logic and Workflow:**
+- Defines a set of dashboard items (Users, Approvals, Events, Resources) with icons, counts, and navigation routes.
+- Renders a styled header with a welcome message and avatar.
+- Renders a grid of cards for each dashboard item. Each card is clickable and navigates to the corresponding admin screen.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons for icons.
+- **dashboardItems:**
+  - An array of objects, each representing a dashboard card (title, count, icon, route).
+- **Component:**
+  - Uses `useNavigation` to enable navigation to other screens.
+  - Renders a `SafeAreaView` and a `ScrollView` for layout.
+  - **Header:**
+    - Displays the title "Admin Dashboard".
+    - Shows an avatar image and a welcome label.
+  - **Dashboard Grid:**
+    - Maps over `dashboardItems` to render a card for each item.
+    - Each card shows an icon, a count, and a title.
+    - Clicking a card navigates to the corresponding route (e.g., UserManagement, Approvals, Events, ResourceManagement).
+- **Styles:**
+  - Styles for the safe area, header, avatar, grid, cards, and text.
+
+---
+
+## AdminEmailScreen.tsx
+
+**Purpose:**
+This screen allows an admin to send emails to users by role or to a specific user. It provides a form for composing the email, selecting recipients, and sending the message. It also shows a confirmation popup on success.
+
+**Main Logic and Workflow:**
+- Lets the admin select a recipient role or a specific user.
+- Shows a list of placeholder emails for the selected role.
+- If "Particular User" is selected, allows the admin to select a user role and enter an email address.
+- Collects subject and message, with a word limit.
+- Validates input and shows alerts for missing fields or word limit exceeded.
+- Shows a confirmation popup when the email is sent.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, Ionicons, AdminHeroBox for header.
+- **roles, MAX_WORD_LIMIT, placeholderEmails:**
+  - Defines available roles, word limit, and placeholder email data for each role.
+- **Component State:**
+  - `selectedRole`, `specificUserRole`, `userEmail`, `subject`, `message`: Form fields.
+  - `showRoleDropdown`, `showUserRoleDropdown`: Dropdown visibility.
+  - `showSuccessModal`, `fadeAnim`: For confirmation popup animation.
+- **wordCount:**
+  - Calculates the current word count of the message.
+- **handleSend:**
+  - Validates all required fields and word count.
+  - Resets the form and shows the success modal with animation.
+- **Return (JSX):**
+  - Renders the header, dropdowns for recipient selection, email list for role, form fields for subject and message, and the send button.
+  - Shows a confirmation popup on successful send.
+- **Styles:**
+  - Styles for layout, dropdowns, email list, form fields, send button, and confirmation popup.
+
+---
+
+## ApprovalDetailsScreen.tsx
+
+**Purpose:**
+This screen displays the details of an event (or other approval item) pending admin approval. It allows the admin to view all relevant information, including event creator, event details, and associated opportunity (if any), and to approve or reject the event with a reason.
+
+**Main Logic and Workflow:**
+- Fetches event details, event creator, and associated opportunity from Firestore based on the provided ID and type.
+- Displays all event and opportunity details, including timings, volunteers needed, and creator info.
+- Provides Approve and Reject buttons. Approve calls the service to approve the event; Reject opens a modal to enter a rejection reason and then calls the service to reject the event.
+- Shows loading and error states as appropriate.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation types, Firestore functions, and service functions for approval.
+- **Props:**
+  - Receives the approval item ID and type from navigation route params.
+- **Component State:**
+  - `event`, `opportunity`, `eventCreator`: Data objects for the event, opportunity, and creator.
+  - `loading`: Loading state for fetching data.
+  - `rejectionModalVisible`, `rejectionReason`: For handling rejection modal and input.
+- **useEffect:**
+  - Fetches event details, event creator, and opportunity from Firestore on mount.
+- **handleApprove:**
+  - Calls the service to approve the event and navigates back on success.
+- **handleReject/confirmReject:**
+  - Opens the rejection modal, collects a reason, and calls the service to reject the event and navigates back on success.
+- **Return (JSX):**
+  - Shows loading or error states if needed.
+  - Renders the event creator card, event details, opportunity details (if any), and Approve/Reject buttons.
+  - Includes a modal for entering a rejection reason.
+- **Styles:**
+  - Styles for layout, cards, labels, values, buttons, and the rejection modal.
+
+---
+
+## ApprovalManagementScreen.tsx
+
+**Purpose:**
+This screen allows admins to manage all pending approvals for events, volunteers, and event organizers. Admins can approve or deny requests, view details, and provide rejection reasons.
+
+**Main Logic and Workflow:**
+- Fetches pending approvals for the selected tab (event, volunteer, organizer) using the service layer.
+- Displays a list of approval cards for each item.
+- Allows swipe actions (approve/deny) and tapping a card to view details.
+- Shows a modal to enter a rejection reason when denying.
+- Updates the list after each action.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, gesture handler, Ionicons, AdminHeroBox, and approval service functions.
+- **Component State:**
+  - `activeTab`: Current approval type (event, volunteer, organizer).
+  - `approvals`: List of pending approval items.
+  - `loading`, `actionLoading`: Loading states for fetching and actions.
+  - `rejectionModalVisible`, `rejectionReason`, `pendingDenyId`: For handling rejection modal and input.
+- **useEffect:**
+  - Fetches approvals for the selected tab on mount or when tab changes.
+- **handleApprove:**
+  - Approves the item and removes it from the list.
+- **handleDeny/confirmDeny:**
+  - Opens the rejection modal, collects a reason, and denies the item.
+- **handleCardPress:**
+  - Navigates to the ApprovalDetails screen for the selected item.
+- **renderRightActions:**
+  - Renders swipeable approve/deny buttons for each card.
+- **Return (JSX):**
+  - Renders the header, tabs, approval cards, swipe actions, and rejection modal.
+- **Styles:**
+  - Styles for layout, tabs, cards, swipe actions, and modal.
+
+---
+
+## AssignUserRoleScreen.tsx
+
+**Purpose:**
+This screen allows an admin to assign a new role to a user. It displays a list of roles and updates the user's role in Firestore upon selection.
+
+**Main Logic and Workflow:**
+- Receives the user object via navigation params.
+- Displays a list of available roles.
+- Allows the admin to select a role and assign it to the user.
+- Updates the user's role in Firestore and navigates back on success.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Firestore functions, AdminHeroBox.
+- **Component State:**
+  - `selectedRole`: The currently selected role.
+  - `loading`: Loading state for the assign operation.
+- **handleAssignRole:**
+  - Updates the user's role in Firestore and shows a success message.
+- **Return (JSX):**
+  - Renders the header, role selection buttons, and assign button.
+  - Shows an error message if user data is missing.
+- **Styles:**
+  - Styles for layout, buttons, and error messages.
+
+---
+
+## AttendanceReportScreen.tsx
+
+**Purpose:**
+This screen allows admins to mark attendance for volunteers assigned to an event's opportunity. Admins can mark all as present/absent or toggle individual attendance.
+
+**Main Logic and Workflow:**
+- Fetches the opportunity and volunteer applications for the given event.
+- Displays a list of selected volunteers.
+- Allows marking all as present/absent or toggling individual attendance.
+- Updates attendance status in Firestore via the service layer.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons, AdminHeroBox, and service functions.
+- **Component State:**
+  - `attendees`: List of volunteer applications.
+  - `loading`, `markingAll`: Loading states for fetching and marking.
+  - `noOpportunity`, `opportunityId`, `nameCache`: For opportunity and name lookup.
+- **useEffect:**
+  - Fetches attendees and opportunity on mount.
+  - Fetches and caches volunteer names as needed.
+- **markAll/toggleAttendance:**
+  - Mark all as present/absent or toggle individual attendance, updating Firestore and local state.
+- **Return (JSX):**
+  - Renders the header, mark all button, and a list of selected volunteers with attendance toggles.
+- **Styles:**
+  - Styles for layout, cards, buttons, and text.
+
+---
+
+## AssignVolunteersScreen.tsx
+
+**Purpose:**
+This screen allows admins to assign or unassign volunteers to an event's opportunity. It displays a dropdown of events, shows applications, and allows toggling assignment status.
+
+**Main Logic and Workflow:**
+- Fetches all events needing volunteers and displays them in a dropdown.
+- Fetches the opportunity and applications for the selected event.
+- Displays a list of applications, sorted by assignment status.
+- Allows toggling assignment for each volunteer, updating Firestore and local state.
+- Shows the number of selected volunteers and disables assignment if slots are full.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons, AdminHeroBox, and service functions.
+- **Component State:**
+  - `events`, `selectedEventId`, `selectedEventTitle`, `eventDropdownVisible`: For event selection.
+  - `applications`, `loading`, `nameCache`, `noOpportunity`, `opportunityId`, `slots`: For opportunity and application management.
+- **useEffect:**
+  - Fetches events on mount, and applications/opportunity when event changes.
+  - Fetches and caches volunteer names as needed.
+- **toggleAssignment:**
+  - Assigns or unassigns a volunteer, updating Firestore and local state.
+- **Return (JSX):**
+  - Renders the header, event dropdown, selected count, and a list of applications with assign/unassign buttons.
+- **Styles:**
+  - Styles for layout, dropdown, cards, buttons, and text.
+
+---
+
+## EventsScreen.tsx (app/event)
+
+**Purpose:**
+This screen displays a calendar and a list of approved events for the selected date. It allows users to view event details, register for events, and (for event organizers) add new events or view their own events.
+
+**Main Logic and Workflow:**
+- Fetches events for the current month from the backend (Firebase or local service).
+- Filters and displays only approved events for the selected date.
+- Allows navigation between months and selection of a specific date.
+- Provides registration and event detail navigation for users.
+- For event organizers, shows buttons to add new events and view their own events.
+- Handles loading and error states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, calendar, event card, and service functions.
+- **Component State:**
+  - `selectedDate`, `currentMonth`, `events`, `loading`, `refreshKey`: For calendar navigation, event data, and UI state.
+- **useEffect/useFocusEffect:**
+  - Fetches events for the current month and updates on navigation or refresh.
+- **goToPreviousMonth/goToNextMonth:**
+  - Navigates the calendar between months, preventing navigation to past months.
+- **handleDateSelect:**
+  - Sets the selected date for event filtering.
+- **handleRegister/handleEventClick:**
+  - Navigates to event registration or detail screens.
+- **handleAddEvent:**
+  - Navigates to the event creation form for event organizers.
+- **filteredEvents:**
+  - Filters events to show only those for the selected date.
+- **Return (JSX):**
+  - Renders the header, calendar, event list, and buttons for adding/viewing events (for organizers). Shows loading indicator as needed.
+- **Styles:**
+  - Styles for layout, calendar, event cards, buttons, and loading state.
+
+---
+
+## ProfileScreen.tsx
+
+**Purpose:**
+This screen allows an admin to view and edit their profile information, including name, phone number, and profile picture. It also displays the admin's email (read-only).
+
+**Main Logic and Workflow:**
+- Fetches the current user's profile data from Firestore on mount.
+- Allows editing of name and phone number, and saving changes to Firestore.
+- Allows picking a new profile picture from the device, storing it as a base64 string in Firestore, and removing the profile picture.
+- Handles loading and uploading states, and shows success/error messages.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons, Firestore functions, Auth, ImagePicker, and KeyboardAwareWrapper.
+- **Component State:**
+  - `name`, `email`, `phone`, `profileImage`: User profile fields.
+  - `loading`, `uploading`: Loading states for fetching and uploading.
+- **fetchUserProfile:**
+  - Fetches the current user's profile from Firestore and sets state.
+- **formatPhoneNumber/handlePhoneChange:**
+  - Formats the phone number input for display.
+- **pickImage/removeProfileImage:**
+  - Handles picking a new profile image or removing the current one, updating Firestore and local state.
+- **handleSave:**
+  - Saves updated name and phone number to Firestore.
+- **Return (JSX):**
+  - Renders the header, profile image, form fields, and save button. Shows loading indicators as needed.
+- **Styles:**
+  - Styles for layout, header, profile image, form fields, and buttons.
+
+---
+
+## ResourceManagementScreen.tsx
+
+**Purpose:**
+This screen allows admins to manage all resources in the system, including creating, editing, deleting, activating/deactivating, and searching resources. Resources can be of various types (AddictionHelp, FindTherapist, Counselling, Awareness, SupportSystem) and content types (text, image, video, document).
+
+**Main Logic and Workflow:**
+- Fetches all resources and resource statistics on mount.
+- Allows searching and filtering resources by type.
+- Provides a modal for creating or editing resources, supporting file uploads for images, videos, and documents.
+- Allows activating/deactivating resources, editing, and deleting them.
+- Displays resource statistics, a search bar, filter buttons, and a list of resources with actions.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, file pickers, video, AdminHeroBox, and resource service functions.
+- **Component State:**
+  - `resources`, `loading`, `modalVisible`, `editingResource`, `uploading`, `searchTerm`, `selectedType`, `stats`: For resource management and UI state.
+  - `formData`, `selectedFile`: For the resource creation/editing form and file selection.
+- **useEffect:**
+  - Loads resources and stats on mount.
+- **loadResources/loadStats:**
+  - Fetches resources and statistics from the backend.
+- **resetForm/openEditModal:**
+  - Resets the form or opens the modal for editing a resource.
+- **pickImage/pickVideo/pickDocument/handleFileSelection:**
+  - Handles file selection for resource content.
+- **handleSave:**
+  - Validates and saves a new or edited resource via the service layer.
+- **handleDelete:**
+  - Shows a confirmation dialog and deletes the resource via the service layer.
+- **handleToggleStatus:**
+  - Activates or deactivates a resource.
+- **handleSearch:**
+  - Searches resources by term and type.
+- **formatFileSize/renderFilePreview/renderResourceContent:**
+  - Utility functions for displaying file size and previews.
+- **Return (JSX):**
+  - Renders the header, stats, search/filter UI, add button, resource list, and modal for resource creation/editing.
+  - Each resource card provides actions for activation, editing, and deletion.
+- **Styles:**
+  - Styles for layout, stats, search/filter, cards, modals, and file previews.
+
+---
+
+## SettingsScreen.tsx
+
+**Purpose:**
+This screen allows admins to manage their account settings, including viewing and editing their profile, privacy, security, and notification preferences. It also provides options to sign out and delete the account.
+
+**Main Logic and Workflow:**
+- Displays a list of settings sections and options (Account, Privacy, Security, Notifications).
+- Allows navigation to the Profile screen for editing profile information.
+- Provides a sign-out button and a delete account button with confirmation.
+- Handles loading state for account deletion.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons, AdminHeroBox, Auth context, and service functions.
+- **Component State:**
+  - `deleting`: Loading state for account deletion.
+- **settingsOptions:**
+  - Defines the sections and options for the settings screen.
+- **handleOptionPress:**
+  - Handles navigation to the Profile screen or logs other option presses.
+- **handleSignOut:**
+  - Calls the signOut function from Auth context.
+- **handleDeleteAccount:**
+  - Shows a confirmation dialog and deletes the current user and related data via the service layer. Navigates to the Login screen on success.
+- **Return (JSX):**
+  - Renders the header, settings sections and options, sign-out button, and delete account button. Shows a loading indicator during account deletion.
+- **Styles:**
+  - Styles for layout, sections, options, buttons, and loading states.
+
+---
+
+## UserDetailsScreen.tsx
+
+**Purpose:**
+This screen displays detailed information about a specific user for admins. It allows viewing user details and, for non-admin users, provides actions to ban/unban or assign a new role.
+
+**Main Logic and Workflow:**
+- Fetches the user by ID from the backend on mount.
+- Displays user details (name, email, phone, role, status).
+- For non-admin users, allows banning/unbanning and assigning a new role.
+- Handles loading and error states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, AdminHeroBox, and user service functions.
+- **Component State:**
+  - `user`, `loading`, `updating`: For user data and UI state.
+- **useEffect:**
+  - Fetches the user by ID on mount or when focused.
+- **handleBanUnban:**
+  - Toggles the user's approved status and updates the backend.
+- **Return (JSX):**
+  - Renders the header, user details, and for non-admins, ban/unban and assign role buttons.
+- **Styles:**
+  - Styles for layout, card, labels, values, and buttons.
+
+---
+
+## UserManagementScreen.tsx
+
+**Purpose:**
+This screen allows admins to view and manage all users by role. It provides search, filtering, and actions for each user, including viewing details and banning/unbanning (except for admin users).
+
+**Main Logic and Workflow:**
+- Fetches users by role from the backend and displays them in a list.
+- Allows searching users by name or email.
+- Provides tabs to filter users by role.
+- For each user, allows viewing details and, for non-admins, banning/unbanning.
+- Handles loading and error states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Ionicons, AdminHeroBox, and user service functions.
+- **Component State:**
+  - `activeRole`, `users`, `loading`, `error`, `search`, `searchQuery`: For user management and UI state.
+- **loadUsers:**
+  - Fetches users by role and filters valid users.
+- **handleBanUnban:**
+  - Toggles the user's approval status and updates the backend.
+- **filteredUsers:**
+  - Filters users by search query.
+- **Return (JSX):**
+  - Renders the header, search bar, role tabs, and user cards with actions.
+- **Styles:**
+  - Styles for layout, search bar, tabs, cards, and buttons.
+
+---
+
+## AdminEditEventScreen.tsx
+
+**Purpose:**
+This screen allows admins to edit the details of an event and its associated opportunity (if the event needs volunteers). It provides a form for editing event and opportunity fields and saving changes to the backend.
+
+**Main Logic and Workflow:**
+- Fetches the event and associated opportunity by event ID on mount.
+- Displays a form with editable fields for event and opportunity details.
+- Allows saving changes, which updates the event and opportunity in the backend.
+- Handles loading and saving states, and shows success/error messages.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, AdminHeroBox, and event/opportunity service functions.
+- **Component State:**
+  - `loading`, `saving`, `event`, `opportunity`: For data and UI state.
+  - Editable fields for event and opportunity details.
+- **fetchData:**
+  - Fetches the event and opportunity by ID and sets state.
+- **handleSave:**
+  - Updates the event and opportunity in the backend and refreshes data.
+- **Return (JSX):**
+  - Renders the header, form fields for event and opportunity, and save button. Shows loading indicator as needed.
+- **Styles:**
+  - Styles for layout, form fields, buttons, and section headers.
+
+---
+
+## LoginScreen.tsx
+
+**Purpose:**
+This screen allows users to log in to the app using email/password or Google authentication. It handles validation, error states, and approval status checks, and provides navigation to sign up and password reset screens.
+
+**Main Logic and Workflow:**
+- Collects email and password from the user.
+- Validates input fields and displays errors.
+- On login, authenticates with Firebase Auth and checks the user's approval status in Firestore.
+- Handles pending/rejected approval states with appropriate messages and sign-out option.
+- Provides Google login using Expo AuthSession.
+- Navigates to sign up and forgot password screens as needed.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Firebase Auth, Firestore, AuthContext, icons, and Google Auth hook.
+- **Component State:**
+  - `email`, `password`, `errors`, `showPassword`, `loading`: For form fields, error handling, and UI state.
+- **validate:**
+  - Validates email and password fields, sets error messages.
+- **handleLogin:**
+  - Authenticates with Firebase, checks approval status, and handles errors or pending/rejected states.
+- **Google Auth:**
+  - Uses the `useGoogleAuth` hook to handle Google sign-in.
+- **Return (JSX):**
+  - Renders the logo, error messages, sign-out button (if needed), input fields, login button, Google login button, and navigation to sign up/forgot password.
+  - Shows a loading overlay during authentication.
+- **Styles:**
+  - Styles for layout, input fields, buttons, error messages, and loading overlay.
+
+---
+
+## ForgotPassword.tsx
+
+**Purpose:**
+This screen allows users to request a password reset email if they have forgotten their password. It handles validation, error states, and navigation back to the login screen.
+
+**Main Logic and Workflow:**
+- Collects the user's email address.
+- Validates the email input and displays errors.
+- On submit, sends a password reset email using Firebase Auth.
+- Displays success or error messages and navigates back to login after a delay.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Firebase Auth, Firestore, icons.
+- **Component State:**
+  - `email`, `loading`, `emailSent`, `errors`: For form fields, error handling, and UI state.
+- **validate:**
+  - Validates the email field and sets error messages.
+- **handleResetPassword:**
+  - Sends a password reset email using Firebase Auth, handles errors, and shows success message. Navigates back to login after a delay.
+- **handleBackToLogin:**
+  - Navigates back to the login screen.
+- **Return (JSX):**
+  - Renders the logo, title, subtitle, error/success messages, email input, reset button, and back to login button. Shows a loading indicator during the reset process.
+- **Styles:**
+  - Styles for layout, input fields, buttons, error/success messages, and loading state.
+
+---
+
+## SignUpScreen.tsx
+
+**Purpose:**
+This screen allows users to create a new account by entering their full name, email, phone number, and password. It validates input, provides password visibility toggles, and navigates to the role selection screen. It also supports Google sign-up.
+
+**Main Logic and Workflow:**
+- Collects full name, email, phone number, password, and confirm password from the user.
+- Validates all fields and displays errors.
+- On continue, navigates to the RoleSelection screen with the entered data.
+- Provides Google sign-up using Expo AuthSession.
+- Allows toggling password visibility for both password fields.
+- Handles loading state during navigation.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, and Google Auth hook.
+- **Component State:**
+  - `fullName`, `email`, `phoneNumber`, `password`, `confirmPassword`, `showPassword`, `showConfirmPassword`, `errors`, `loading`: For form fields, error handling, and UI state.
+- **formatPhoneNumber/validatePhoneNumber:**
+  - Formats and validates the phone number input.
+- **validate:**
+  - Validates all fields and sets error messages.
+- **handleContinue:**
+  - Validates input and navigates to RoleSelection with the entered data.
+- **Google Auth:**
+  - Uses the `useGoogleAuth` hook to handle Google sign-up and navigates to RoleSelection.
+- **Return (JSX):**
+  - Renders the progress tracker, logo, input fields, continue button, Google sign-up button, and navigation to login. Shows loading overlay if needed.
+- **Styles:**
+  - Styles for layout, progress tracker, input fields, buttons, error messages, and loading overlay.
+
+---
+
+## CheckInboxScreen.tsx
+
+**Purpose:**
+This screen informs users that a password reset link has been sent to their email and provides a button to return to the login screen.
+
+**Main Logic and Workflow:**
+- Displays a message instructing the user to check their inbox for a password reset link.
+- Provides a button to navigate back to the login screen.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, and types.
+- **Component:**
+  - Uses `useNavigation` to enable navigation to the login screen.
+  - Renders the logo, title, subtitle, and a button to go back to login.
+- **Styles:**
+  - Styles for layout, logo, title, subtitle, and button.
+
+---
+
+## EmailVerificationScreen.tsx
+
+**Purpose:**
+This screen handles the email verification step during user registration. It sends a verification email, allows the user to change their email, and polls for verification status. Once verified, it updates Firestore and navigates the user to login.
+
+**Main Logic and Workflow:**
+- Sends a verification email to the user on mount and allows resending.
+- Allows the user to change their email address and updates Firestore.
+- Polls for email verification status and, once verified, updates Firestore and signs the user out.
+- Handles loading, error, and success states, and disables navigation except for back.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Firebase Auth, Firestore, and types.
+- **Component State:**
+  - `email`, `loading`, `message`, `resendTimer`, `verificationSent`, `checking`, `userCreated`: For form fields, UI state, and polling.
+- **sendVerification:**
+  - Sends a verification email to the current user and starts the resend timer.
+- **useEffect:**
+  - Sends verification on mount, manages resend timer, and polls for verification status.
+- **handleEmailChange:**
+  - Allows the user to change their email and updates Firestore.
+- **handleResend:**
+  - Resends the verification email if the timer allows.
+- **Return (JSX):**
+  - Renders the logo, title, subtitle, email input, send/resend buttons, polling indicator, and back button. Shows messages for success, error, and waiting for verification.
+- **Styles:**
+  - Styles for layout, input, buttons, messages, and loading state.
+
+---
+
+## RoleSelectionScreen.tsx
+
+**Purpose:**
+This screen allows users to select their role (Support Seeker, Volunteer, or Event Organizer) during the sign-up process. It validates the selection and navigates to the user settings screen with the selected role and previous registration data.
+
+**Main Logic and Workflow:**
+- Receives user registration data (name, email, phone, password) via navigation params.
+- Displays a list of roles with descriptions and icons.
+- Allows the user to select a role and validates the selection.
+- On continue, navigates to the UserSettings screen with the selected role and registration data.
+- Provides a progress tracker and back button.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, and types.
+- **Component State:**
+  - `selectedRole`, `roleError`: For role selection and error handling.
+- **handleRoleSelect:**
+  - Sets the selected role and clears errors.
+- **handleContinue:**
+  - Validates the role selection and navigates to UserSettings with all registration data.
+- **Return (JSX):**
+  - Renders the progress tracker, logo, title, subtitle, role cards, continue button, and back button. Shows error if no role is selected.
+- **Styles:**
+  - Styles for layout, progress tracker, role cards, buttons, and error messages.
+
+---
+
+## googleAuth.ts
+
+**Purpose:**
+This file provides a custom React hook for handling Google authentication using Expo AuthSession and Firebase Auth. It is used to enable Google sign-in/sign-up in the app.
+
+**Main Logic and Workflow:**
+- Sets up an Expo AuthSession request for Google authentication.
+- Handles the authentication response and signs in to Firebase using the Google credential.
+- Calls a callback on successful login.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - Expo AuthSession, WebBrowser, React, Firebase Auth, and app config.
+- **WebBrowser.maybeCompleteAuthSession:**
+  - Ensures the web browser session is completed after authentication.
+- **useGoogleAuth:**
+  - Sets up the Google AuthSession request with client IDs for different platforms.
+  - Uses a React effect to handle the authentication response:
+    - If successful, extracts the ID token, creates a Firebase credential, and signs in with Firebase Auth.
+    - Calls the provided `onLoginSuccess` callback after successful sign-in.
+  - Returns the `promptAsync` function to trigger the Google login flow.
+
+---
+
+## UserSettingsScreen.tsx
+
+**Purpose:**
+This screen is the final step of user registration, allowing users to complete their profile by uploading a profile picture, setting notification preferences, and adding emergency contacts. It creates the user in Firebase Auth and Firestore, then navigates to email verification.
+
+**Main Logic and Workflow:**
+- Receives registration data (role, name, email, phone, password) via navigation params.
+- Allows the user to upload a profile picture, set notification preferences, and add emergency contacts.
+- On completion, creates the user in Firebase Auth and Firestore with the appropriate approval status.
+- Navigates to the EmailVerification screen for email confirmation.
+- Handles loading, error, and success states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, ImagePicker, Firebase Auth, Firestore, and types.
+- **Component State:**
+  - `profileImage`, `loading`, `notifications`, `emergencyContacts`, `inlineMessage`: For form fields, preferences, and UI state.
+- **handleAddContact/handleContactChange/handleRemoveContact:**
+  - Manage the list of emergency contacts.
+- **pickImage:**
+  - Allows the user to pick a profile image and stores it as a base64 string.
+- **handleComplete:**
+  - Validates input, creates the user in Firebase Auth, stores user data in Firestore, and navigates to EmailVerification.
+- **Return (JSX):**
+  - Renders the progress tracker, profile picture section, notification preferences, emergency contacts, and complete setup button. Shows loading indicator as needed.
+- **Styles:**
+  - Styles for layout, progress tracker, sections, inputs, buttons, and loading state.
+
+---
+
+## RegisterEventScreen.tsx
+
+**Purpose:**
+This screen allows users to view event details and register for an event. It handles registration, cancellation, and displays the user's registration status. It also shows event details and manages loading and error states.
+
+**Main Logic and Workflow:**
+- Fetches the event details and user data on mount.
+- Checks if the user is already registered for the event.
+- Allows the user to register for or cancel registration for the event.
+- Displays event details, registration form, and registration status.
+- Handles loading and error states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, Firebase Auth/Firestore, event service, AuthContext, icons, and HeroBox.
+- **Component State:**
+  - `name`, `email`, `phone`, `event`, `loading`, `isRegistering`: For user/event data and UI state.
+- **useEffect:**
+  - Fetches user data and event details on mount.
+- **checkRegistration:**
+  - Checks if the user is already registered for the event.
+- **handleRegister:**
+  - Registers the user for the event and updates state/UI.
+- **handleCancelRegistration:**
+  - Cancels the user's registration and updates state/UI.
+- **Return (JSX):**
+  - Renders the header, event details, registration form, and registration status. Shows loading and error states as needed.
+- **Styles:**
+  - Styles for layout, event details, form, buttons, and loading/error states.
+
+---
+
+## MyEventsScreen.tsx
+
+**Purpose:**
+This screen allows event organizers to view a list of all events they have posted, along with their approval status and details. It displays event information and status (approved, pending, rejected) and handles loading and error states.
+
+**Main Logic and Workflow:**
+- Fetches all events created by the current user from the backend on mount.
+- Displays a list of events with their details and approval status.
+- Handles loading and error states.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, AdminHeroBox, event service, and Firebase Auth.
+- **Component State:**
+  - `events`, `loading`, `error`: For event data and UI state.
+- **useEffect:**
+  - Fetches the current user's events on mount.
+- **Return (JSX):**
+  - Renders the header, loading/error messages, and a list of event cards with details and status. Shows rejection reason if present.
+- **Styles:**
+  - Styles for layout, cards, status, and error/loading states.
+
+---
+
+## EventsFormScreen.tsx
+
+**Purpose:**
+This screen allows users (typically event organizers) to create a new event, including specifying event details, timings, location, description, and (optionally) volunteer requirements. It validates input, checks for profanity, and creates both the event and associated volunteer opportunity in the backend.
+
+**Main Logic and Workflow:**
+- Receives an optional selected date from navigation params.
+- Collects event details (title, date, time, location, description) and, if needed, volunteer requirements.
+- Validates all fields, checks for profanity, and enforces word limits.
+- On submit, creates the event in Firestore and, if volunteers are needed, creates an associated opportunity.
+- Handles loading, error, and success states, and navigates back to the events list on success.
+
+**Block-by-block Explanation:**
+- **Imports:**
+  - React, React Native components, navigation, icons, date/time pickers, slider, keyboard wrapper, profanity filter, and service functions.
+- **Component State:**
+  - All form fields for event and volunteer details, plus UI state for pickers, loading, and submission.
+- **useEffect:**
+  - Fetches the current user's name for the event creator field.
+- **handleDateChange/handleStartTimeChange/handleEndTimeChange:**
+  - Manage date and time pickers and validation.
+- **validateForm:**
+  - Validates all fields, checks word limits, and ensures logical consistency (e.g., end time after start time).
+- **handleSubmit:**
+  - Validates input, checks for profanity, creates the event and opportunity in Firestore, and shows success/error messages.
+- **Return (JSX):**
+  - Renders the header, form fields for event and volunteer details, date/time pickers, and submit button. Shows loading and error states as needed.
+- **Styles:**
+  - Styles for layout, form fields, pickers, buttons, and loading state.
+
+---
+
+## AnnouncementsScreen.tsx
+
+**Purpose:**
+Displays a combined feed of user-specific notifications and global announcements. Allows users to mark notifications as read and navigate to relevant screens (e.g., event registration, emergency) based on notification type.
+
+**Main Logic and Workflow:**
+- Fetches notifications and announcements from the notification service.
+- Combines and sorts them by timestamp (most recent first).
+- Displays each notification with an icon, message, and relative time.
+- Allows pull-to-refresh and marks notifications as read on tap.
+- Navigates to event registration or emergency screen based on notification type.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, notification service, and HeroBox.
+- **State:** notifications (combined list), loading, refreshing.
+- **fetchNotifications:** Fetches notifications and announcements, combines and sorts them, updates state.
+- **useEffect:** Fetches notifications on mount.
+- **onRefresh:** Handles pull-to-refresh.
+- **handleNotificationPress:** Marks notification as read and navigates to relevant screen.
+- **getNotificationIcon:** Returns icon name based on notification type.
+- **formatTimestamp:** Formats timestamp as relative time (e.g., '2h ago').
+- **Return (JSX):** Renders header, loading indicator, empty state, or list of notifications. Each notification is a card with icon, message, time, and unread indicator.
+- **Styles:** Layout, cards, unread state, icons, and empty/loading states.
+
+---
+
+## EmergencyScreen.tsx
+
+**Purpose:**
+Provides users with a list of emergency contacts (default and user-added), allowing them to quickly call for help. Users can add custom emergency contacts, which are persisted locally.
+
+**Main Logic and Workflow:**
+- Loads emergency contacts from AsyncStorage on mount.
+- Displays default and user-added contacts as call buttons.
+- Allows users to add new contacts via a modal form (with validation).
+- Initiates a phone call when a contact is pressed.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, AsyncStorage, and HeroBox.
+- **State:** contacts (user-added), modal visibility, name/phone input fields.
+- **loadContacts:** Loads contacts from AsyncStorage.
+- **useEffect:** Loads contacts on mount.
+- **formatPhoneNumber:** Formats phone input as (XXX) XXX-XXXX.
+- **saveContacts:** Saves contacts to AsyncStorage and updates state.
+- **handleAddContact:** Validates and adds a new contact, then saves.
+- **handleCall:** Initiates a phone call to the selected contact.
+- **defaultContacts:** List of always-available emergency contacts (e.g., hotline).
+- **Return (JSX):** Renders header, emergency contacts as call buttons, add contact button, and modal for adding new contacts.
+- **Styles:** Layout, buttons, modal, input fields, and iconography.
+
+---
+
+## JournalScreen.tsx
+
+**Purpose:**
+Acts as the entry point for the journaling feature. Presents options to create a new journal entry or view existing entries, with a visual cover and navigation buttons.
+
+**Main Logic and Workflow:**
+- Displays a cover image and two main actions: 'New Entry' and 'View My Entries'.
+- Navigates to the appropriate screen based on user selection.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, and HeroBox.
+- **Navigation:** Uses navigation to move to NewJournalEntryScreen or MyJournalsScreen.
+- **Return (JSX):** Renders the header, cover image, and two action buttons.
+- **Styles:** Layout, image, and button styles for a visually appealing entry screen.
+
+---
+
+## MyJournalScreen.tsx
+
+**Purpose:**
+Displays a list of the user's journal entries, allowing them to view, edit, or delete entries. Provides a button to create a new entry.
+
+**Main Logic and Workflow:**
+- Fetches the user's journal entries from the backend on mount.
+- Displays entries in a scrollable list, with options to edit or delete each entry.
+- Handles deletion with confirmation and updates the list locally for responsiveness.
+- Provides a button to create a new entry.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, and journal service functions.
+- **State:** List of journals, loading state.
+- **fetchJournals:** Loads journal entries from the backend.
+- **useEffect:** Fetches journals on mount.
+- **handleDelete:** Confirms and deletes an entry, updating the UI.
+- **handleEdit:** Navigates to the entry editing screen with the selected entry.
+- **handleNewEntry:** Navigates to the new entry screen.
+- **Return (JSX):** Renders header, empty state, or list of entries with edit/delete actions and a floating new entry button.
+- **Styles:** Layout, entry cards, action buttons, and empty/loading states.
+
+---
+
+## NewJournalEntryScreen.tsx
+
+**Purpose:**
+Allows users to create a new journal entry or edit an existing one. Enforces word limits and validates input before saving or updating the entry in the backend.
+
+**Main Logic and Workflow:**
+- Accepts an optional entry prop for editing.
+- Collects title and body, enforcing word limits.
+- Validates input and saves or updates the entry in the backend.
+- Navigates back on success and shows error/success alerts.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, and journal service functions.
+- **State:** Title and body fields, prefilled if editing.
+- **countWords:** Utility to count words for validation.
+- **handleSave:** Validates input, enforces word limits, and saves or updates the entry.
+- **Return (JSX):** Renders header, input fields for title and body, word counters, and save/update button.
+- **Styles:** Layout, input fields, word counters, and save button.
+
+---
+
+## AddictionHelpScreen.tsx
+
+**Purpose:**
+Displays a list of addiction help resources (text, images, videos, documents) fetched from the backend. Allows users to expand/collapse resource cards to view details and interact with media or download documents.
+
+**Main Logic and Workflow:**
+- Fetches addiction help resources from the backend on mount.
+- Displays each resource as a card, expandable to show details and media.
+- Handles loading, error, and empty states.
+- Supports images, videos, documents, and tags for each resource.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, animation, icons, video, HeroBox, and resource services.
+- **State:** List of resources, loading state, expanded indices, and animation values.
+- **loadResources:** Fetches resources and initializes animations.
+- **toggleCard:** Expands/collapses a resource card with animation.
+- **renderResourceContent:** Renders media or text for each resource.
+- **renderDetails:** Animated details section for each resource.
+- **Return (JSX):** Renders header, loading/empty state, and resource cards.
+- **Styles:** Layout, card, media, and tag styles.
+
+---
+
+## AwarenessScreen.tsx
+
+**Purpose:**
+Provides links to mental health awareness articles and toolkits. Each resource is presented as an expandable card with a link to an external article.
+
+**Main Logic and Workflow:**
+- Displays a static list of awareness resources.
+- Each card can be expanded to reveal a link to the article.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, animation, icons, and HeroBox.
+- **State:** Expanded indices and animation values for cards.
+- **toggleCard:** Expands/collapses a card with animation.
+- **renderDetails:** Animated section with a link to the article.
+- **Return (JSX):** Renders header, intro, and resource cards.
+- **Styles:** Layout, card, and button styles.
+
+---
+
+## CounsellingScreen.tsx
+
+**Purpose:**
+Lists available counselors and organizations, with contact information and links. Each counselor is presented as an expandable card with details and contact options.
+
+**Main Logic and Workflow:**
+- Displays a static list of counselors and organizations.
+- Each card can be expanded to show contact info, phone, email, and website.
+- Allows users to call or visit the website directly from the card.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, animation, icons, and HeroBox.
+- **State:** Expanded indices and animation values for cards.
+- **toggleCard:** Expands/collapses a card with animation.
+- **renderDetails:** Animated section with contact info and links.
+- **Return (JSX):** Renders header, intro, and counselor cards.
+- **Styles:** Layout, card, and contact styles.
+
+---
+
+## FindTherapistScreen.tsx
+
+**Purpose:**
+Provides links to directories and services for finding therapists, including certified therapists, online consultations, and affordable care. Each topic is an expandable card with a link to an external resource.
+
+**Main Logic and Workflow:**
+- Displays a static list of therapist-finding resources.
+- Each card can be expanded to reveal a link to the resource.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, animation, icons, and HeroBox.
+- **State:** Expanded indices and animation values for cards.
+- **toggleCard:** Expands/collapses a card with animation.
+- **renderDetails:** Animated section with a link to the resource.
+- **Return (JSX):** Renders header and resource cards.
+- **Styles:** Layout, card, and button styles.
+
+---
+
+## ResourcesScreen.tsx
+
+**Purpose:**
+Acts as the main hub for the resources section, providing navigation to all resource subcategories (Addiction Help, Find a Therapist, Counselling, Awareness, Support System).
+
+**Main Logic and Workflow:**
+- Displays a list of resource categories as buttons.
+- Navigates to the selected resource screen on press.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, icons, and HeroBox.
+- **resources:** List of resource categories with labels, routes, and icons.
+- **Return (JSX):** Renders header and navigation buttons for each resource category.
+- **Styles:** Layout and button styles for the resource hub.
+
+---
+
+## SupportSystemScreen.tsx
+
+**Purpose:**
+Provides links to support resources for women, families, youth, and transitional homes. Each resource is an expandable card with a link to an external resource.
+
+**Main Logic and Workflow:**
+- Displays a static list of support resources.
+- Each card can be expanded to reveal a link to the resource.
+- Custom header with navigation and SOS button.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, animation, icons, and navigation.
+- **State:** Expanded indices and animation values for cards.
+- **toggleCard:** Expands/collapses a card with animation.
+- **renderDetails:** Animated section with a link to the resource.
+- **Return (JSX):** Renders custom header and resource cards.
+- **Styles:** Layout, card, and header styles.
+
+---
+
+## AboutUsScreen.tsx
+
+**Purpose:**
+Displays information about the app, its mission, values, and contact details. Serves as an informational page for users to learn about the platform and its goals.
+
+**Main Logic and Workflow:**
+- Shows the app logo, mission statement, and sections for 'Who We Are', 'Our Values', and 'Contact Us'.
+- Uses static content and icons for visual appeal.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, HeroBox, and icons.
+- **Return (JSX):** Renders header, logo, mission, and informational sections with styled containers and icons.
+- **Styles:** Layout, section, and icon styles for a clean, branded look.
+
+---
+
+## FeedbackScreen.tsx
+
+**Purpose:**
+Allows users to submit feedback and rate their experience. Feedback is stored in Firestore and profanity-checked before submission.
+
+**Main Logic and Workflow:**
+- Collects a star rating and optional comment from the user.
+- Validates input, checks for profanity, and submits feedback to Firestore.
+- Shows loading and error/success alerts.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, Firestore, star rating, profanity filter, and HeroBox.
+- **State:** Rating, comment, and submission state.
+- **handleSubmit:** Validates input, checks for profanity, and submits feedback.
+- **Return (JSX):** Renders header, star rating, comment input, and submit button.
+- **Styles:** Layout, input, button, and rating styles.
+
+---
+
+## ProfileScreen.tsx
+
+**Purpose:**
+Allows users to view and edit their profile information, including name, phone, and profile picture. Supports uploading/removing profile images and updates Firestore accordingly.
+
+**Main Logic and Workflow:**
+- Fetches user profile data from Firestore on mount.
+- Allows editing of name and phone, and updating/removing profile image.
+- Validates input and checks for profanity before saving.
+- Handles image upload to Firebase Storage and updates Firestore with the image URL.
+- Shows loading, uploading, and error/success states.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, Firestore, Storage, image picker, profanity filter, and KeyboardAwareWrapper.
+- **State:** Name, email, phone, profile image, loading, and uploading states.
+- **fetchUserProfile:** Loads user data from Firestore.
+- **pickImage:** Handles image selection and upload to Firebase Storage.
+- **removeProfileImage:** Removes the profile image from Storage and Firestore.
+- **handleSave:** Validates and saves profile changes to Firestore.
+- **Return (JSX):** Renders header, profile image, form fields, and save button.
+- **Styles:** Layout, image, input, and button styles.
+
+---
+
+## SettingsScreen.tsx
+
+**Purpose:**
+Acts as the main settings hub, providing navigation to profile, feedback, about, and account actions (sign out, delete account).
+
+**Main Logic and Workflow:**
+- Displays grouped settings options (Account, Support & Info) as sections with navigation.
+- Handles sign out and account deletion with confirmation and backend integration.
+- Navigates to sub-screens for profile, feedback, and about.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, AuthContext, HeroBox, and user service.
+- **State:** Deleting state for account deletion.
+- **handleOptionPress:** Navigates to the selected settings sub-screen.
+- **handleSignOut:** Signs the user out using AuthContext.
+- **handleDeleteAccount:** Confirms and deletes the user account and data.
+- **Return (JSX):** Renders header, settings sections, and account action buttons.
+- **Styles:** Layout, section, button, and action styles.
+
+---
+
+## OpportunitiesScreen.tsx
+
+**Purpose:**
+Displays a list of approved volunteer opportunities with advanced filtering (by tag, time, location, and search). Allows users to view details and see their application status.
+
+**Main Logic and Workflow:**
+- Fetches all approved opportunities and user applications from the backend.
+- Supports filtering by weekends, time, location, and search query.
+- Displays each opportunity as a card with details and a button to view more.
+- Shows application status if the user has applied.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, date-fns, services, and HeroBox.
+- **State:** Opportunities, user applications, filters, dropdowns, loading, and error.
+- **fetchApprovedOpportunities:** Loads opportunities and available locations.
+- **fetchUserApplications:** Loads user's applications.
+- **Filtering logic:** Applies all filters and search to the opportunities list.
+- **handleDetails:** Navigates to the details screen for the selected opportunity.
+- **Return (JSX):** Renders header, search/filter controls, and opportunity cards.
+- **Styles:** Layout, card, filter, and dropdown styles.
+
+---
+
+## OpportunityApplicationFormScreen.tsx
+
+**Purpose:**
+Allows users to apply for a volunteer opportunity by submitting a form. Prefills user info and checks for profanity before submission.
+
+**Main Logic and Workflow:**
+- Fetches user info to prefill the form.
+- Collects a short description from the user.
+- Validates input and checks for profanity.
+- Submits the application to the backend and navigates to the details screen on success.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, Firestore, services, profanity filter, and HeroBox.
+- **State:** Form data, loading, and fetching user state.
+- **fetchUserData:** Loads user info for the form.
+- **validateForm:** Ensures required fields are filled.
+- **handleSubmit:** Validates, checks for profanity, and submits the application.
+- **Return (JSX):** Renders header, form fields, and submit button.
+- **Styles:** Layout, input, and button styles.
+
+---
+
+## OpportunityDetailsScreen.tsx
+
+**Purpose:**
+Displays detailed information about a volunteer opportunity and allows users to apply or cancel their application. Shows application status and handles all backend interactions.
+
+**Main Logic and Workflow:**
+- Fetches opportunity details and user application status from the backend.
+- Displays all opportunity details, including rewards and refreshments.
+- Allows users to apply, cancel, or see their application status.
+- Handles loading, error, and empty states.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, Firestore, services, and HeroBox.
+- **State:** Opportunity details, application status, form data, and loading states.
+- **fetchOpportunityDetails:** Loads opportunity details from the backend.
+- **fetchUserData:** Loads user info for the form.
+- **checkApplicationStatus:** Checks if the user has applied.
+- **handleApply:** Submits a new application.
+- **handleCancel:** Cancels an existing application.
+- **Return (JSX):** Renders header, opportunity details, application form/status, and action buttons.
+- **Styles:** Layout, card, form, and button styles.
+
+---
+
+## VolunteerLearningsScreen.tsx
+
+**Purpose:**
+Displays a list of learning modules for volunteers, showing progress and status for each module. Provides a summary of completed modules, hours, and skills.
+
+**Main Logic and Workflow:**
+- Shows static data for learning modules and progress summary.
+- Each module displays its title, duration, and status with an icon.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, and HeroBox.
+- **learningModules:** Static list of modules with status.
+- **renderStatusIcon:** Returns an icon based on module status.
+- **Return (JSX):** Renders header, progress summary, and module cards.
+- **Styles:** Layout, card, and icon styles.
+
+---
+
+## VolunteerRewardsScreen.tsx
+
+**Purpose:**
+Displays the user's progress toward volunteer rewards and earned badges. Shows a progress bar of steps and a grid of badges.
+
+**Main Logic and Workflow:**
+- Shows static data for progress steps and badges.
+- Each step and badge displays an icon and completion status.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, icons, and HeroBox.
+- **progressSteps:** Static list of progress steps.
+- **badges:** Static list of badges with earned status.
+- **Return (JSX):** Renders header, progress steps, and badges grid.
+- **Styles:** Layout, progress, and badge styles.
+
+---
+
+## VolunteerScreen.tsx
+
+**Purpose:**
+Acts as the main hub for volunteer features, providing navigation to browse opportunities, view learnings, rewards, and applications. Also lists available opportunities and application status.
+
+**Main Logic and Workflow:**
+- Fetches approved opportunities and user applications from the backend.
+- Provides navigation to all volunteer-related screens.
+- Displays available opportunities and application status.
+
+**Block-by-block Explanation:**
+- **Imports:** React, React Native components, navigation, services, and HeroBox.
+- **State:** Opportunities, user applications, loading, and error.
+- **fetchApprovedOpportunities:** Loads opportunities from the backend.
+- **fetchUserApplications:** Loads user's applications.
+- **handleApply:** Navigates to the application form for an opportunity.
+- **Return (JSX):** Renders header, navigation grid, and opportunity cards.
+- **Styles:** Layout, grid, card, and button styles.
+
+--- 

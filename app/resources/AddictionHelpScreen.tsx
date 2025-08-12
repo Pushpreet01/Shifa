@@ -6,23 +6,20 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  Animated,
   Linking,
   Alert,
   ActivityIndicator,
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Video } from "expo-av";
+import { Video, ResizeMode } from "expo-av";
 import HeroBox from "../../components/HeroBox";
 import { getUserResources, UserResource } from "../../services/resourceService";
-import { Resource } from "../../services/adminResourceService";
 
 const AddictionHelpScreen = () => {
   const [resources, setResources] = useState<UserResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
-  const [animations] = useState<Animated.Value[]>([]);
 
   useEffect(() => {
     loadResources();
@@ -33,10 +30,6 @@ const AddictionHelpScreen = () => {
       setLoading(true);
       const fetchedResources = await getUserResources("AddictionHelp");
       setResources(fetchedResources);
-
-      // Initialize animations for each resource
-      const newAnimations = fetchedResources.map(() => new Animated.Value(0));
-      setAnimations(newAnimations);
     } catch (error) {
       console.error("Error loading addiction help resources:", error);
       Alert.alert("Error", "Failed to load resources");
@@ -47,17 +40,11 @@ const AddictionHelpScreen = () => {
 
   const toggleCard = (index: number) => {
     const isExpanded = expandedIndices.includes(index);
-    const newExpandedIndices = isExpanded
-      ? expandedIndices.filter((i) => i !== index)
-      : [...expandedIndices, index];
-
-    setExpandedIndices(newExpandedIndices);
-
-    Animated.timing(animations[index], {
-      toValue: isExpanded ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
+    setExpandedIndices(
+      isExpanded
+        ? expandedIndices.filter((i) => i !== index)
+        : [...expandedIndices, index]
+    );
   };
 
   const renderResourceContent = (resource: UserResource) => {
@@ -76,7 +63,7 @@ const AddictionHelpScreen = () => {
           source={{ uri: resource.fileUrl }}
           style={styles.resourceVideo}
           useNativeControls
-          resizeMode="contain"
+          resizeMode={ResizeMode.CONTAIN}
         />
       );
     }
@@ -99,13 +86,11 @@ const AddictionHelpScreen = () => {
   };
 
   const renderDetails = (resource: UserResource, index: number) => {
-    const height = animations[index]?.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 100],
-    });
+    const isExpanded = expandedIndices.includes(index);
+    if (!isExpanded) return null;
 
     return (
-      <Animated.View style={[styles.detailsContainer, { height }]}>
+      <View style={styles.detailsContainer}>
         {renderResourceContent(resource)}
 
         {resource.tags && resource.tags.length > 0 && (
@@ -117,7 +102,7 @@ const AddictionHelpScreen = () => {
             ))}
           </View>
         )}
-      </Animated.View>
+      </View>
     );
   };
 
@@ -127,7 +112,7 @@ const AddictionHelpScreen = () => {
         <HeroBox
           title="Addiction Help"
           showBackButton
-          customBackRoute="Resources"
+          customBackRoute="ResourcesList"
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1B6B63" />
@@ -143,7 +128,7 @@ const AddictionHelpScreen = () => {
         <HeroBox
           title="Addiction Help"
           showBackButton
-          customBackRoute="Resources"
+          customBackRoute="ResourcesList"
         />
 
         {resources.length === 0 ? (

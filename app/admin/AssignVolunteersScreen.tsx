@@ -116,10 +116,6 @@ const AssignVolunteersScreen = () => {
     fetchData();
   }, [selectedEventId]);
 
-<<<<<<< Updated upstream
-  // Assign/unassign volunteer
-  const selectedCount = applications.filter(a => a.status === 'Selected').length;
-=======
   /**
    * Handles volunteer assignment toggling
    * Respects slot limits when assigning volunteers
@@ -127,7 +123,6 @@ const AssignVolunteersScreen = () => {
    * @param currentStatus - Current assignment status
    */
   const selectedCount = applications.filter(a => a.status === 'approved').length;
->>>>>>> Stashed changes
   const toggleAssignment = async (applicationId: string, currentStatus: string) => {
     // Prevent assigning if slots are full and trying to assign
     if (currentStatus !== 'approved' && slots !== null && selectedCount >= slots) return;

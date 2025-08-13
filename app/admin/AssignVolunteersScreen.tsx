@@ -59,7 +59,7 @@ const AssignVolunteersScreen = () => {
   // On applications change, fetch missing names
   React.useEffect(() => {
     const fetchNames = async () => {
-      const missing = applications.filter(a => !a.fullName && !nameCache[a.userId]);
+      const missing = applications.filter(a => a?.userId && !a.fullName && !nameCache[a.userId]);
       await Promise.all(missing.map(a => getVolunteerName(a.userId)));
     };
     if (applications.length > 0) fetchNames();
@@ -78,7 +78,7 @@ const AssignVolunteersScreen = () => {
           const found = filteredEvents.find((ev: any) => ev.id === initialEventId);
           if (found) {
             setSelectedEventId(found.id);
-            setSelectedEventTitle(found.title);
+            setSelectedEventTitle((found as any).title || 'Untitled Event');
           }
         }
       } finally {
@@ -116,13 +116,23 @@ const AssignVolunteersScreen = () => {
     fetchData();
   }, [selectedEventId]);
 
+<<<<<<< Updated upstream
   // Assign/unassign volunteer
   const selectedCount = applications.filter(a => a.status === 'Selected').length;
+=======
+  /**
+   * Handles volunteer assignment toggling
+   * Respects slot limits when assigning volunteers
+   * @param applicationId - ID of the application to toggle
+   * @param currentStatus - Current assignment status
+   */
+  const selectedCount = applications.filter(a => a.status === 'approved').length;
+>>>>>>> Stashed changes
   const toggleAssignment = async (applicationId: string, currentStatus: string) => {
     // Prevent assigning if slots are full and trying to assign
-    if (currentStatus !== 'Selected' && slots !== null && selectedCount >= slots) return;
+    if (currentStatus !== 'approved' && slots !== null && selectedCount >= slots) return;
     setLoading(true);
-    const newStatus = currentStatus === 'Selected' ? 'Not Selected' : 'Selected';
+    const newStatus = currentStatus === 'approved' ? 'pending' : 'approved';
     try {
       await FirebaseVolunteerApplicationService.updateApplicationStatus(applicationId, newStatus);
       setApplications((prev) => prev.map((a) => a.applicationId === applicationId ? { ...a, status: newStatus } : a));
@@ -133,8 +143,8 @@ const AssignVolunteersScreen = () => {
 
   // Sort applications: Not Selected at top, Selected at bottom
   const sortedApplications = [...applications].sort((a, b) => {
-    if (a.status === 'Not Selected' && b.status === 'Selected') return -1;
-    if (a.status === 'Selected' && b.status === 'Not Selected') return 1;
+    if (a.status === 'pending' && b.status === 'approved') return -1;
+    if (a.status === 'approved' && b.status === 'pending') return 1;
     return 0;
   });
 
@@ -186,7 +196,7 @@ const AssignVolunteersScreen = () => {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           {sortedApplications.map((app) => {
-            const isSelected = app.status === 'Selected';
+            const isSelected = app.status === 'approved';
             const disableAssign = !isSelected && slots !== null && selectedCount >= slots;
             return (
               <View key={app.applicationId} style={styles.card}>
@@ -196,7 +206,7 @@ const AssignVolunteersScreen = () => {
                     size={28}
                     color={isSelected ? '#1B6B63' : '#C44536'}
                   />
-                  <Text style={styles.name}>{app.fullName || nameCache[app.userId] || app.userId}</Text>
+                  <Text style={styles.name}>{app.fullName || nameCache[app.userId] || app.userId || 'Unknown User'}</Text>
                 </View>
                 <TouchableOpacity
                   style={[

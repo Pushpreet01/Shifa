@@ -73,7 +73,7 @@ const AttendanceReportScreen = () => {
   // On attendees change, fetch missing names
   React.useEffect(() => {
     const fetchNames = async () => {
-      const missing = attendees.filter(a => !a.fullName && !nameCache[a.userId]);
+      const missing = attendees.filter(a => a?.userId && !a.fullName && !nameCache[a.userId]);
       await Promise.all(missing.map(a => getVolunteerName(a.userId)));
     };
     if (attendees.length > 0) fetchNames();
@@ -134,7 +134,7 @@ const AttendanceReportScreen = () => {
                     size={28}
                     color={attendee.attendance === 'Present' ? '#1B6B63' : '#C44536'}
                   />
-                  <Text style={styles.name}>{attendee.fullName || nameCache[attendee.userId] || attendee.userId}</Text>
+                  <Text style={styles.name}>{attendee.fullName || nameCache[attendee.userId] || attendee.userId || 'Unknown User'}</Text>
                 </View>
                 <TouchableOpacity
                   style={[

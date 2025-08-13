@@ -26,8 +26,8 @@ import HeroBox from "../../components/HeroBox";
 type Props = NativeStackScreenProps<HomeStackParamList, "EventsForm">;
 
 const MAX_CHAR_LIMITS = {
-  title: 20,
-  location: 20,
+  title: 35,
+  location: 35,
   description: 250,
   volunteerDescription: 250,
   timings: 20,

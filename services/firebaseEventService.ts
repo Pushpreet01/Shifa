@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { CalendarEvent } from "./calendarService";
 import NotificationService from "./notificationService";
+import { analyzeTextSentiment } from "./aiSentimentService";
 
 class FirebaseEventService {
   async fetchEvents(startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
@@ -87,11 +88,14 @@ class FirebaseEventService {
       console.log("[addEvent] User authenticated:", currentUser.uid);
 
       console.log("[addEvent] Creating event document...");
+      const text = `${eventData?.title || ""}\n\n${eventData?.description || ""}`.trim();
+      const ai = analyzeTextSentiment(text);
       const eventRef = await addDoc(collection(db, "events"), {
         ...eventData,
         createdBy: currentUser.uid,
         createdAt: new Date(),
         approvalStatus: "pending", // Set initial status as pending
+        ai,
       });
       console.log("[addEvent] Event document created with ID:", eventRef.id);
 

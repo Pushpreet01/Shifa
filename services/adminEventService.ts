@@ -1,5 +1,6 @@
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
+import { analyzeTextSentiment } from "./aiSentimentService";
 
 export async function fetchEvents() {
     const snapshot = await getDocs(collection(db, "events"));
@@ -7,13 +8,17 @@ export async function fetchEvents() {
 }
 
 export async function createEvent(data: any) {
-    const docRef = await addDoc(collection(db, "events"), data);
+    const text = `${data?.title || ""}\n\n${data?.description || ""}`.trim();
+    const ai = analyzeTextSentiment(text);
+    const docRef = await addDoc(collection(db, "events"), { ...data, ai });
     return { id: docRef.id };
 }
 
 export async function updateEvent(eventId: string, data: any) {
     const eventRef = doc(db, "events", eventId);
-    await updateDoc(eventRef, data);
+    const text = `${data?.title || ""}\n\n${data?.description || ""}`.trim();
+    const ai = analyzeTextSentiment(text);
+    await updateDoc(eventRef, { ...data, ai });
     return true;
 }
 

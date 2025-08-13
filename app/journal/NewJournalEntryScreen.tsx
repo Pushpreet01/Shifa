@@ -24,7 +24,7 @@ import ProfanityFilterService from "../../services/profanityFilterService";
 type ScreenRouteProp = RouteProp<HomeStackParamList, "NewJournalEntryScreen">;
 
 const MAX_CHAR_LIMITS = {
-  title: 20, // Changed to characters
+  title: 35, // Changed to characters
   body: 500, // Already in characters
 };
 

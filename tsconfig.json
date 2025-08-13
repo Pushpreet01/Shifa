@@ -3,6 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "module": "ES2020",
-    "jsx": "react-native"
+    "jsx": "react-native",
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
   }
 }

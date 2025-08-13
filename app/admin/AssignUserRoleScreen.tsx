@@ -64,7 +64,7 @@ const AssignUserRoleScreen = () => {
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, { role: selectedRole });
       Alert.alert('Success', `Role assigned: ${selectedRole}`);
-      navigation.navigate('UserDetails', { userID: user.id });
+      navigation.navigate('UserDetails', { userId: user.id });
     } catch (err) {
       Alert.alert('Error', 'Failed to assign role.');
     } finally {
@@ -78,7 +78,7 @@ const AssignUserRoleScreen = () => {
    */
   const handleBackPress = () => {
     if (user) {
-      navigation.navigate('UserDetails', { userID: user.id });
+      navigation.navigate('UserDetails', { userId: user.id });
     } else {
       navigation.goBack();
     }

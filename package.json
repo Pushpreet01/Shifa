@@ -40,8 +40,8 @@
         "node-steam-openid": "^2.0.0",
         "papaparse": "^5.5.3",
         "passport-steam": "^1.0.18",
-        "react": "19.0.0",
-        "react-dom": "19.0.0",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
         "react-native": "0.79.5",
         "react-native-dotenv": "^3.4.11",
         "react-native-gesture-handler": "~2.24.0",
@@ -60,5 +60,8 @@
         "ts-node": "^10.9.2",
         "typescript": "~5.8.3"
     },
-    "private": true
+    "private": true,
+    "overrides": {
+        "react": "18.2.0"
+    }
 }

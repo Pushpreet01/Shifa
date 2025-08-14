@@ -144,12 +144,7 @@ const SignUpScreen: React.FC = () => {
     setLoading(false);
   };
 
-  /**
-   * Google authentication handler
-   * On successful Google auth, navigates to role selection
-   * with empty form data (will be filled from Google profile)
-   */
-  const { promptAsync } = useGoogleAuth(async () => {
+  const { signInWithGoogle } = useGoogleAuth(async () => {
     navigation.navigate("RoleSelection", {
       fullName: "",
       email: "",
@@ -316,7 +311,7 @@ const SignUpScreen: React.FC = () => {
         <Text style={styles.Text}>Or</Text>
 
         <TouchableOpacity
-          onPress={() => promptAsync()}
+          onPress={() => signInWithGoogle()}
           style={styles.googleButton}
           disabled={loading}
         >

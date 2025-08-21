@@ -93,7 +93,7 @@ const SignUpScreen: React.FC = () => {
     setLoading(false);
   };
 
-  const { promptAsync } = useGoogleAuth(async () => {
+  const { signInWithGoogle } = useGoogleAuth(async () => {
     navigation.navigate("RoleSelection", {
       fullName: "",
       email: "",
@@ -260,7 +260,7 @@ const SignUpScreen: React.FC = () => {
         {/* <Text style={styles.Text}>Or</Text>
 
         <TouchableOpacity
-          onPress={() => promptAsync()}
+          onPress={() => signInWithGoogle()}
           style={styles.googleButton}
           disabled={loading}
         >

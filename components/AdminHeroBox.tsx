@@ -7,16 +7,22 @@ interface AdminHeroBoxProps {
   title: string;
   showBackButton?: boolean;
   customBackRoute?: string;
+  onBackPress?: () => void;
 }
 
 const AdminHeroBox: React.FC<AdminHeroBoxProps> = ({
   title,
   showBackButton = false,
   customBackRoute,
+  onBackPress,
 }) => {
   const navigation = useNavigation<any>();
 
   const handleBack = () => {
+    if (onBackPress) {
+      onBackPress();
+      return;
+    }
     if (customBackRoute === 'AdminDashboard') {
       navigation.navigate('Home', { screen: 'AdminDashboard' });
     } else if (customBackRoute === 'Events') {

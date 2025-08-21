@@ -92,7 +92,7 @@ const LoginScreen = () => {
     }
   };
 
-  const { promptAsync } = useGoogleAuth(() => {
+  const { signInWithGoogle } = useGoogleAuth(() => {
     // Don't set user here - let AuthContext handle it through onAuthStateChanged
     // The AuthContext will automatically set the user with role when Firebase auth state changes
   });
@@ -186,7 +186,7 @@ const LoginScreen = () => {
       {/* <Text style={styles.Text}>Or</Text>
 
       <TouchableOpacity
-        onPress={() => promptAsync()}
+        onPress={() => signInWithGoogle()}
         style={styles.googleButton}
       >
         <Image source={require("../../assets/google-logo.png")} style={styles.googleIcon} />

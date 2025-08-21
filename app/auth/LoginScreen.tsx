@@ -183,7 +183,7 @@ const LoginScreen = () => {
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
-      <Text style={styles.Text}>Or</Text>
+      {/* <Text style={styles.Text}>Or</Text>
 
       <TouchableOpacity
         onPress={() => promptAsync()}
@@ -193,7 +193,7 @@ const LoginScreen = () => {
         <Text style={styles.googleButtonText}>
           Continue with Google
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <Text style={styles.Text}>Don't have an account?</Text>
 

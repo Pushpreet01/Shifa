@@ -210,11 +210,11 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.selectedDateText}>
             {selectedDate
               ? `${selectedDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}`
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}`
               : "Select date"}
           </Text>
         </View>
@@ -245,7 +245,10 @@ const EventsScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.eventsListContainer}>
+      <ScrollView
+        style={styles.eventsListContainer}
+        contentContainerStyle={styles.eventsListContent}
+      >
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#F4A941" />
@@ -377,6 +380,9 @@ const styles = StyleSheet.create({
   eventsListContainer: {
     flex: 1,
     padding: 20,
+  },
+  eventsListContent: {
+    paddingBottom: 120, // Extra padding to ensure content is not cut off by tab bar
   },
   loadingContainer: {
     flex: 1,

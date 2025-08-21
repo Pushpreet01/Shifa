@@ -12,6 +12,7 @@ import { LogBox } from "react-native";
 
 // Import or define your WebWrapper here
 import WebWrapper from "./components/WebWrapper";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 LogBox.ignoreLogs([
   "expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go",
@@ -24,18 +25,20 @@ export default function App() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaProvider>
-        <WebWrapper>
-          <AuthProvider>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-            <NetworkStatus />
-          </AuthProvider>
-        </WebWrapper>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={styles.container}>
+        <SafeAreaProvider>
+          <WebWrapper>
+            <AuthProvider>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+              <NetworkStatus />
+            </AuthProvider>
+          </WebWrapper>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 

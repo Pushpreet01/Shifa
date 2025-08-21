@@ -15,7 +15,7 @@ import HeroBox from "../../components/AdminHeroBox";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { SettingsStackParamList } from "../../navigation/AppNavigator";
+import { SettingsStackParamList } from "../../navigation/AdminNavigator";
 import { deleteCurrentUserAndData } from '../../services/firebaseUserService';
 
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStackParamList & { Login: undefined }>;
@@ -29,6 +29,9 @@ const SettingsScreen = () => {
     switch (option) {
       case "Profile":
         navigation.navigate("Profile");
+        break;
+      case "Feedbacks":
+        navigation.navigate("AdminFeedback");
         break;
       default:
         console.log(`${option} pressed`);
@@ -59,6 +62,17 @@ const SettingsScreen = () => {
           name: "Notifications",
           icon: "notifications-outline" as const,
           description: "Customize your notification preferences"
+        }
+      ]
+    },
+    {
+      title: "Admin",
+      icon: "settings-outline" as const,
+      items: [
+        {
+          name: "Feedbacks",
+          icon: "chatbubble-outline" as const,
+          description: "View and manage user feedbacks"
         }
       ]
     }
@@ -136,9 +150,9 @@ const SettingsScreen = () => {
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.deleteButton} 
-            onPress={handleDeleteAccount} 
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={handleDeleteAccount}
             disabled={deleting}
           >
             {deleting ? (

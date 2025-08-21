@@ -13,6 +13,7 @@ export type CalendarEvent = {
   source: "firebase" | "local"; // Make this required and specific
   approvalStatus?: "pending" | "approved" | "rejected"; // Add approval status
   createdBy?: string;
+  createdAt?: Date;
   needsVolunteers?: boolean;
 };
 

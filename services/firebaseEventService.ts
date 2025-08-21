@@ -49,6 +49,7 @@ class FirebaseEventService {
           source: "firebase",
           approvalStatus: approvalStatusObj,
           needsVolunteers: data.needsVolunteers,
+          createdAt: data.createdAt ? data.createdAt.toDate?.() || new Date(data.createdAt) : undefined,
         });
       });
 
@@ -342,6 +343,7 @@ class FirebaseEventService {
           source: "firebase",
           approvalStatus: data.approvalStatus || "pending",
           createdBy: data.createdBy,
+          createdAt: data.createdAt ? data.createdAt.toDate?.() || new Date(data.createdAt) : undefined,
         });
       });
       return events;

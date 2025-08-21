@@ -4,8 +4,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/AdminNavigator';
 import AdminHeroBox from '../../components/AdminHeroBox';
-import { fetchUsers, banUser } from '../../services/adminUserService';
+import { banUser } from '../../services/adminUserService';
 import { useIsFocused } from '@react-navigation/native';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebaseConfig';
 
 // User type for UI
 // (should match the type in UserManagementScreen)
@@ -16,7 +18,7 @@ type User = {
   phone?: string;
   profileImage?: string;
   role: 'Support Seeker' | 'Volunteer' | 'Event Organizer' | 'Admin';
-  approved: boolean;
+  approvalStatus: { status: 'Approved' | 'Pending' | 'Rejected'; reason?: string };
 };
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'UserDetails'>;
@@ -33,11 +35,24 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     const loadUser = async () => {
       setLoading(true);
       try {
-        // fetchUsers returns an array, so filter by id
-        const users = await fetchUsers(); // fetch all approved users
-        const found = users.find((u: any) => u.id === userId);
-        setUser(found || null);
+        // Get the specific user document directly
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUser({
+            id: userDoc.id,
+            fullName: userData.fullName || '',
+            email: userData.email || '',
+            phone: userData.phoneNumber || '',
+            profileImage: userData.profileImage || '',
+            role: userData.role || 'Support Seeker',
+            approvalStatus: userData.approvalStatus || { status: 'Pending' }
+          });
+        } else {
+          setUser(null);
+        }
       } catch (err) {
+        console.error('Error loading user:', err);
         setUser(null);
       } finally {
         setLoading(false);
@@ -50,9 +65,15 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     if (!user) return;
     setUpdating(true);
     try {
-      await banUser(user.id, !user.approved);
-      setUser({ ...user, approved: !user.approved });
-      Alert.alert('Success', `User has been ${user.approved ? 'banned' : 'unbanned'}.`);
+      await banUser(user.id, user.approvalStatus.status !== 'Approved');
+      setUser({
+        ...user,
+        approvalStatus: {
+          status: user.approvalStatus.status === 'Approved' ? 'Rejected' : 'Approved',
+          reason: user.approvalStatus.status === 'Approved' ? 'Banned by admin.' : undefined
+        }
+      });
+      Alert.alert('Success', `User has been ${user.approvalStatus.status === 'Approved' ? 'banned' : 'unbanned'}.`);
     } catch (err) {
       Alert.alert('Error', 'Failed to update user status.');
     } finally {
@@ -107,28 +128,57 @@ const UserDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
         {user.role !== 'Admin' && (
           <>
             <Text style={styles.label}>Status:</Text>
-            <Text style={styles.value}>{user.approved ? 'Active' : 'Banned'}</Text>
+            {user.approvalStatus.status === 'Approved' && (
+              <Text style={styles.statusApproved}>Active</Text>
+            )}
+            {user.approvalStatus.status === 'Pending' && (
+              <Text style={styles.statusPending}>Pending Approval</Text>
+            )}
+            {user.approvalStatus.status === 'Rejected' && (
+              <View>
+                <Text style={styles.statusRejected}>
+                  {user.approvalStatus.reason === 'Banned by admin.' ? 'Banned' : 'Rejected'}
+                </Text>
+                {user.approvalStatus.reason && user.approvalStatus.reason !== 'Banned by admin.' && (
+                  <Text style={styles.rejectionReason}>Reason: {user.approvalStatus.reason}</Text>
+                )}
+              </View>
+            )}
           </>
         )}
 
         <View style={styles.actions}>
-          {/* Only show Ban and Assign Role for non-admin users */}
-          {user.role !== 'Admin' && (
-            <>
-              <TouchableOpacity
-                style={[styles.button, styles.banButton]}
-                onPress={handleBanUnban}
-                disabled={updating}
-              >
-                <Text style={styles.buttonText}>{user.approved ? 'Ban' : 'Unban'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.roleButton]}
-                onPress={() => navigation.navigate('AssignUserRole', { user })}
-              >
-                <Text style={styles.buttonText}>Assign Role</Text>
-              </TouchableOpacity>
-            </>
+          {/* Only show Ban/Unban for non-admin users who are not pending */}
+          {user.role !== 'Admin' && user.approvalStatus.status !== 'Pending' && (
+            <TouchableOpacity
+              style={[styles.button, styles.banButton]}
+              onPress={handleBanUnban}
+              disabled={updating}
+            >
+              <Text style={styles.buttonText}>{user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Only show Assign Role for non-admin users who are not pending */}
+          {user.role !== 'Admin' && user.approvalStatus.status !== 'Pending' && (
+            <TouchableOpacity
+              style={[styles.button, styles.roleButton]}
+              onPress={() => navigation.navigate('AssignUserRole', {
+                user: {
+                  ...user,
+                  name: user.fullName // Add the name property expected by UserType
+                }
+              })}
+            >
+              <Text style={styles.buttonText}>Assign Role</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Disabled buttons for pending users */}
+          {user.role !== 'Admin' && user.approvalStatus.status === 'Pending' && (
+            <View style={[styles.button, styles.disabledButton]}>
+              <Text style={styles.disabledButtonText}>Pending Approval - Actions Disabled</Text>
+            </View>
           )}
         </View>
       </View>
@@ -170,6 +220,39 @@ const styles = StyleSheet.create({
   banButton: { backgroundColor: '#008080' },
   roleButton: { backgroundColor: '#008080' },
   buttonText: { color: '#fff', fontWeight: 'bold' },
+  statusApproved: {
+    fontSize: 16,
+    color: '#28a745',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  statusPending: {
+    fontSize: 16,
+    color: '#ffc107',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  statusRejected: {
+    fontSize: 16,
+    color: '#dc3545',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  rejectionReason: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  disabledButton: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  disabledButtonText: {
+    color: '#6c757d',
+    fontWeight: 'bold',
+  },
 });
 
 export default UserDetailsScreen;

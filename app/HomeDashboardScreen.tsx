@@ -168,8 +168,8 @@ const HomeDashboardScreen = () => {
   };
 
   const handleProfilePress = () => {
-    // @ts-ignore - Ignoring type check for cross-stack navigation
-    navigation.navigate("Settings", { screen: "Profile" });
+    // Navigate directly to Profile screen
+    navigation.navigate("Profile");
   };
 
   const handleNavigation = (route: keyof HomeStackParamList) => {

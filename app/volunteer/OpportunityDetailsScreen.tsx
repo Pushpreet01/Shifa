@@ -149,7 +149,7 @@ const OpportunityDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       const app = apps.find((a) => a.opportunityId === opportunityId);
       setIsApplied(!!app);
       setApplicationStatus(app ? app.status.toUpperCase() : null);
-      setApplicationId(app ? app.id : null);
+      setApplicationId(app ? app.applicationId : null);
     } catch (error) {
       console.error("Error checking application status:", error);
     } finally {

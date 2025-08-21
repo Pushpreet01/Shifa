@@ -18,6 +18,7 @@ import UserDetailsScreen from '../app/admin/UserDetailsScreen';
 import AssignUserRoleScreen from '../app/admin/AssignUserRoleScreen';
 import AdminEmailScreen from '../app/admin/AdminEmailScreen';
 import AdminEditEventScreen from '../app/admin/AdminEditEventScreen';
+import AdminFeedbackScreen from '../app/admin/AdminFeedbackScreen';
 
 // Settings Screens
 import SettingsScreen from '../app/admin/SettingsScreen';
@@ -48,6 +49,7 @@ export type AdminStackParamList = {
   AssignUserRole: { user: UserType };
   AdminEmail: undefined;
   AdminEditEvent: { eventId: string };
+  AdminFeedback: undefined;
 };
 
 // Compose stack now includes AdminEmail
@@ -58,6 +60,7 @@ export type ComposeStackParamList = {
 export type SettingsStackParamList = {
   SettingsHome: undefined;
   Profile: undefined;
+  AdminFeedback: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -79,6 +82,7 @@ const AdminHomeStackScreen = () => (
     <AdminStack.Screen name="AssignUserRole" component={AssignUserRoleScreen} />
     <AdminStack.Screen name="AdminEmail" component={AdminEmailScreen} />
     <AdminStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
+    <AdminStack.Screen name="AdminFeedback" component={AdminFeedbackScreen} />
   </AdminStack.Navigator>
 );
 
@@ -93,6 +97,7 @@ const SettingsStackScreen = () => (
   <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
     <SettingsStack.Screen name="SettingsHome" component={SettingsScreen} />
     <SettingsStack.Screen name="Profile" component={ProfileScreen} />
+    <SettingsStack.Screen name="AdminFeedback" component={AdminFeedbackScreen} />
   </SettingsStack.Navigator>
 );
 

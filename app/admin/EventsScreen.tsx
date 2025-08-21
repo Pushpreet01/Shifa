@@ -313,14 +313,14 @@ const EventsScreen = () => {
         )}
       </ScrollView>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.floatingAddButton}
         onPress={() => openModal()}
         accessibilityLabel="Create new event"
         accessibilityRole="button"
       >
         <Ionicons name="add" size={30} color="#FFFFFF" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>

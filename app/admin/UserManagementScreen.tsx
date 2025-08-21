@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AdminHeroBox from '../../components/AdminHeroBox';
 import {
-  fetchUsers,
+  fetchAllUsers,
   banUser,
 } from '../../services/adminUserService';
 import { useIsFocused } from '@react-navigation/native';
@@ -49,7 +49,7 @@ const UserManagementScreen = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchUsers(role);
+      const data = await fetchAllUsers(role);
       // Only include users with all required fields
       const validUsers = (Array.isArray(data) ? data : []).filter(
         (user: any): user is User =>
@@ -159,7 +159,15 @@ const UserManagementScreen = () => {
           <Text style={styles.totalText}>Total Registered Users: {filteredUsers.length}</Text>
         )}
         {!loading && !error && filteredUsers.map(user => (
-          <View key={user.id} style={styles.userCard}>
+          <View key={user.id} style={[
+            styles.userCard,
+            user.role !== 'Admin' && {
+              borderLeftColor:
+                user.approvalStatus.status === 'Approved' ? '#28a745' : // Green for approved
+                  user.approvalStatus.status === 'Pending' ? '#ffc107' : // Yellow for pending
+                    '#dc3545' // Red for rejected/banned
+            }
+          ]}>
             <View style={styles.userInfoRow}>
               <Image
                 source={user.profileImage ? { uri: user.profileImage } : require('../../assets/aiplaceholder.png')}
@@ -169,6 +177,28 @@ const UserManagementScreen = () => {
                 <Text style={styles.userName}>{user.fullName || 'No Name'}</Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
                 {user.phone && <Text style={styles.userPhone}>{user.phone}</Text>}
+
+                {/* Status Display */}
+                {user.role !== 'Admin' && (
+                  <View style={styles.statusContainer}>
+                    {user.approvalStatus.status === 'Approved' && (
+                      <Text style={styles.statusApproved}>Status: Active</Text>
+                    )}
+                    {user.approvalStatus.status === 'Pending' && (
+                      <Text style={styles.statusPending}>Status: Pending Approval</Text>
+                    )}
+                    {user.approvalStatus.status === 'Rejected' && (
+                      <View>
+                        <Text style={styles.statusRejected}>
+                          Status: {user.approvalStatus.reason === 'Banned by admin.' ? 'Banned' : 'Rejected'}
+                        </Text>
+                        {user.approvalStatus.reason && user.approvalStatus.reason !== 'Banned by admin.' && (
+                          <Text style={styles.rejectionReason}>Reason: {user.approvalStatus.reason}</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
             <View style={styles.actionsRow}>
@@ -177,24 +207,28 @@ const UserManagementScreen = () => {
                 style={[styles.actionButton, styles.viewBtn]}>
                 <Ionicons name="eye-outline" size={18} color="#fff" />
               </TouchableOpacity>
-              {/* Only show ban/unban and rejection reason for non-admin users */}
-              {user.role !== 'Admin' && (
-                <>
-                  <TouchableOpacity
-                    onPress={() => handleBanUnban(user)}
-                    style={[styles.actionButton, styles.banBtn]}
-                  >
-                    <Ionicons name="close-circle-outline" size={18} color="#fff" />
-                    <Text style={{ color: '#fff', marginLeft: 6, fontSize: 12 }}>
-                      {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
-                    </Text>
-                  </TouchableOpacity>
-                  {user.approvalStatus.status === 'Rejected' && user.approvalStatus.reason && (
-                    <Text style={{ color: '#C44536', fontSize: 12, marginTop: 4 }}>
-                      Rejected: {user.approvalStatus.reason}
-                    </Text>
-                  )}
-                </>
+
+              {/* Only show ban/unban for non-admin users who are not pending */}
+              {user.role !== 'Admin' && user.approvalStatus.status !== 'Pending' && (
+                <TouchableOpacity
+                  onPress={() => handleBanUnban(user)}
+                  style={[styles.actionButton, styles.banBtn]}
+                >
+                  <Ionicons name="close-circle-outline" size={18} color="#fff" />
+                  <Text style={{ color: '#fff', marginLeft: 6, fontSize: 12 }}>
+                    {user.approvalStatus.status === 'Approved' ? 'Ban' : 'Unban'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Disabled buttons for pending users */}
+              {user.role !== 'Admin' && user.approvalStatus.status === 'Pending' && (
+                <View style={[styles.actionButton, styles.disabledBtn]}>
+                  <Ionicons name="time-outline" size={18} color="#999" />
+                  <Text style={{ color: '#999', marginLeft: 6, fontSize: 12 }}>
+                    Pending
+                  </Text>
+                </View>
               )}
             </View>
           </View>
@@ -205,8 +239,9 @@ const UserManagementScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FDF6EC',
-   },
+  container: {
+    flex: 1, backgroundColor: '#FDF6EC',
+  },
   searchBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -282,7 +317,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     borderLeftWidth: 5,
-    borderLeftColor: '#E5A54E',
+    borderLeftColor: '#E5A54E', // Default color for Admin users
   },
   userInfoRow: {
     flexDirection: 'row',
@@ -302,6 +337,30 @@ const styles = StyleSheet.create({
   userName: { fontSize: 16, fontWeight: 'bold', color: '#333' },
   userEmail: { fontSize: 14, color: '#777', marginTop: 2 },
   userPhone: { fontSize: 13, color: '#1B6B63', marginTop: 2 },
+  statusContainer: {
+    marginTop: 8,
+  },
+  statusApproved: {
+    fontSize: 12,
+    color: '#28a745',
+    fontWeight: '600',
+  },
+  statusPending: {
+    fontSize: 12,
+    color: '#ffc107',
+    fontWeight: '600',
+  },
+  statusRejected: {
+    fontSize: 12,
+    color: '#dc3545',
+    fontWeight: '600',
+  },
+  rejectionReason: {
+    fontSize: 11,
+    color: '#6c757d',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -317,6 +376,11 @@ const styles = StyleSheet.create({
   viewBtn: { backgroundColor: '#008080' },
   editBtn: { backgroundColor: '#008080' },
   banBtn: { backgroundColor: '#008080' },
+  disabledBtn: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
 });
 
 export default UserManagementScreen;

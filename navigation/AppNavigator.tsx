@@ -87,6 +87,7 @@ export type HomeStackParamList = {
   MyEvents: undefined;
   AdminEditEvent: { eventId: string };
   Settings: undefined;
+  Profile: undefined;
 };
 
 export type SettingsStackParamList = {
@@ -174,7 +175,8 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="MyEvents" component={MyEventsScreen} />
     <HomeStack.Screen name="AdminEditEvent" component={AdminEditEventScreen} />
     <HomeStack.Screen name="Settings" component={SettingsScreen} />
-    
+    <HomeStack.Screen name="Profile" component={ProfileScreen} />
+
   </HomeStack.Navigator>
 );
 

@@ -13,6 +13,18 @@ export async function fetchUsers(role?: string) {
     return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
+export async function fetchAllUsers(role?: string) {
+    const baseRef = collection(db, "users");
+    let q;
+    if (role) {
+        q = query(baseRef, where("role", "==", role));
+    } else {
+        q = query(baseRef);
+    }
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
 /**
  * Ban or unban a user by setting the 'approvalStatus' field.
  * @param userId The user's document ID

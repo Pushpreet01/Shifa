@@ -257,7 +257,7 @@ const SignUpScreen: React.FC = () => {
           )}
         </TouchableOpacity>
 
-        <Text style={styles.Text}>Or</Text>
+        {/* <Text style={styles.Text}>Or</Text>
 
         <TouchableOpacity
           onPress={() => promptAsync()}
@@ -268,7 +268,7 @@ const SignUpScreen: React.FC = () => {
           <Text style={styles.googleButtonText}>
             Continue with Google
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Text style={styles.Text}>Already have an account?</Text>
 

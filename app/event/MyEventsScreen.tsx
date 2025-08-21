@@ -31,7 +31,19 @@ const MyEventsScreen: React.FC<NativeStackScreenProps<HomeStackParamList, any>> 
             try {
                 setLoading(true);
                 const myEvents = await firebaseEventService.getEventsByCreator(currentUser.uid);
-                setEvents(myEvents);
+                const toTime = (value: any): number => {
+                    if (!value) return 0;
+                    if (value instanceof Date) return value.getTime();
+                    if (typeof value?.toDate === "function") return value.toDate().getTime();
+                    const t = new Date(value).getTime();
+                    return isNaN(t) ? 0 : t;
+                };
+                const sortedEvents = [...myEvents].sort((a, b) => {
+                    const aTime = toTime(a?.createdAt) || toTime(a?.date);
+                    const bTime = toTime(b?.createdAt) || toTime(b?.date);
+                    return bTime - aTime;
+                });
+                setEvents(sortedEvents);
             } catch (err) {
                 setError("Failed to load your events.");
             } finally {
